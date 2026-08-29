@@ -10,6 +10,9 @@ module smoke_tb;
   );
 
   initial begin
+    $dumpfile("build/smoke.fst");
+    $dumpvars(0, smoke_tb);
+
     a = 1'b0;
     b = 1'b0;
     #1;
@@ -24,4 +27,3 @@ module smoke_tb;
     $finish;
   end
 endmodule
-

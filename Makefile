@@ -19,7 +19,7 @@ lint:
 
 test:
 	mkdir -p $(BUILD_DIR)
-	verilator --binary --timing --top-module smoke_tb \
+	verilator --binary --timing --trace-fst --top-module smoke_tb \
 		--Mdir $(BUILD_DIR)/obj_smoke -o smoke_test $(SV_SOURCES)
 	./$(BUILD_DIR)/obj_smoke/smoke_test
 

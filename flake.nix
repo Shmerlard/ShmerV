@@ -15,10 +15,12 @@
           default = pkgs.mkShell {
             packages = with pkgs; [
               gnumake
+              lz4
               slang-server
               surfer
               verible
               verilator
+              zlib
               zsh
             ];
           };
