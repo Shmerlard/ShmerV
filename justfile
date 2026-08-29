@@ -1,5 +1,5 @@
 build_dir := "build"
-sv_sources := "rtl/smoke.sv tb/smoke_tb.sv"
+sv_sources := `find rtl tb -type f -name '*.sv' | sort | tr '\n' ' '`
 
 default:
   @just --list
@@ -16,11 +16,25 @@ lint:
   verible-verilog-lint {{sv_sources}}
   verilator --lint-only --timing --top-module smoke_tb {{sv_sources}}
 
-test:
-  mkdir -p {{build_dir}}
-  verilator --binary --timing --trace-fst --top-module smoke_tb \
-    --Mdir {{build_dir}}/obj_smoke -o smoke_test {{sv_sources}}
-  ./{{build_dir}}/obj_smoke/smoke_test
+test module="":
+  @set -e; \
+  if [ -n "{{module}}" ]; then \
+    rtl_source=$(find rtl -type f -name '{{module}}.sv' -print -quit); \
+    testbench=$(find tb -type f -name '{{module}}_tb.sv' -print -quit); \
+    if [ -z "$rtl_source" ] || [ -z "$testbench" ]; then \
+      echo "Missing RTL or testbench for {{module}}"; \
+      exit 1; \
+    fi; \
+    mkdir -p {{build_dir}}; \
+    verilator --binary --timing --trace-fst --top-module {{module}}_tb \
+      --Mdir {{build_dir}}/obj_{{module}} -o {{module}}_test "$rtl_source" "$testbench"; \
+    ./{{build_dir}}/obj_{{module}}/{{module}}_test; \
+  else \
+    for testbench in $(find tb -type f -name '*_tb.sv' | sort); do \
+      test_name=$(basename "$testbench" _tb.sv); \
+      just test "$test_name"; \
+    done; \
+  fi
 
 clean:
   rm -rf {{build_dir}}
