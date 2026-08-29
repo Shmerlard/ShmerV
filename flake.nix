@@ -15,6 +15,7 @@
           default = pkgs.mkShell {
             packages = with pkgs; [
               gnumake
+              just
               lz4
               slang-server
               surfer
