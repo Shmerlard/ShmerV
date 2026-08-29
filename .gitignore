@@ -1,0 +1,8 @@
+/build/
+/.direnv/
+/result
+/result-*
+*.fst
+*.vcd
+*.log
+
