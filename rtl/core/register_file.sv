@@ -1,4 +1,4 @@
-timeunit 1ns/1ps;
+timeunit 1ns / 1ps;
 
 module register_file (
     input  logic        clk,
