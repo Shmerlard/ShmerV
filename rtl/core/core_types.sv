@@ -10,7 +10,8 @@ package core_types;
     ALU_SRL,
     ALU_SRA,
     ALU_OR,
-    ALU_AND
+    ALU_AND,
+    ALU_INVALID
   } alu_op_t;
 
   typedef enum logic [2:0] {
