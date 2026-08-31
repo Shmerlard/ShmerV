@@ -18,8 +18,8 @@ module id_stage (
     output logic [4:0] rs1,
     output logic [4:0] rs2,
     output alu_op_t alu_op,
-    output logic [31:0] pc_if,
-    output logic valid_if
+    output logic [31:0] pc_id_out,
+    output logic valid_id_out
 
 );
   opcode_t opcode;
@@ -30,8 +30,8 @@ module id_stage (
   logic [31:0] rs1_data_rf;
   logic [31:0] rs2_data_rf;
 
-  assign pc_if = pc_id;
-  assign valid_if = valid_id;
+  assign pc_id_out    = pc_id;
+  assign valid_id_out = valid_id;
 
   instruction_decoder id (
       .instr     (instr_id),
@@ -64,9 +64,9 @@ module id_stage (
 
   always_comb begin
     case (alu_src_a_sel)
-      2'b00: alu_operand_a = rs1_data_rf;
-      2'b01: alu_operand_a = '0;
-      2'b10: alu_operand_a = pc_id;
+      2'b00:   alu_operand_a = rs1_data_rf;
+      2'b01:   alu_operand_a = '0;
+      2'b10:   alu_operand_a = pc_id;
       default: alu_operand_a = '0;
     endcase
     // TODO: add enums

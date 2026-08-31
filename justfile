@@ -27,9 +27,10 @@ test module="":
     fi; \
     mkdir -p {{build_dir}}; \
     package_sources=$(find rtl -type f -name '*_types.sv' | sort); \
+    rtl_sources=$(find rtl -type f -name '*.sv' ! -name '*_types.sv' | sort); \
     verilator --binary --timing --trace-fst --top-module {{module}}_tb \
       --Mdir {{build_dir}}/obj_{{module}} -o {{module}}_test \
-      $package_sources "$rtl_source" "$testbench"; \
+      $package_sources $rtl_sources "$testbench"; \
     ./{{build_dir}}/obj_{{module}}/{{module}}_test; \
   else \
     for testbench in $(find tb -type f -name '*_tb.sv' | sort); do \
