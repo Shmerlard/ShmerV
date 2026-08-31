@@ -1,12 +1,13 @@
 timeunit 1ns / 1ps;
 
 module register_file (
-    input  logic        clk,
-    input  logic [ 4:0] read_addr_1,
-    input  logic [ 4:0] read_addr_2,
-    input  logic        write_enable,
-    input  logic [ 4:0] write_addr,
-    input  logic [31:0] write_data,
+    input logic        clk,
+    input logic [ 4:0] read_addr_1,
+    input logic [ 4:0] read_addr_2,
+    input logic        write_enable,
+    input logic [ 4:0] write_addr,
+    input logic [31:0] write_data,
+
     output logic [31:0] read_data_1,
     output logic [31:0] read_data_2
 );
