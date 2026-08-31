@@ -23,6 +23,7 @@
               verilator
               zlib
               zsh
+              typst
             ];
           };
         });
