@@ -4,30 +4,30 @@ import core_types::*;
 
 module alu_tb;
 
-  logic [31:0] a;
-  logic [31:0] b;
-  alu_op_t    op;
-  logic [31:0] result;
+  logic [31:0] operand_a_i;
+  logic [31:0] operand_b_i;
+  alu_operation_t    operation_i;
+  logic [31:0] result_o;
 
   alu dut (
-      .a(a),
-      .b(b),
-      .op(op),
-      .result(result)
+      .operand_a_i(operand_a_i),
+      .operand_b_i(operand_b_i),
+      .operation_i(operation_i),
+      .result_o(result_o)
   );
 
-  task automatic check(input logic [31:0] test_a, input logic [31:0] test_b, input alu_op_t test_op,
-                       input logic [31:0] expected);
+  task automatic check(input logic [31:0] test_a, input logic [31:0] test_b,
+                       input alu_operation_t test_op, input logic [31:0] expected);
     begin
-      a  = test_a;
-      b  = test_b;
-      op = test_op;
+      operand_a_i = test_a;
+      operand_b_i = test_b;
+      operation_i = test_op;
 
       #1;
 
-      if (result !== expected) begin
-        $fatal(1, "FAILED: op=%s a=%h b=%h expected=%h got=%h", test_op.name(), a, b, expected,
-               result);
+      if (result_o !== expected) begin
+        $fatal(1, "FAILED: operation_i=%s operand_a_i=%h operand_b_i=%h expected=%h got=%h",
+               test_op.name(), operand_a_i, operand_b_i, expected, result_o);
       end
     end
   endtask
@@ -70,7 +70,7 @@ module alu_tb;
     // AND
     check(32'hFFFF_0000, 32'hAAAA_AAAA, ALU_AND, 32'hAAAA_0000);
 
-    // Only b[4:0] controls shift amount.
+    // Only operand_b_i[4:0] controls shift amount.
     // 33 -> shift by 1.
     check(32'h0000_0001, 32'd33, ALU_SLL, 32'h0000_0002);
 

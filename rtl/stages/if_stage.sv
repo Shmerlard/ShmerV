@@ -3,25 +3,25 @@ timeunit 1ns / 1ps;
 module if_stage (
     input logic clk,
     input logic rst,
-    input logic pc_wr_en,
-    input logic [31:0] imem_data,
+    input logic pc_write_enable_i,
+    input logic [31:0] instruction_memory_read_data_i,
 
-    output logic [31:0] imem_addr,
-    output logic [31:0] inst_if
+    output logic [31:0] instruction_memory_address_o,
+    output logic [31:0] instruction_if_o
 
 );
-  logic [31:0] next_pc;
+  logic [31:0] pc_next;
 
-  assign inst_if = imem_data;
+  assign instruction_if_o = instruction_memory_read_data_i;
 
 
   program_counter pc (
-      .clk    (clk),
-      .rst    (rst),
-      .enable (pc_wr_en),
-      .next_pc(next_pc),
-      .pc_out (imem_addr)
+      .clk      (clk),
+      .rst      (rst),
+      .enable_i (pc_write_enable_i),
+      .next_pc_i(pc_next),
+      .pc_o     (instruction_memory_address_o)
   );
 
-  assign next_pc = imem_addr + 32'd4;
+  assign pc_next = instruction_memory_address_o + 32'd4;
 endmodule

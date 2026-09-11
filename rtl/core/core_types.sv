@@ -12,7 +12,7 @@ package core_types;
     ALU_OR,
     ALU_AND,
     ALU_INVALID
-  } alu_op_t;
+  } alu_operation_t;
 
   typedef enum logic [2:0] {
     TYPE_R,
@@ -22,7 +22,7 @@ package core_types;
     TYPE_U,
     TYPE_J,
     TYPE_INVALID
-  } instr_type_t;
+  } instruction_type_t;
 
   typedef enum logic [6:0] {
     OPCODE_LOAD   = 7'b0000011,

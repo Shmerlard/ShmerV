@@ -4,27 +4,27 @@ import core_types::*;
 
 module immediate_generator_tb;
 
-  logic [31:0] instr;
-  instr_type_t instr_type;
-  logic [31:0] imm;
+  logic [31:0] instruction_i;
+  instruction_type_t instruction_type_i;
+  logic [31:0] immediate_o;
 
   immediate_generator dut (
-      .instr(instr),
-      .instr_type(instr_type),
-      .imm(imm)
+      .instruction_i(instruction_i),
+      .instruction_type_i(instruction_type_i),
+      .immediate_o(immediate_o)
   );
 
-  task automatic check(input logic [31:0] test_instr, input instr_type_t test_type,
+  task automatic check(input logic [31:0] test_instr, input instruction_type_t test_type,
                        input logic [31:0] expected);
     begin
-      instr      = test_instr;
-      instr_type = test_type;
+      instruction_i      = test_instr;
+      instruction_type_i = test_type;
 
       #1;
 
-      if (imm !== expected) begin
-        $error("FAILED: type=%s instr=%h expected=%h got=%h", test_type.name(), instr, expected,
-               imm);
+      if (immediate_o !== expected) begin
+        $error("FAILED: type=%s instruction_i=%h expected=%h got=%h", test_type.name(),
+               instruction_i, expected, immediate_o);
       end
     end
   endtask

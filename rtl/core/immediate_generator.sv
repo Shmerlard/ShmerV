@@ -1,40 +1,54 @@
 import core_types::*;
 
 module immediate_generator (
-    input logic [31:0] instr,
-    input instr_type_t instr_type,
+    input logic [31:0] instruction_i,
+    input instruction_type_t instruction_type_i,
 
-    output logic [31:0] imm
+    output logic [31:0] immediate_o
 );
 
   always_comb begin
-    case (instr_type)
+    case (instruction_type_i)
 
       TYPE_I: begin
-        imm = {{20{instr[31]}}, instr[31:20]};
+        immediate_o = {{20{instruction_i[31]}}, instruction_i[31:20]};
       end
 
       TYPE_S: begin
-        imm = {{20{instr[31]}}, instr[31:25], instr[11:7]};
+        immediate_o = {{20{instruction_i[31]}}, instruction_i[31:25], instruction_i[11:7]};
       end
 
       TYPE_B: begin
-        imm = {{19{instr[31]}}, instr[31], instr[7], instr[30:25], instr[11:8], 1'b0};
+        immediate_o = {
+          {19{instruction_i[31]}},
+          instruction_i[31],
+          instruction_i[7],
+          instruction_i[30:25],
+          instruction_i[11:8],
+          1'b0
+        };
       end
 
       TYPE_U: begin
-        imm = {instr[31:12], 12'b0};
+        immediate_o = {instruction_i[31:12], 12'b0};
       end
 
       TYPE_J: begin
-        imm = {{11{instr[31]}}, instr[31], instr[19:12], instr[20], instr[30:21], 1'b0};
+        immediate_o = {
+          {11{instruction_i[31]}},
+          instruction_i[31],
+          instruction_i[19:12],
+          instruction_i[20],
+          instruction_i[30:21],
+          1'b0
+        };
       end
 
       TYPE_R, TYPE_INVALID: begin
-        imm = '0;
+        immediate_o = '0;
       end
 
-      default: imm = '0;
+      default: immediate_o = '0;
 
     endcase
   end

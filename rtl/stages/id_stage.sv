@@ -3,56 +3,56 @@ import core_types::*;
 
 module id_stage (
     input logic clk,
-    input logic valid_id,
-    input logic [31:0] instr_id,
-    input logic [31:0] pc_id,
-    input logic [31:0] wb_wr_data,
-    input logic [4:0] wb_wr_reg,
-    input logic wb_wr_en,
+    input logic valid_id_i,
+    input logic [31:0] instruction_id_i,
+    input logic [31:0] pc_id_i,
+    input logic [31:0] writeback_data_i,
+    input logic [4:0] writeback_rd_i,
+    input logic writeback_write_enable_i,
 
-    output logic [31:0] rs1_data,
-    output logic [31:0] rs2_data,
-    output logic [31:0] imm,
-    output logic [4:0] rd,
-    output logic [4:0] rs1,
-    output logic [4:0] rs2,
-    output alu_op_t alu_op,
-    output logic [31:0] pc_id_out,
-    output logic valid_id_out
+    output logic [31:0] rs1_data_o,
+    output logic [31:0] rs2_data_o,
+    output logic [31:0] immediate_o,
+    output logic [4:0] rd_o,
+    output logic [4:0] rs1_o,
+    output logic [4:0] rs2_o,
+    output alu_operation_t alu_operation_o,
+    output logic [31:0] pc_id_o,
+    output logic valid_id_o
 
 );
   opcode_t opcode;
   logic [2:0] funct3;
   logic [6:0] funct7;
-  instr_type_t instr_type;
-  assign pc_id_out    = pc_id;
-  assign valid_id_out = valid_id;
+  instruction_type_t instr_type;
+  assign pc_id_o    = pc_id_i;
+  assign valid_id_o = valid_id_i;
 
   instruction_decoder id (
-      .instr     (instr_id),
-      .opcode    (opcode),
-      .rd        (rd),
-      .funct3    (funct3),
-      .rs1       (rs1),
-      .rs2       (rs2),
-      .funct7    (funct7),
-      .instr_type(instr_type),
-      .alu_op    (alu_op)
+      .instruction_i     (instruction_id_i),
+      .opcode_o          (opcode),
+      .rd_o              (rd_o),
+      .funct3_o          (funct3),
+      .rs1_o             (rs1_o),
+      .rs2_o             (rs2_o),
+      .funct7_o          (funct7),
+      .instruction_type_o(instr_type),
+      .alu_operation_o   (alu_operation_o)
   );
 
   immediate_generator immediate_generator (
-      .instr     (instr_id),
-      .instr_type(instr_type),
-      .imm       (imm)
+      .instruction_i     (instruction_id_i),
+      .instruction_type_i(instr_type),
+      .immediate_o       (immediate_o)
   );
   register_file register_file (
-      .clk         (clk),
-      .read_addr_1 (rs1),
-      .read_addr_2 (rs2),
-      .write_enable(wb_wr_en),
-      .write_addr  (wb_wr_reg),
-      .write_data  (wb_wr_data),
-      .read_data_1 (rs1_data),
-      .read_data_2 (rs2_data)
+      .clk             (clk),
+      .read_address_1_i(rs1_o),
+      .read_address_2_i(rs2_o),
+      .write_enable_i  (writeback_write_enable_i),
+      .write_address_i (writeback_rd_i),
+      .write_data_i    (writeback_data_i),
+      .read_data_1_o   (rs1_data_o),
+      .read_data_2_o   (rs2_data_o)
   );
 endmodule
