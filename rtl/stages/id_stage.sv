@@ -3,7 +3,6 @@ import core_types::*;
 
 module id_stage (
     input logic clk,
-    input logic valid_id_i,
     input logic [31:0] instruction_id_i,
     input logic [31:0] pc_id_i,
     input logic [31:0] writeback_data_i,
@@ -18,18 +17,13 @@ module id_stage (
     output logic [4:0] rs2_o,
     output execute_control_t execute_control_o,
     output memory_control_t memory_control_o,
-    output writeback_control_t writeback_control_o,
-    output logic [31:0] pc_id_o,
-    output logic valid_id_o
+    output writeback_control_t writeback_control_o
 
 );
   opcode_t opcode;
   logic [2:0] funct3;
   logic [6:0] funct7;
   instruction_type_t instr_type;
-  assign pc_id_o    = pc_id_i;
-  assign valid_id_o = valid_id_i;
-
   instruction_decoder id (
       .instruction_i     (instruction_id_i),
       .opcode_o          (opcode),

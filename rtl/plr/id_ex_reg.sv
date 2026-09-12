@@ -4,6 +4,7 @@ module id_ex_reg (
     input logic clk,
     input logic rst,
 
+    input logic valid_id_i,
     input execute_control_t execute_control_id_i,
     input memory_control_t memory_control_id_i,
     input writeback_control_t writeback_control_id_i,
@@ -16,6 +17,7 @@ module id_ex_reg (
     input logic [4:0] rd_id_i,
 
     output execute_control_t execute_control_ex_o,
+    output logic valid_ex_o,
     output memory_control_t memory_control_ex_o,
     output writeback_control_t writeback_control_ex_o,
     output logic [31:0] rs1_data_ex_o,
@@ -29,6 +31,7 @@ module id_ex_reg (
 
   always_ff @(posedge clk) begin
     if (rst) begin
+      valid_ex_o             <= 1'b0;
       execute_control_ex_o   <= '0;
       memory_control_ex_o    <= '0;
       writeback_control_ex_o <= '0;
@@ -40,6 +43,7 @@ module id_ex_reg (
       rs2_ex_o               <= '0;
       rd_ex_o                <= '0;
     end else begin
+      valid_ex_o             <= valid_id_i;
       execute_control_ex_o   <= execute_control_id_i;
       memory_control_ex_o    <= memory_control_id_i;
       writeback_control_ex_o <= writeback_control_id_i;

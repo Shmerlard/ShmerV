@@ -6,40 +6,16 @@ module ex_stage (
     input logic [31:0] rs2_data_i,
 
     input execute_control_t execute_control_i,
-    input memory_control_t memory_control_i,
-    output memory_control_t memory_control_o,
-    input writeback_control_t writeback_control_i,
-    output writeback_control_t writeback_control_o,
 
     input logic [31:0] immediate_i,
-    input logic valid_i,
     input logic [31:0] pc_i,
-    input logic [4:0] rs1_i,
-    input logic [4:0] rs2_i,
-    input logic [4:0] rd_i,
 
-    output logic valid_o,
-    output logic [31:0] pc_o,
-    output logic [4:0] rs1_o,
-    output logic [4:0] rs2_o,
-    output logic [4:0] rd_o,
-    output logic [31:0] rs2_data_o,
     output logic [31:0] alu_result_o
 
 );
-
-  assign memory_control_o = memory_control_i;
-  assign writeback_control_o = writeback_control_i;
-
   logic [31:0] alu_operand_a;
   logic [31:0] alu_operand_b;
 
-  assign valid_o    = valid_i;
-  assign pc_o       = pc_i;
-  assign rs1_o      = rs1_i;
-  assign rs2_o      = rs2_i;
-  assign rd_o       = rd_i;
-  assign rs2_data_o = rs2_data_i;
 
   always_comb begin
     case (execute_control_i.alu_operand_a_select)
