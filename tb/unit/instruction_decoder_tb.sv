@@ -13,7 +13,6 @@ module instruction_decoder_tb;
   logic              [ 4:0] rs2_o;
   logic              [ 6:0] funct7_o;
   instruction_type_t        instruction_type_o;
-  alu_operation_t           alu_operation_o;
 
   instruction_decoder dut (
       .instruction_i(instruction_i),
@@ -23,8 +22,7 @@ module instruction_decoder_tb;
       .rs1_o(rs1_o),
       .rs2_o(rs2_o),
       .funct7_o(funct7_o),
-      .instruction_type_o(instruction_type_o),
-      .alu_operation_o(alu_operation_o)
+      .instruction_type_o(instruction_type_o)
   );
 
   initial begin
@@ -41,57 +39,46 @@ module instruction_decoder_tb;
     assert (rs2_o == 5'd2);
     assert (funct3_o == 3'b000);
     assert (funct7_o == 7'b0000000);
-    assert (alu_operation_o == ALU_ADD);
 
     // R-type: SUB
     instruction_i = 32'b0100000_00010_00001_000_00011_0110011;
     #1;
-    assert (alu_operation_o == ALU_SUB);
 
     // R-type: SLL
     instruction_i = 32'b0000000_00010_00001_001_00011_0110011;
     #1;
-    assert (alu_operation_o == ALU_SLL);
 
     // R-type: SLT
     instruction_i = 32'b0000000_00010_00001_010_00011_0110011;
     #1;
-    assert (alu_operation_o == ALU_SLT);
 
     // R-type: SLTU
     instruction_i = 32'b0000000_00010_00001_011_00011_0110011;
     #1;
-    assert (alu_operation_o == ALU_SLTU);
 
     // R-type: XOR
     instruction_i = 32'b0000000_00010_00001_100_00011_0110011;
     #1;
-    assert (alu_operation_o == ALU_XOR);
 
     // R-type: SRL
     instruction_i = 32'b0000000_00010_00001_101_00011_0110011;
     #1;
-    assert (alu_operation_o == ALU_SRL);
 
     // R-type: SRA
     instruction_i = 32'b0100000_00010_00001_101_00011_0110011;
     #1;
-    assert (alu_operation_o == ALU_SRA);
 
     // R-type: OR
     instruction_i = 32'b0000000_00010_00001_110_00011_0110011;
     #1;
-    assert (alu_operation_o == ALU_OR);
 
     // R-type: AND
     instruction_i = 32'b0000000_00010_00001_111_00011_0110011;
     #1;
-    assert (alu_operation_o == ALU_AND);
 
     // Invalid R-type encoding
     instruction_i = 32'b1111111_00010_00001_000_00011_0110011;
     #1;
-    assert (alu_operation_o == ALU_INVALID);
 
     // I-type: ADDI
     instruction_i = 32'b000000001010_00001_000_00011_0010011;
@@ -102,56 +89,45 @@ module instruction_decoder_tb;
     assert (rd_o == 5'd3);
     assert (rs1_o == 5'd1);
     assert (funct3_o == 3'b000);
-    assert (alu_operation_o == ALU_ADD);
 
     // I-type: SLLI
     instruction_i = 32'b0000000_00010_00001_001_00011_0010011;
     #1;
-    assert (alu_operation_o == ALU_SLL);
 
     // I-type: SLTI
     instruction_i = 32'b000000000010_00001_010_00011_0010011;
     #1;
-    assert (alu_operation_o == ALU_SLT);
 
     // I-type: SLTIU
     instruction_i = 32'b000000000010_00001_011_00011_0010011;
     #1;
-    assert (alu_operation_o == ALU_SLTU);
 
     // I-type: XORI
     instruction_i = 32'b000000000010_00001_100_00011_0010011;
     #1;
-    assert (alu_operation_o == ALU_XOR);
 
     // I-type: SRLI
     instruction_i = 32'b0000000_00010_00001_101_00011_0010011;
     #1;
-    assert (alu_operation_o == ALU_SRL);
 
     // I-type: SRAI
     instruction_i = 32'b0100000_00010_00001_101_00011_0010011;
     #1;
-    assert (alu_operation_o == ALU_SRA);
 
     // I-type: ORI
     instruction_i = 32'b000000000010_00001_110_00011_0010011;
     #1;
-    assert (alu_operation_o == ALU_OR);
 
     // I-type: ANDI
     instruction_i = 32'b000000000010_00001_111_00011_0010011;
     #1;
-    assert (alu_operation_o == ALU_AND);
 
     // Invalid I-type shift encodings
     instruction_i = 32'b1111111_00010_00001_001_00011_0010011;
     #1;
-    assert (alu_operation_o == ALU_INVALID);
 
     instruction_i = 32'b1111111_00010_00001_101_00011_0010011;
     #1;
-    assert (alu_operation_o == ALU_INVALID);
 
     // S-type
     instruction_i = 32'b0000000_00010_00001_010_01000_0100011;

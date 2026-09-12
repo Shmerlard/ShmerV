@@ -4,10 +4,14 @@ import core_types::*;
 module ex_stage (
     input logic [31:0] rs1_data_i,
     input logic [31:0] rs2_data_i,
+
+    input execute_control_t execute_control_i,
+    input memory_control_t memory_control_i,
+    output memory_control_t memory_control_o,
+    input writeback_control_t writeback_control_i,
+    output writeback_control_t writeback_control_o,
+
     input logic [31:0] immediate_i,
-    input logic [1:0] alu_operand_a_select_i,
-    input logic alu_operand_b_select_i,
-    input alu_operation_t alu_operation_i,
     input logic valid_i,
     input logic [31:0] pc_i,
     input logic [4:0] rs1_i,
@@ -23,6 +27,10 @@ module ex_stage (
     output logic [31:0] alu_result_o
 
 );
+
+  assign memory_control_o = memory_control_i;
+  assign writeback_control_o = writeback_control_i;
+
   logic [31:0] alu_operand_a;
   logic [31:0] alu_operand_b;
 
@@ -34,16 +42,16 @@ module ex_stage (
   assign rs2_data_o = rs2_data_i;
 
   always_comb begin
-    case (alu_operand_a_select_i)
-      2'b00:   alu_operand_a = rs1_data_i;
-      2'b01:   alu_operand_a = '0;
-      2'b10:   alu_operand_a = pc_i;
+    case (execute_control_i.alu_operand_a_select)
+      ALU_OPERAND_A_RS1: alu_operand_a = rs1_data_i;
+      ALU_OPERAND_A_ZERO: alu_operand_a = '0;
+      ALU_OPERAND_A_PC: alu_operand_a = pc_i;
       default: alu_operand_a = '0;
     endcase
 
-    case (alu_operand_b_select_i)
-      1'b0:    alu_operand_b = rs2_data_i;
-      1'b1:    alu_operand_b = immediate_i;
+    case (execute_control_i.alu_operand_b_select)
+      ALU_OPERAND_B_RS2:    alu_operand_b = rs2_data_i;
+      ALU_OPERAND_B_IMM:    alu_operand_b = immediate_i;
       default: alu_operand_b = '0;
     endcase
   end
@@ -51,7 +59,7 @@ module ex_stage (
   alu alu (
       .operand_a_i(alu_operand_a),
       .operand_b_i(alu_operand_b),
-      .operation_i(alu_operation_i),
+      .operation_i(execute_control_i.alu_operation),
       .result_o   (alu_result_o)
   );
 

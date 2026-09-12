@@ -14,6 +14,18 @@ package core_types;
     ALU_INVALID
   } alu_operation_t;
 
+  typedef enum logic [1:0] {
+    ALU_OPERAND_A_RS1,
+    ALU_OPERAND_A_ZERO,
+    ALU_OPERAND_A_PC
+  } alu_operand_a_select_t;
+
+  typedef enum logic {
+    ALU_OPERAND_B_RS2,
+    ALU_OPERAND_B_IMM
+  } alu_operand_b_select_t;
+
+
   typedef enum logic [2:0] {
     TYPE_R,
     TYPE_I,
@@ -38,6 +50,12 @@ package core_types;
   } opcode_t;
 
   typedef struct packed {
+    alu_operand_a_select_t alu_operand_a_select;
+    alu_operand_b_select_t alu_operand_b_select;
+    alu_operation_t alu_operation;
+  } execute_control_t;
+
+  typedef struct packed {
     logic memory_read_enable;
     logic memory_write_enable;
   } memory_control_t;
@@ -46,4 +64,6 @@ package core_types;
     logic register_write_enable;
     logic writeback_source;  // 0: alu result, 1: memory read data // TODO: maybe make an ENUM?
   } writeback_control_t;
+
+
 endpackage
