@@ -36,4 +36,14 @@ package core_types;
     OPCODE_JAL    = 7'b1101111,
     OPCODE_SYSTEM = 7'b1110011
   } opcode_t;
+
+  typedef struct packed {
+    logic memory_read_enable;
+    logic memory_write_enable;
+  } memory_control_t;
+
+  typedef struct packed {
+    logic register_write_enable;
+    logic writeback_source;  // 0: alu result, 1: memory read data // TODO: maybe make an ENUM?
+  } writeback_control_t;
 endpackage
