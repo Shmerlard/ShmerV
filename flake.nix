@@ -17,6 +17,7 @@
               gnumake
               just
               lz4
+              pkgsCross.riscv32-embedded.stdenv.cc
               slang-server
               surfer
               verible

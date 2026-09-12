@@ -1,4 +1,8 @@
-module cpu_system (
+timeunit 1ns / 1ps;
+
+module cpu_system #(
+    parameter string MEMORY_INIT_FILE = ""
+) (
     input logic clk,
     input logic rst
 );
@@ -26,7 +30,9 @@ module cpu_system (
       .dmem_write_data_o   (dmem_write_data)
   );
 
-  memory memory (
+  memory #(
+      .INIT_FILE(MEMORY_INIT_FILE)
+  ) memory (
       .clk                   (clk),
       .port_a_read_address_i (imem_read_address),
       .port_a_read_data_o    (imem_read_data),
