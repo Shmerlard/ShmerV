@@ -3,6 +3,7 @@ timeunit 1ns / 1ps;
 import core_types::*;
 
 module wb_stage_tb;
+  logic valid_i;
   writeback_control_t writeback_control_i;
   logic [31:0] alu_result_i;
   logic [31:0] memory_read_data_i;
@@ -15,6 +16,7 @@ module wb_stage_tb;
     $dumpfile("build/wb_stage.fst");
     $dumpvars(0, wb_stage_tb);
 
+    valid_i = 1'b1;
     alu_result_i = 32'h1234_5678;
     memory_read_data_i = 32'hDEAD_BEEF;
     writeback_control_i = '0;

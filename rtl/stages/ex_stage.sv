@@ -2,6 +2,7 @@ timeunit 1ns / 1ps;
 import core_types::*;
 
 module ex_stage (
+    input logic valid_i,
     input logic [31:0] rs1_data_i,
     input logic [31:0] rs2_data_i,
 

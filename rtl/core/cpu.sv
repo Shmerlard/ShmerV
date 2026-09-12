@@ -28,8 +28,6 @@ module cpu (
   logic [31:0] rs2_data_id;
   logic valid_id;
   logic [4:0] rd_id;
-  logic [4:0] rs1_id;
-  logic [4:0] rs2_id;
 
   execute_control_t execute_control_id;
   memory_control_t memory_control_id;
@@ -47,8 +45,6 @@ module cpu (
   logic [31:0] rs1_data_ex;
   logic [31:0] rs2_data_ex;
   logic [31:0] imm_ex;
-  logic [4:0] rs1_ex;
-  logic [4:0] rs2_ex;
   logic [31:0] pc_ex;
   logic [4:0] rd_ex;
   logic [31:0] alu_result_ex;
@@ -61,7 +57,6 @@ module cpu (
   logic [31:0] rs2_data_mem;
   logic [4:0] rd_mem;
   logic [31:0] dmem_address_mem;
-  logic [31:0] dmem_read_data_mem;
   logic valid_mem;
 
   // writeback signals
@@ -77,7 +72,7 @@ module cpu (
   if_stage if_stage (
       .clk                           (clk),
       .rst                           (rst),
-      .pc_write_enable_i             (1'b1),                 // FIX: 1 for now
+      .pc_write_enable_i             (1'b1),
       .instruction_memory_read_data_i(imem_read_data_i),
       .instruction_memory_address_o  (imem_read_address_o),
       .instruction_if_o              (instruction_if)
@@ -88,15 +83,15 @@ module cpu (
       .rst                           (rst),
       .instruction_memory_read_data_i(instruction_if),
       .pc_if_i                       (pc_if),
-      .valid_id_o                    (valid_id),        // TODO: FIX VALID BITS
+      .valid_id_o                    (valid_id),
       .instruction_id_o              (instruction_id),
       .pc_id_o                       (pc_id)
   );
 
   id_stage id_stage (
       .clk                     (clk),
+      .valid_i                 (valid_id),
       .instruction_id_i        (instruction_id),
-      .pc_id_i                 (pc_id),
       .writeback_data_i        (rf_write_data_wb),
       .writeback_rd_i          (rd_wb),
       .writeback_write_enable_i(rf_write_enable_wb),
@@ -104,8 +99,6 @@ module cpu (
       .rs2_data_o              (rs2_data_id),
       .immediate_o             (imm_id),
       .rd_o                    (rd_id),
-      .rs1_o                   (rs1_id),
-      .rs2_o                   (rs2_id),
       .execute_control_o       (execute_control_id),
       .memory_control_o        (memory_control_id),
       .writeback_control_o     (writeback_control_id)
@@ -122,8 +115,6 @@ module cpu (
       .rs2_data_id_i         (rs2_data_id),
       .immediate_id_i        (imm_id),
       .pc_id_i               (pc_id),
-      .rs1_id_i              (rs1_id),
-      .rs2_id_i              (rs2_id),
       .rd_id_i               (rd_id),
       .execute_control_ex_o  (execute_control_ex),
       .valid_ex_o            (valid_ex),
@@ -133,12 +124,11 @@ module cpu (
       .rs2_data_ex_o         (rs2_data_ex),
       .immediate_ex_o        (imm_ex),
       .pc_ex_o               (pc_ex),
-      .rs1_ex_o              (rs1_ex),
-      .rs2_ex_o              (rs2_ex),
       .rd_ex_o               (rd_ex)
   );
 
   ex_stage ex_stage (
+      .valid_i          (valid_ex),
       .rs1_data_i       (rs1_data_ex),
       .rs2_data_i       (rs2_data_ex),
       .execute_control_i(execute_control_ex),
@@ -164,16 +154,14 @@ module cpu (
   );
 
   mem_stage mem_stage (
+      .valid_i              (valid_mem),
       .alu_result_i         (alu_result_mem),
-      .rd_i                 (rd_mem),
       .rs2_data_i           (rs2_data_mem),
-      .memory_read_data_i   (dmem_read_data_i),
       .memory_control_i     (memory_control_mem),
       .memory_address_o     (dmem_address_mem),
       .memory_write_data_o  (dmem_write_data_o),
       .memory_read_enable_o (dmem_read_enable_o),
-      .memory_write_enable_o(dmem_write_enable_o),
-      .memory_read_data_o   (dmem_read_data_mem)
+      .memory_write_enable_o(dmem_write_enable_o)
   );
 
   mem_wb_reg mem_wb_reg (
@@ -182,7 +170,7 @@ module cpu (
       .valid_mem_i            (valid_mem),
       .writeback_control_mem_i(writeback_control_mem),
       .alu_result_mem_i       (alu_result_mem),
-      .memory_read_data_mem_i (dmem_read_data_mem),
+      .memory_read_data_mem_i (dmem_read_data_i),
       .rd_mem_i               (rd_mem),
       .writeback_control_wb_o (writeback_control_wb),
       .valid_wb_o             (valid_wb),
@@ -192,8 +180,8 @@ module cpu (
   );
 
   wb_stage wb_stage (
+      .valid_i            (valid_wb),
       .writeback_control_i(writeback_control_wb),
-      .rd_i               (rd_wb),
       .alu_result_i       (alu_result_wb),
       .memory_read_data_i (memory_read_data_wb),
       .writeback_data_o   (rf_write_data_wb),

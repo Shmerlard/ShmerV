@@ -3,8 +3,8 @@ import core_types::*;
 
 module id_stage (
     input logic clk,
+    input logic valid_i,
     input logic [31:0] instruction_id_i,
-    input logic [31:0] pc_id_i,
     input logic [31:0] writeback_data_i,
     input logic [4:0] writeback_rd_i,
     input logic writeback_write_enable_i,
@@ -13,8 +13,6 @@ module id_stage (
     output logic [31:0] rs2_data_o,
     output logic [31:0] immediate_o,
     output logic [4:0] rd_o,
-    output logic [4:0] rs1_o,
-    output logic [4:0] rs2_o,
     output execute_control_t execute_control_o,
     output memory_control_t memory_control_o,
     output writeback_control_t writeback_control_o
@@ -23,14 +21,16 @@ module id_stage (
   opcode_t opcode;
   logic [2:0] funct3;
   logic [6:0] funct7;
+  logic [4:0] rs1;
+  logic [4:0] rs2;
   instruction_type_t instr_type;
   instruction_decoder id (
       .instruction_i     (instruction_id_i),
       .opcode_o          (opcode),
       .rd_o              (rd_o),
       .funct3_o          (funct3),
-      .rs1_o             (rs1_o),
-      .rs2_o             (rs2_o),
+      .rs1_o             (rs1),
+      .rs2_o             (rs2),
       .funct7_o          (funct7),
       .instruction_type_o(instr_type)
   );
@@ -51,8 +51,8 @@ module id_stage (
   );
   register_file register_file (
       .clk             (clk),
-      .read_address_1_i(rs1_o),
-      .read_address_2_i(rs2_o),
+      .read_address_1_i(rs1),
+      .read_address_2_i(rs2),
       .write_enable_i  (writeback_write_enable_i),
       .write_address_i (writeback_rd_i),
       .write_data_i    (writeback_data_i),

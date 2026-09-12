@@ -4,8 +4,8 @@ import core_types::*;
 
 module id_stage_tb;
   logic                      clk = 1'b0;
+  logic                      valid_i;
   logic               [31:0] instruction_id_i;
-  logic               [31:0] pc_id_i;
   logic               [31:0] writeback_data_i;
   logic               [ 4:0] writeback_rd_i;
   logic                      writeback_write_enable_i;
@@ -14,8 +14,6 @@ module id_stage_tb;
   logic               [31:0] rs2_data_o;
   logic               [31:0] immediate_o;
   logic               [ 4:0] rd_o;
-  logic               [ 4:0] rs1_o;
-  logic               [ 4:0] rs2_o;
   execute_control_t          execute_control_o;
   memory_control_t           memory_control_o;
   writeback_control_t        writeback_control_o;
@@ -38,8 +36,8 @@ module id_stage_tb;
     $dumpfile("build/id_stage.fst");
     $dumpvars(0, id_stage_tb);
 
+    valid_i                  = 1'b1;
     instruction_id_i         = '0;
-    pc_id_i                  = 32'h0000_0100;
     writeback_data_i         = '0;
     writeback_rd_i           = '0;
     writeback_write_enable_i = 1'b0;
@@ -52,7 +50,7 @@ module id_stage_tb;
     #1ns;
     assert (rs1_data_o == 32'h1234_5678);
     assert (rs2_data_o == 32'h0000_0005);
-    assert (rs1_o == 5'd1 && rs2_o == 5'd2 && rd_o == 5'd3);
+    assert (rd_o == 5'd3);
     assert (execute_control_o.alu_operation == ALU_ADD);
 
     // ADDI x3, x1, -4: operand B comes from the sign-extended immediate.

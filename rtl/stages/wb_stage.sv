@@ -1,7 +1,7 @@
 import core_types::*;
 module wb_stage (
+    input logic valid_i,
     input writeback_control_t writeback_control_i,
-    input [4:0] rd_i,
     input [31:0] alu_result_i,
     input [31:0] memory_read_data_i,
     output [31:0] writeback_data_o,

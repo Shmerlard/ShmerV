@@ -3,20 +3,12 @@ timeunit 1ns / 1ps;
 import core_types::*;
 
 module ex_stage_tb;
+  logic                    valid_i;
   logic             [31:0] rs1_data_i;
   logic             [31:0] rs2_data_i;
   logic             [31:0] immediate_i;
   execute_control_t        execute_control_i;
   logic             [31:0] pc_i;
-  logic             [ 4:0] rs1_i;
-  logic             [ 4:0] rs2_i;
-  logic             [ 4:0] rd_i;
-
-  logic             [31:0] pc_o;
-  logic             [ 4:0] rs1_o;
-  logic             [ 4:0] rs2_o;
-  logic             [ 4:0] rd_o;
-  logic             [31:0] rs2_data_o;
   logic             [31:0] alu_result_o;
 
   ex_stage dut (.*);
@@ -26,21 +18,16 @@ module ex_stage_tb;
     $dumpvars(0, ex_stage_tb);
 
     rs1_data_i                             = 32'd10;
+    valid_i                                = 1'b1;
     rs2_data_i                             = 32'd3;
     immediate_i                            = 32'd7;
     execute_control_i.alu_operation        = ALU_ADD;
     pc_i                                   = 32'h0000_0100;
-    rs1_i                                  = 5'd1;
-    rs2_i                                  = 5'd2;
-    rd_i                                   = 5'd3;
     execute_control_i.alu_operand_a_select = ALU_OPERAND_A_RS1;
     execute_control_i.alu_operand_b_select = ALU_OPERAND_B_RS2;
     #1ns;
 
     assert (alu_result_o == 32'd13);
-    assert (pc_o == pc_i);
-    assert (rs1_o == rs1_i && rs2_o == rs2_i);
-    assert (rd_o == rd_i && rs2_data_o == rs2_data_i);
 
     // Register plus immediate.
     execute_control_i.alu_operand_b_select = ALU_OPERAND_B_IMM;
