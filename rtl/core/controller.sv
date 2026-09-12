@@ -35,9 +35,15 @@ module controller (
       OPCODE_LOAD: begin
         execute_control_o.alu_operand_a_select = ALU_OPERAND_A_RS1;
         execute_control_o.alu_operand_b_select = ALU_OPERAND_B_IMM;
+        memory_control_o.memory_read_enable = 1'b1;
+        writeback_control_o.register_write_enable = alu_operation != ALU_INVALID;
+        writeback_control_o.writeback_source = 1'b1;
       end
 
       OPCODE_STORE: begin
+        execute_control_o.alu_operand_a_select = ALU_OPERAND_A_RS1;
+        execute_control_o.alu_operand_b_select = ALU_OPERAND_B_IMM;
+        memory_control_o.memory_write_enable   = 1'b1;
       end
 
       default: begin
