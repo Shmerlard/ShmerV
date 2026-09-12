@@ -15,7 +15,7 @@ module mem_stage_tb;
   mem_stage dut (.*);
 
   initial begin
-    $dumpfile("build/mem_stage.fst");
+    $dumpfile("build/tests/mem_stage/waveform.fst");
     $dumpvars(0, mem_stage_tb);
 
     valid_i = 1'b1;

@@ -14,7 +14,7 @@ module ex_stage_tb;
   ex_stage dut (.*);
 
   initial begin
-    $dumpfile("build/ex_stage.fst");
+    $dumpfile("build/tests/ex_stage/waveform.fst");
     $dumpvars(0, ex_stage_tb);
 
     rs1_data_i                             = 32'd10;

@@ -20,7 +20,8 @@ module cpu_system_tb;
     if (!$value$plusargs("expected_address=%h", expected_address))
       $fatal(1, "Missing +expected_address");
     if (!$value$plusargs("expected_value=%h", expected_value)) $fatal(1, "Missing +expected_value");
-    if (!$value$plusargs("trace_file=%s", trace_file)) trace_file = "build/cpu_system.fst";
+    if (!$value$plusargs("trace_file=%s", trace_file))
+      trace_file = "build/tests/cpu_system/waveform.fst";
 
     $dumpfile(trace_file);
     $dumpvars(0, cpu_system_tb);

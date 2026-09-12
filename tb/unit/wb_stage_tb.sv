@@ -13,7 +13,7 @@ module wb_stage_tb;
   wb_stage dut (.*);
 
   initial begin
-    $dumpfile("build/wb_stage.fst");
+    $dumpfile("build/tests/wb_stage/waveform.fst");
     $dumpvars(0, wb_stage_tb);
 
     valid_i = 1'b1;

@@ -10,7 +10,7 @@ module smoke_tb;
   );
 
   initial begin
-    $dumpfile("build/smoke.fst");
+    $dumpfile("build/tests/smoke/waveform.fst");
     $dumpvars(0, smoke_tb);
 
     a_i = 1'b0;

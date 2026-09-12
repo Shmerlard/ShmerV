@@ -26,7 +26,7 @@ module instruction_decoder_tb;
   );
 
   initial begin
-    $dumpfile("build/instruction_decoder.fst");
+    $dumpfile("build/tests/instruction_decoder/waveform.fst");
     $dumpvars(0, instruction_decoder_tb);
     // R-type: ADD
     instruction_i = 32'b0000000_00010_00001_000_00011_0110011;

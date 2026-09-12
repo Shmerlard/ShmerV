@@ -14,7 +14,7 @@ module controller_tb;
   controller dut (.*);
 
   initial begin
-    $dumpfile("build/controller.fst");
+    $dumpfile("build/tests/controller/waveform.fst");
     $dumpvars(0, controller_tb);
 
     // ADD: register operands, ALU result written to the register file.

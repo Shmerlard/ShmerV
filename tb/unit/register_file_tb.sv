@@ -25,7 +25,7 @@ module register_file_tb;
   endtask
 
   initial begin
-    $dumpfile("build/register_file.fst");
+    $dumpfile("build/tests/register_file/waveform.fst");
     $dumpvars(0, register_file_tb);
 
     read_address_1_i = 5'd0;

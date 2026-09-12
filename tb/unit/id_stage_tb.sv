@@ -33,7 +33,7 @@ module id_stage_tb;
   endtask
 
   initial begin
-    $dumpfile("build/id_stage.fst");
+    $dumpfile("build/tests/id_stage/waveform.fst");
     $dumpvars(0, id_stage_tb);
 
     valid_i                  = 1'b1;

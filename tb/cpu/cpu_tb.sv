@@ -43,7 +43,7 @@ module cpu_tb;
   always #5ns clk = ~clk;
 
   initial begin
-    $dumpfile("build/cpu.fst");
+    $dumpfile("build/tests/cpu/waveform.fst");
     $dumpvars(0, cpu_tb);
 
     // NOP-fill the program area.
