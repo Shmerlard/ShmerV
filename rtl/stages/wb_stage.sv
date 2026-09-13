@@ -13,6 +13,6 @@ module wb_stage (
   assign wb_source = writeback_control_i.writeback_source;
 
   assign writeback_data_o = wb_source ? memory_read_data_i : alu_result_i;
-  assign rf_write_enable_o = writeback_control_i.register_write_enable;
+  assign rf_write_enable_o = writeback_control_i.register_write_enable && valid_i;
 
 endmodule

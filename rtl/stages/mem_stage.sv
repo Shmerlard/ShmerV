@@ -16,8 +16,8 @@ module mem_stage (
 );
   assign memory_address_o = alu_result_i;
 
-  assign memory_read_enable_o = memory_control_i.memory_read_enable;
-  assign memory_write_enable_o = memory_control_i.memory_write_enable;
+  assign memory_read_enable_o = memory_control_i.memory_read_enable && valid_i;
+  assign memory_write_enable_o = memory_control_i.memory_write_enable && valid_i;
 
   assign memory_write_data_o = rs2_data_i;
 

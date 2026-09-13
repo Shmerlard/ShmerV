@@ -13,6 +13,7 @@ module id_ex_reg (
     input logic [31:0] immediate_id_i,
     input logic [31:0] pc_id_i,
     input logic [4:0] rd_id_i,
+    input logic flush_ex_i,
 
     output execute_control_t execute_control_ex_o,
     output logic valid_ex_o,
@@ -36,6 +37,8 @@ module id_ex_reg (
       immediate_ex_o         <= '0;
       pc_ex_o                <= '0;
       rd_ex_o                <= '0;
+    end else if (flush_ex_i) begin
+      valid_ex_o <= 1'b0;
     end else begin
       valid_ex_o             <= valid_id_i;
       execute_control_ex_o   <= execute_control_id_i;

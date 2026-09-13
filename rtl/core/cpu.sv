@@ -83,6 +83,7 @@ module cpu (
       .rst                           (rst),
       .instruction_memory_read_data_i(instruction_if),
       .pc_if_i                       (pc_if),
+      .flush_id_i                    (1'b0),
       .valid_id_o                    (valid_id),
       .instruction_id_o              (instruction_id),
       .pc_id_o                       (pc_id)
@@ -116,6 +117,7 @@ module cpu (
       .immediate_id_i        (imm_id),
       .pc_id_i               (pc_id),
       .rd_id_i               (rd_id),
+      .flush_ex_i            (1'b0),
       .execute_control_ex_o  (execute_control_ex),
       .valid_ex_o            (valid_ex),
       .memory_control_ex_o   (memory_control_ex),

@@ -3,6 +3,7 @@ module if_id_reg (
     input logic rst,
     input logic [31:0] instruction_memory_read_data_i,
     input logic [31:0] pc_if_i,
+    input logic flush_id_i,
 
     output logic valid_id_o,
     output logic [31:0] instruction_id_o,
@@ -14,6 +15,8 @@ module if_id_reg (
   always_ff @(posedge clk) begin
     if (rst) begin
       pc_id_o    <= '0;
+      valid_id_o <= 1'b0;
+    end else if (flush_id_i) begin
       valid_id_o <= 1'b0;
     end else begin
       pc_id_o    <= pc_if_i;
