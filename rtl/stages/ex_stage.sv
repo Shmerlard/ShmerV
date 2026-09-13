@@ -11,12 +11,17 @@ module ex_stage (
     input logic [31:0] immediate_i,
     input logic [31:0] pc_i,
 
-    output logic [31:0] alu_result_o
+    output logic [31:0] alu_result_o,
+    output logic [31:0] pc_plus_4_data_o,
+
+    output logic pc_redirect_enable_o,
+    output logic [31:0] pc_redirect_address_o
 
 );
   logic [31:0] alu_operand_a;
   logic [31:0] alu_operand_b;
 
+  assign pc_plus_4_data_o = pc_i + 32'd4;
 
   always_comb begin
     case (execute_control_i.alu_operand_a_select)
@@ -40,4 +45,6 @@ module ex_stage (
       .result_o   (alu_result_o)
   );
 
+  assign pc_redirect_enable_o  = execute_control_i.pc_redirect_enable && valid_i;
+  assign pc_redirect_address_o = alu_result_o;
 endmodule

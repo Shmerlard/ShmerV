@@ -25,6 +25,12 @@ package core_types;
     ALU_OPERAND_B_IMM
   } alu_operand_b_select_t;
 
+  typedef enum logic [1:0] {
+    WRITEBACK_SOURCE_ALU,
+    WRITEBACK_SOURCE_MEMORY,
+    WRITEBACK_SOURCE_PC4
+  } writeback_source_t;
+
 
   typedef enum logic [2:0] {
     TYPE_R,
@@ -53,6 +59,7 @@ package core_types;
     alu_operand_a_select_t alu_operand_a_select;
     alu_operand_b_select_t alu_operand_b_select;
     alu_operation_t alu_operation;
+    logic pc_redirect_enable;
   } execute_control_t;
 
   typedef struct packed {
@@ -62,7 +69,7 @@ package core_types;
 
   typedef struct packed {
     logic register_write_enable;
-    logic writeback_source;  // 0: alu result, 1: memory read data // TODO: maybe make an ENUM?
+    writeback_source_t writeback_source;
   } writeback_control_t;
 
 

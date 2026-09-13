@@ -37,13 +37,21 @@ module controller (
         execute_control_o.alu_operand_b_select = ALU_OPERAND_B_IMM;
         memory_control_o.memory_read_enable = 1'b1;
         writeback_control_o.register_write_enable = alu_operation != ALU_INVALID;
-        writeback_control_o.writeback_source = 1'b1;
+        writeback_control_o.writeback_source = WRITEBACK_SOURCE_MEMORY;
       end
 
       OPCODE_STORE: begin
         execute_control_o.alu_operand_a_select = ALU_OPERAND_A_RS1;
         execute_control_o.alu_operand_b_select = ALU_OPERAND_B_IMM;
         memory_control_o.memory_write_enable   = 1'b1;
+      end
+
+      OPCODE_JAL: begin
+        execute_control_o.alu_operand_a_select = ALU_OPERAND_A_PC;
+        execute_control_o.alu_operand_b_select = ALU_OPERAND_B_IMM;
+        execute_control_o.pc_redirect_enable = 1'b1;
+        writeback_control_o.register_write_enable = 1'b1;
+        writeback_control_o.writeback_source = WRITEBACK_SOURCE_PC4;
       end
 
       default: begin
@@ -103,6 +111,8 @@ module controller (
       end
 
       OPCODE_LOAD, OPCODE_STORE: alu_operation = ALU_ADD;
+
+      OPCODE_JAL: alu_operation = ALU_ADD;
 
       default: alu_operation = ALU_INVALID;
     endcase

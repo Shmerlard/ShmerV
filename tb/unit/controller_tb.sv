@@ -26,7 +26,7 @@ module controller_tb;
     assert (execute_control_o.alu_operand_a_select == ALU_OPERAND_A_RS1);
     assert (execute_control_o.alu_operand_b_select == ALU_OPERAND_B_RS2);
     assert (writeback_control_o.register_write_enable);
-    assert (!writeback_control_o.writeback_source);
+    assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_ALU);
     assert (memory_control_o == '0);
 
     // SUB: funct7 selects subtraction.
@@ -52,7 +52,7 @@ module controller_tb;
     assert (memory_control_o.memory_read_enable);
     assert (!memory_control_o.memory_write_enable);
     assert (writeback_control_o.register_write_enable);
-    assert (writeback_control_o.writeback_source);
+    assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_MEMORY);
 
     // Store: calculate an address and write memory without register writeback.
     opcode_i = OPCODE_STORE;
@@ -63,6 +63,17 @@ module controller_tb;
     assert (!memory_control_o.memory_read_enable);
     assert (memory_control_o.memory_write_enable);
     assert (!writeback_control_o.register_write_enable);
+
+    // JAL: redirect to PC + immediate and write PC + 4 to rd.
+    opcode_i = OPCODE_JAL;
+    #1ns;
+    assert (execute_control_o.alu_operation == ALU_ADD);
+    assert (execute_control_o.alu_operand_a_select == ALU_OPERAND_A_PC);
+    assert (execute_control_o.alu_operand_b_select == ALU_OPERAND_B_IMM);
+    assert (execute_control_o.pc_redirect_enable);
+    assert (memory_control_o == '0);
+    assert (writeback_control_o.register_write_enable);
+    assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_PC4);
 
     // Unknown opcode: no memory or register writes are allowed.
     opcode_i = opcode_t'(7'b1111111);
