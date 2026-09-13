@@ -77,7 +77,11 @@ run_cpu_system_program() {
     exit 1
   fi
 
-  read -r cycles expected_address expected_value < "$expected_file"
+  cycles=$(awk '$1 == "cycles" { print $2; exit }' "$expected_file")
+  if [ -z "$cycles" ]; then
+    echo "Missing cycles entry in $expected_file" >&2
+    exit 1
+  fi
   mkdir -p "$program_build_directory"
 
   echo "[RUN]   cpu_system/$program_name"
@@ -91,8 +95,7 @@ run_cpu_system_program() {
   if ! "$build_directory/tests/cpu_system/obj/cpu_system_test" \
     "+memory_init=$program_build_directory/program.hex" \
     "+cycles=$cycles" \
-    "+expected_address=$expected_address" \
-    "+expected_value=$expected_value" \
+    "+expected_file=$expected_file" \
     "+trace_file=$program_build_directory/waveform.fst" \
     > "$program_build_directory/test.log" 2>&1; then
     echo "[FAIL]  cpu_system/$program_name"

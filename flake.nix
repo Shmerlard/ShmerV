@@ -27,7 +27,9 @@
               yosys
 
               # RISC-V software toolchain
+              dtc
               pkgsCross.riscv32-embedded.stdenv.cc
+              spike
 
               # Documentation and diagrams
               drawio
