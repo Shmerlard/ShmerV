@@ -1,5 +1,3 @@
-timeunit 1ns / 1ps;
-
 module if_stage (
     input logic clk,
     input logic rst,

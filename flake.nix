@@ -14,17 +14,30 @@
         in {
           default = pkgs.mkShell {
             packages = with pkgs; [
+              # Development tools
               gnumake
               just
-              lz4
-              pkgsCross.riscv32-embedded.stdenv.cc
+              zsh
+
+              # RTL development
               slang-server
               surfer
               verible
               verilator
-              zlib
-              zsh
+              yosys
+
+              # RISC-V software toolchain
+              pkgsCross.riscv32-embedded.stdenv.cc
+
+              # Documentation and diagrams
+              drawio
+              graphviz
+              netlistsvg
               typst
+
+              # Build dependencies
+              lz4
+              zlib
             ];
           };
         });
