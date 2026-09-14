@@ -108,6 +108,17 @@ module controller_tb;
     assert (writeback_control_o.register_write_enable);
     assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_ALU);
 
+    // AUIPC: add the upper immediate to PC and write the ALU result to rd.
+    opcode_i = OPCODE_AUIPC;
+    #1ns;
+    assert (execute_control_o.alu_operation == ALU_ADD);
+    assert (execute_control_o.alu_operand_a_select == ALU_OPERAND_A_PC);
+    assert (execute_control_o.alu_operand_b_select == ALU_OPERAND_B_IMM);
+    assert (!execute_control_o.pc_redirect_enable);
+    assert (memory_control_o == '0);
+    assert (writeback_control_o.register_write_enable);
+    assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_ALU);
+
     // Unknown opcode: no memory or register writes are allowed.
     opcode_i = opcode_t'(7'b1111111);
     #1ns;
