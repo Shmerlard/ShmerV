@@ -17,6 +17,7 @@
               # Development tools
               gnumake
               just
+              python3
               zsh
 
               # RTL development
