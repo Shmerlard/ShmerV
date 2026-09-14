@@ -65,6 +65,13 @@ module controller (
         end
       end
 
+      OPCODE_LUI: begin
+          execute_control_o.alu_operand_a_select = ALU_OPERAND_A_ZERO;
+          execute_control_o.alu_operand_b_select = ALU_OPERAND_B_IMM;
+          writeback_control_o.register_write_enable = 1'b1;
+          writeback_control_o.writeback_source = WRITEBACK_SOURCE_ALU;
+      end
+
       default: begin
       end
     endcase
@@ -129,6 +136,9 @@ module controller (
         if (funct3_i == 3'b000) alu_operation = ALU_ADD;
       end
 
+      OPCODE_LUI: begin
+          alu_operation = ALU_ADD;
+      end
       default: alu_operation = ALU_INVALID;
     endcase
   end

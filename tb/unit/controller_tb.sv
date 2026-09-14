@@ -97,6 +97,17 @@ module controller_tb;
     assert (!execute_control_o.pc_redirect_zero_lsb);
     assert (!writeback_control_o.register_write_enable);
 
+    // LUI: write the upper immediate to rd through the ALU.
+    opcode_i = OPCODE_LUI;
+    #1ns;
+    assert (execute_control_o.alu_operation == ALU_ADD);
+    assert (execute_control_o.alu_operand_a_select == ALU_OPERAND_A_ZERO);
+    assert (execute_control_o.alu_operand_b_select == ALU_OPERAND_B_IMM);
+    assert (!execute_control_o.pc_redirect_enable);
+    assert (memory_control_o == '0);
+    assert (writeback_control_o.register_write_enable);
+    assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_ALU);
+
     // Unknown opcode: no memory or register writes are allowed.
     opcode_i = opcode_t'(7'b1111111);
     #1ns;
