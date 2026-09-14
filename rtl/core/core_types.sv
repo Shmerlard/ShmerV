@@ -31,6 +31,21 @@ package core_types;
     WRITEBACK_SOURCE_PC4
   } writeback_source_t;
 
+  typedef enum logic [2:0] {
+    PC_REDIRECT_NEVER  = 3'b000,
+    PC_REDIRECT_EQ     = 3'b001,
+    PC_REDIRECT_NEQ    = 3'b010,
+    PC_REDIRECT_LT     = 3'b011,
+    PC_REDIRECT_GE     = 3'b100,
+    PC_REDIRECT_ULT    = 3'b101,
+    PC_REDIRECT_UGE    = 3'b110,
+    PC_REDIRECT_ALWAYS = 3'b111
+  } pc_redirect_condition_t;
+
+  typedef enum logic {
+    PC_REDIRECT_ADDRESS_PC_IMMEDIATE,
+    PC_REDIRECT_ADDRESS_ALU_RESULT
+  } pc_redirect_address_source_t;
 
   typedef enum logic [2:0] {
     TYPE_R,
@@ -59,7 +74,8 @@ package core_types;
     alu_operand_a_select_t alu_operand_a_select;
     alu_operand_b_select_t alu_operand_b_select;
     alu_operation_t alu_operation;
-    logic pc_redirect_enable;
+    pc_redirect_condition_t pc_redirect_condition;
+    pc_redirect_address_source_t pc_redirect_address_source;
     logic pc_redirect_zero_lsb;
   } execute_control_t;
 

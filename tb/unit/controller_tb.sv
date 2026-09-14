@@ -13,6 +13,22 @@ module controller_tb;
 
   controller dut (.*);
 
+  task automatic check_branch(input logic [2:0] funct3,
+                              input pc_redirect_condition_t expected_condition);
+    begin
+      opcode_i = OPCODE_BRANCH;
+      funct3_i = funct3;
+      #1ns;
+      assert (execute_control_o.alu_operation == ALU_SUB);
+      assert (execute_control_o.alu_operand_a_select == ALU_OPERAND_A_RS1);
+      assert (execute_control_o.alu_operand_b_select == ALU_OPERAND_B_RS2);
+      assert (execute_control_o.pc_redirect_condition == expected_condition);
+      assert (execute_control_o.pc_redirect_address_source == PC_REDIRECT_ADDRESS_PC_IMMEDIATE);
+      assert (memory_control_o == '0);
+      assert (!writeback_control_o.register_write_enable);
+    end
+  endtask
+
   initial begin
     $dumpfile("build/tests/controller/waveform.fst");
     $dumpvars(0, controller_tb);
@@ -70,7 +86,8 @@ module controller_tb;
     assert (execute_control_o.alu_operation == ALU_ADD);
     assert (execute_control_o.alu_operand_a_select == ALU_OPERAND_A_PC);
     assert (execute_control_o.alu_operand_b_select == ALU_OPERAND_B_IMM);
-    assert (execute_control_o.pc_redirect_enable);
+    assert (execute_control_o.pc_redirect_condition == PC_REDIRECT_ALWAYS);
+    assert (execute_control_o.pc_redirect_address_source == PC_REDIRECT_ADDRESS_PC_IMMEDIATE);
     assert (!execute_control_o.pc_redirect_zero_lsb);
     assert (memory_control_o == '0);
     assert (writeback_control_o.register_write_enable);
@@ -83,7 +100,8 @@ module controller_tb;
     assert (execute_control_o.alu_operation == ALU_ADD);
     assert (execute_control_o.alu_operand_a_select == ALU_OPERAND_A_RS1);
     assert (execute_control_o.alu_operand_b_select == ALU_OPERAND_B_IMM);
-    assert (execute_control_o.pc_redirect_enable);
+    assert (execute_control_o.pc_redirect_condition == PC_REDIRECT_ALWAYS);
+    assert (execute_control_o.pc_redirect_address_source == PC_REDIRECT_ADDRESS_ALU_RESULT);
     assert (execute_control_o.pc_redirect_zero_lsb);
     assert (memory_control_o == '0);
     assert (writeback_control_o.register_write_enable);
@@ -93,7 +111,7 @@ module controller_tb;
     funct3_i = 3'b001;
     #1ns;
     assert (execute_control_o.alu_operation == ALU_INVALID);
-    assert (!execute_control_o.pc_redirect_enable);
+    assert (execute_control_o.pc_redirect_condition == PC_REDIRECT_NEVER);
     assert (!execute_control_o.pc_redirect_zero_lsb);
     assert (!writeback_control_o.register_write_enable);
 
@@ -103,7 +121,7 @@ module controller_tb;
     assert (execute_control_o.alu_operation == ALU_ADD);
     assert (execute_control_o.alu_operand_a_select == ALU_OPERAND_A_ZERO);
     assert (execute_control_o.alu_operand_b_select == ALU_OPERAND_B_IMM);
-    assert (!execute_control_o.pc_redirect_enable);
+    assert (execute_control_o.pc_redirect_condition == PC_REDIRECT_NEVER);
     assert (memory_control_o == '0);
     assert (writeback_control_o.register_write_enable);
     assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_ALU);
@@ -114,10 +132,30 @@ module controller_tb;
     assert (execute_control_o.alu_operation == ALU_ADD);
     assert (execute_control_o.alu_operand_a_select == ALU_OPERAND_A_PC);
     assert (execute_control_o.alu_operand_b_select == ALU_OPERAND_B_IMM);
-    assert (!execute_control_o.pc_redirect_enable);
+    assert (execute_control_o.pc_redirect_condition == PC_REDIRECT_NEVER);
     assert (memory_control_o == '0);
     assert (writeback_control_o.register_write_enable);
     assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_ALU);
+
+    // Conditional branches.
+    check_branch(3'b000, PC_REDIRECT_EQ);
+    check_branch(3'b001, PC_REDIRECT_NEQ);
+    check_branch(3'b100, PC_REDIRECT_LT);
+    check_branch(3'b101, PC_REDIRECT_GE);
+    check_branch(3'b110, PC_REDIRECT_ULT);
+    check_branch(3'b111, PC_REDIRECT_UGE);
+
+    // Reserved branch funct3 encodings are invalid.
+    opcode_i = OPCODE_BRANCH;
+    funct3_i = 3'b010;
+    #1ns;
+    assert (execute_control_o.alu_operation == ALU_INVALID);
+    assert (execute_control_o.pc_redirect_condition == PC_REDIRECT_NEVER);
+
+    funct3_i = 3'b011;
+    #1ns;
+    assert (execute_control_o.alu_operation == ALU_INVALID);
+    assert (execute_control_o.pc_redirect_condition == PC_REDIRECT_NEVER);
 
     // Unknown opcode: no memory or register writes are allowed.
     opcode_i = opcode_t'(7'b1111111);

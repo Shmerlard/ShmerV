@@ -11,6 +11,7 @@ module controller (
 );
 
   alu_operation_t alu_operation;
+  pc_redirect_condition_t branch_condition;
 
   always_comb begin
     execute_control_o   = '0;
@@ -49,7 +50,8 @@ module controller (
       OPCODE_JAL: begin
         execute_control_o.alu_operand_a_select = ALU_OPERAND_A_PC;
         execute_control_o.alu_operand_b_select = ALU_OPERAND_B_IMM;
-        execute_control_o.pc_redirect_enable = 1'b1;
+        execute_control_o.pc_redirect_condition = PC_REDIRECT_ALWAYS;
+        execute_control_o.pc_redirect_address_source = PC_REDIRECT_ADDRESS_PC_IMMEDIATE;
         writeback_control_o.register_write_enable = 1'b1;
         writeback_control_o.writeback_source = WRITEBACK_SOURCE_PC4;
       end
@@ -58,7 +60,8 @@ module controller (
         if (alu_operation != ALU_INVALID) begin
           execute_control_o.alu_operand_a_select = ALU_OPERAND_A_RS1;
           execute_control_o.alu_operand_b_select = ALU_OPERAND_B_IMM;
-          execute_control_o.pc_redirect_enable = 1'b1;
+          execute_control_o.pc_redirect_condition = PC_REDIRECT_ALWAYS;
+          execute_control_o.pc_redirect_address_source = PC_REDIRECT_ADDRESS_ALU_RESULT;
           execute_control_o.pc_redirect_zero_lsb = 1'b1;
           writeback_control_o.register_write_enable = 1'b1;
           writeback_control_o.writeback_source = WRITEBACK_SOURCE_PC4;
@@ -77,7 +80,13 @@ module controller (
         execute_control_o.alu_operand_b_select = ALU_OPERAND_B_IMM;
         writeback_control_o.register_write_enable = 1'b1;
         writeback_control_o.writeback_source = WRITEBACK_SOURCE_ALU;
+      end
 
+      OPCODE_BRANCH: begin
+        execute_control_o.alu_operand_a_select = ALU_OPERAND_A_RS1;
+        execute_control_o.alu_operand_b_select = ALU_OPERAND_B_RS2;
+        execute_control_o.pc_redirect_condition = branch_condition;
+        execute_control_o.pc_redirect_address_source = PC_REDIRECT_ADDRESS_PC_IMMEDIATE;
       end
 
       default: begin
@@ -148,9 +157,28 @@ module controller (
         alu_operation = ALU_ADD;
       end
 
+      OPCODE_BRANCH: begin
+        if (branch_condition != PC_REDIRECT_NEVER) alu_operation = ALU_SUB;
+      end
 
       default: alu_operation = ALU_INVALID;
     endcase
+  end
+
+  always_comb begin
+    branch_condition = PC_REDIRECT_NEVER;
+
+    if (opcode_i == OPCODE_BRANCH) begin
+      case (funct3_i)
+        3'b000:  branch_condition = PC_REDIRECT_EQ;
+        3'b001:  branch_condition = PC_REDIRECT_NEQ;
+        3'b100:  branch_condition = PC_REDIRECT_LT;
+        3'b101:  branch_condition = PC_REDIRECT_GE;
+        3'b110:  branch_condition = PC_REDIRECT_ULT;
+        3'b111:  branch_condition = PC_REDIRECT_UGE;
+        default: branch_condition = PC_REDIRECT_NEVER;
+      endcase
+    end
   end
 
 

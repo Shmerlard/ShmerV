@@ -8,12 +8,18 @@ module alu_tb;
   logic [31:0] operand_b_i;
   alu_operation_t    operation_i;
   logic [31:0] result_o;
+  logic equal_o;
+  logic signed_less_than_o;
+  logic unsigned_less_than_o;
 
   alu dut (
-      .operand_a_i(operand_a_i),
-      .operand_b_i(operand_b_i),
-      .operation_i(operation_i),
-      .result_o(result_o)
+      .operand_a_i         (operand_a_i),
+      .operand_b_i         (operand_b_i),
+      .operation_i         (operation_i),
+      .result_o            (result_o),
+      .equal_o             (equal_o),
+      .signed_less_than_o  (signed_less_than_o),
+      .unsigned_less_than_o(unsigned_less_than_o)
   );
 
   task automatic check(input logic [31:0] test_a, input logic [31:0] test_b,
@@ -73,6 +79,22 @@ module alu_tb;
     // Only operand_b_i[4:0] controls shift amount.
     // 33 -> shift by 1.
     check(32'h0000_0001, 32'd33, ALU_SLL, 32'h0000_0002);
+
+    // Comparison status outputs are independent of the selected operation.
+    check(32'd5, 32'd5, ALU_ADD, 32'd10);
+    assert (equal_o);
+    assert (!signed_less_than_o);
+    assert (!unsigned_less_than_o);
+
+    check(32'hFFFF_FFFF, 32'd1, ALU_ADD, 32'd0);
+    assert (!equal_o);
+    assert (signed_less_than_o);
+    assert (!unsigned_less_than_o);
+
+    check(32'd1, 32'd2, ALU_ADD, 32'd3);
+    assert (!equal_o);
+    assert (signed_less_than_o);
+    assert (unsigned_less_than_o);
 
     $display("All ALU tests passed.");
     $finish;

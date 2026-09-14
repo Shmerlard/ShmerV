@@ -1,0 +1,8 @@
+cycles 100
+register 11 0000000b
+register 12 0000000c
+register 13 0000000d
+register 14 0000000e
+register 15 0000000f
+register 16 00000010
+register 17 00000011
