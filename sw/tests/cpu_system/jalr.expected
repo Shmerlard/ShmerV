@@ -1,0 +1,5 @@
+cycles 56
+memory 00000100 0000001c
+memory 00000104 00000028
+register 5 0000001c
+register 6 00000028

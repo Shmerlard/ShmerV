@@ -60,6 +60,7 @@ package core_types;
     alu_operand_b_select_t alu_operand_b_select;
     alu_operation_t alu_operation;
     logic pc_redirect_enable;
+    logic pc_redirect_zero_lsb;
   } execute_control_t;
 
   typedef struct packed {

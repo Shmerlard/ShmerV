@@ -41,7 +41,9 @@ module cpu_system_tb;
     expected_file_handle = $fopen(expected_file, "r");
     if (expected_file_handle == 0) $fatal(1, "Could not open %s", expected_file);
 
-    while (!$feof(expected_file_handle)) begin
+    while (!$feof(
+        expected_file_handle
+    )) begin
       scan_result = $fscanf(expected_file_handle, "%s", check_type);
       if (scan_result == 1) begin
         case (check_type)
@@ -68,18 +70,12 @@ module cpu_system_tb;
           "register": begin
             scan_result = $fscanf(expected_file_handle, "%d %h", expected_register, expected_value);
             if (scan_result != 2) $fatal(1, "Invalid register entry in %s", expected_file);
-            if (expected_register == 0)
-              actual_value = '0;
-            else
-              actual_value = dut.cpu.id_stage.register_file.registers[expected_register];
+            if (expected_register == 0) actual_value = '0;
+            else actual_value = dut.cpu.id_stage.register_file.registers[expected_register];
             assert (actual_value == expected_value)
             else
               $fatal(
-                  1,
-                  "Expected x%0d = %h, got %h",
-                  expected_register,
-                  expected_value,
-                  actual_value
+                  1, "Expected x%0d = %h, got %h", expected_register, expected_value, actual_value
               );
           end
 

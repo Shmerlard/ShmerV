@@ -56,6 +56,13 @@ module ex_stage_tb;
     assert (pc_redirect_enable_o);
     assert (pc_redirect_address_o == 32'h0000_0107);
 
+    // JALR clears bit 0 of an odd redirect address.
+    execute_control_i.pc_redirect_zero_lsb = 1'b1;
+    #1ns;
+    assert (pc_redirect_address_o == 32'h0000_0106);
+
+    execute_control_i.pc_redirect_zero_lsb = 1'b0;
+
     // An invalid jump cannot redirect the PC.
     valid_i = 1'b0;
     #1ns;

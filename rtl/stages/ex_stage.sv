@@ -45,6 +45,9 @@ module ex_stage (
       .result_o   (alu_result_o)
   );
 
-  assign pc_redirect_enable_o  = execute_control_i.pc_redirect_enable && valid_i;
-  assign pc_redirect_address_o = alu_result_o;
+  assign pc_redirect_enable_o = execute_control_i.pc_redirect_enable && valid_i;
+  assign pc_redirect_address_o = 
+      execute_control_i.pc_redirect_zero_lsb
+      ?{alu_result_o[31:1],1'b0} 
+      : alu_result_o;
 endmodule

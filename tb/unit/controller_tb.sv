@@ -71,9 +71,31 @@ module controller_tb;
     assert (execute_control_o.alu_operand_a_select == ALU_OPERAND_A_PC);
     assert (execute_control_o.alu_operand_b_select == ALU_OPERAND_B_IMM);
     assert (execute_control_o.pc_redirect_enable);
+    assert (!execute_control_o.pc_redirect_zero_lsb);
     assert (memory_control_o == '0);
     assert (writeback_control_o.register_write_enable);
     assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_PC4);
+
+    // JALR: redirect to rs1 + immediate and write PC + 4 to rd.
+    opcode_i = OPCODE_JALR;
+    funct3_i = 3'b000;
+    #1ns;
+    assert (execute_control_o.alu_operation == ALU_ADD);
+    assert (execute_control_o.alu_operand_a_select == ALU_OPERAND_A_RS1);
+    assert (execute_control_o.alu_operand_b_select == ALU_OPERAND_B_IMM);
+    assert (execute_control_o.pc_redirect_enable);
+    assert (execute_control_o.pc_redirect_zero_lsb);
+    assert (memory_control_o == '0);
+    assert (writeback_control_o.register_write_enable);
+    assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_PC4);
+
+    // JALR encodings with a nonzero funct3 are invalid.
+    funct3_i = 3'b001;
+    #1ns;
+    assert (execute_control_o.alu_operation == ALU_INVALID);
+    assert (!execute_control_o.pc_redirect_enable);
+    assert (!execute_control_o.pc_redirect_zero_lsb);
+    assert (!writeback_control_o.register_write_enable);
 
     // Unknown opcode: no memory or register writes are allowed.
     opcode_i = opcode_t'(7'b1111111);

@@ -203,7 +203,7 @@ module cpu (
       .writeback_control_i(writeback_control_wb),
       .alu_result_i       (alu_result_wb),
       .memory_read_data_i (memory_read_data_wb),
-      .pc_plus_4_i   (pc_plus_4_wb),
+      .pc_plus_4_i        (pc_plus_4_wb),
       .writeback_data_o   (rf_write_data_wb),
       .rf_write_enable_o  (rf_write_enable_wb)
   );

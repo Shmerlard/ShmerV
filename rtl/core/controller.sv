@@ -54,6 +54,17 @@ module controller (
         writeback_control_o.writeback_source = WRITEBACK_SOURCE_PC4;
       end
 
+      OPCODE_JALR: begin
+        if (alu_operation != ALU_INVALID) begin
+          execute_control_o.alu_operand_a_select = ALU_OPERAND_A_RS1;
+          execute_control_o.alu_operand_b_select = ALU_OPERAND_B_IMM;
+          execute_control_o.pc_redirect_enable = 1'b1;
+          execute_control_o.pc_redirect_zero_lsb = 1'b1;
+          writeback_control_o.register_write_enable = 1'b1;
+          writeback_control_o.writeback_source = WRITEBACK_SOURCE_PC4;
+        end
+      end
+
       default: begin
       end
     endcase
@@ -113,6 +124,10 @@ module controller (
       OPCODE_LOAD, OPCODE_STORE: alu_operation = ALU_ADD;
 
       OPCODE_JAL: alu_operation = ALU_ADD;
+
+      OPCODE_JALR: begin
+        if (funct3_i == 3'b000) alu_operation = ALU_ADD;
+      end
 
       default: alu_operation = ALU_INVALID;
     endcase
