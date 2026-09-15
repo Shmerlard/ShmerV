@@ -13,6 +13,8 @@ module id_ex_reg (
     input logic [31:0] immediate_id_i,
     input logic [31:0] pc_id_i,
     input logic [4:0] rd_id_i,
+    input logic [4:0] rs1_id_i,
+    input logic [4:0] rs2_id_i,
     input logic flush_ex_i,
 
     output execute_control_t execute_control_ex_o,
@@ -23,7 +25,9 @@ module id_ex_reg (
     output logic [31:0] rs2_data_ex_o,
     output logic [31:0] immediate_ex_o,
     output logic [31:0] pc_ex_o,
-    output logic [4:0] rd_ex_o
+    output logic [4:0] rd_ex_o,
+    output logic [4:0] rs1_ex_o,
+    output logic [4:0] rs2_ex_o
 );
 
   always_ff @(posedge clk) begin
@@ -37,6 +41,8 @@ module id_ex_reg (
       immediate_ex_o         <= '0;
       pc_ex_o                <= '0;
       rd_ex_o                <= '0;
+      rs1_ex_o               <= '0;
+      rs2_ex_o               <= '0;
     end else if (flush_ex_i) begin
       valid_ex_o <= 1'b0;
     end else begin
@@ -49,6 +55,8 @@ module id_ex_reg (
       immediate_ex_o         <= immediate_id_i;
       pc_ex_o                <= pc_id_i;
       rd_ex_o                <= rd_id_i;
+      rs1_ex_o               <= rs1_id_i;
+      rs2_ex_o               <= rs2_id_i;
     end
   end
 

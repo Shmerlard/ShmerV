@@ -46,7 +46,7 @@ module cpu_system_tb;
     for (elapsed_cycles = 0; elapsed_cycles < timeout_cycles; elapsed_cycles++) begin
       @(posedge clk);
       #1ns;
-      if (dut.cpu.imem_read_address_o == test_end_pc) begin
+      if (dut.cpu.valid_ex && (dut.cpu.pc_ex == test_end_pc)) begin
         test_completed = 1'b1;
         break;
       end

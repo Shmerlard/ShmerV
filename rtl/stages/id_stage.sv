@@ -13,6 +13,8 @@ module id_stage (
     output logic [31:0] rs2_data_o,
     output logic [31:0] immediate_o,
     output logic [4:0] rd_o,
+    output logic [4:0] rs1_o,
+    output logic [4:0] rs2_o,
     output execute_control_t execute_control_o,
     output memory_control_t memory_control_o,
     output writeback_control_t writeback_control_o
@@ -21,16 +23,27 @@ module id_stage (
   opcode_t opcode;
   logic [2:0] funct3;
   logic [6:0] funct7;
-  logic [4:0] rs1;
-  logic [4:0] rs2;
+  logic [31:0] register_file_rs1_data;
+  logic [31:0] register_file_rs2_data;
+  logic rs1_wb_bypass_enable;
+  logic rs2_wb_bypass_enable;
   instruction_type_t instr_type;
+
+  assign rs1_wb_bypass_enable =
+      writeback_write_enable_i && (writeback_rd_i != 5'b0) && (writeback_rd_i == rs1_o);
+  assign rs2_wb_bypass_enable =
+      writeback_write_enable_i && (writeback_rd_i != 5'b0) && (writeback_rd_i == rs2_o);
+
+  assign rs1_data_o = rs1_wb_bypass_enable ? writeback_data_i : register_file_rs1_data;
+  assign rs2_data_o = rs2_wb_bypass_enable ? writeback_data_i : register_file_rs2_data;
+
   instruction_decoder id (
       .instruction_i     (instruction_id_i),
       .opcode_o          (opcode),
       .rd_o              (rd_o),
       .funct3_o          (funct3),
-      .rs1_o             (rs1),
-      .rs2_o             (rs2),
+      .rs1_o             (rs1_o),
+      .rs2_o             (rs2_o),
       .funct7_o          (funct7),
       .instruction_type_o(instr_type)
   );
@@ -51,12 +64,12 @@ module id_stage (
   );
   register_file register_file (
       .clk             (clk),
-      .read_address_1_i(rs1),
-      .read_address_2_i(rs2),
+      .read_address_1_i(rs1_o),
+      .read_address_2_i(rs2_o),
       .write_enable_i  (writeback_write_enable_i),
       .write_address_i (writeback_rd_i),
       .write_data_i    (writeback_data_i),
-      .read_data_1_o   (rs1_data_o),
-      .read_data_2_o   (rs2_data_o)
+      .read_data_1_o   (register_file_rs1_data),
+      .read_data_2_o   (register_file_rs2_data)
   );
 endmodule

@@ -11,8 +11,14 @@ module ex_stage (
     input logic [31:0] immediate_i,
     input logic [31:0] pc_i,
 
+    input logic [31:0] forward_data_mem_i,
+    input logic [31:0] forward_data_wb_i,
+    input forwarding_source_t rs1_forwarding_source_i,
+    input forwarding_source_t rs2_forwarding_source_i,
+
     output logic [31:0] alu_result_o,
     output logic [31:0] pc_plus_4_data_o,
+    output logic [31:0] store_data_o,
 
     output logic pc_redirect_enable_o,
     output logic [31:0] pc_redirect_address_o
@@ -20,6 +26,9 @@ module ex_stage (
 );
   logic [31:0] alu_operand_a;
   logic [31:0] alu_operand_b;
+
+  logic [31:0] forwarded_rs1_data;
+  logic [31:0] forwarded_rs2_data;
 
 
   logic alu_equal;
@@ -29,19 +38,36 @@ module ex_stage (
   logic pc_redirect_condition_met;
   logic [31:0] pc_plus_immediate;
 
-  assign pc_plus_4_data_o  = pc_i + 32'd4;
+  assign pc_plus_4_data_o = pc_i + 32'd4;
   assign pc_plus_immediate = immediate_i + pc_i;
 
+  assign store_data_o = forwarded_rs2_data;
+
+  always_comb begin
+    case (rs1_forwarding_source_i)
+      FORWARD_SOURCE_REGISTER: forwarded_rs1_data = rs1_data_i;
+      FORWARD_SOURCE_MEM: forwarded_rs1_data = forward_data_mem_i;
+      FORWARD_SOURCE_WB: forwarded_rs1_data = forward_data_wb_i;
+      default: forwarded_rs1_data = 32'b0;
+
+    endcase
+    case (rs2_forwarding_source_i)
+      FORWARD_SOURCE_REGISTER: forwarded_rs2_data = rs2_data_i;
+      FORWARD_SOURCE_MEM: forwarded_rs2_data = forward_data_mem_i;
+      FORWARD_SOURCE_WB: forwarded_rs2_data = forward_data_wb_i;
+      default: forwarded_rs2_data = 32'b0;
+    endcase
+  end
   always_comb begin
     case (execute_control_i.alu_operand_a_select)
-      ALU_OPERAND_A_RS1: alu_operand_a = rs1_data_i;
+      ALU_OPERAND_A_RS1: alu_operand_a = forwarded_rs1_data;
       ALU_OPERAND_A_ZERO: alu_operand_a = '0;
       ALU_OPERAND_A_PC: alu_operand_a = pc_i;
       default: alu_operand_a = '0;
     endcase
 
     case (execute_control_i.alu_operand_b_select)
-      ALU_OPERAND_B_RS2:    alu_operand_b = rs2_data_i;
+      ALU_OPERAND_B_RS2:    alu_operand_b = forwarded_rs2_data;
       ALU_OPERAND_B_IMM:    alu_operand_b = immediate_i;
       default: alu_operand_b = '0;
     endcase

@@ -31,6 +31,12 @@ package core_types;
     WRITEBACK_SOURCE_PC4
   } writeback_source_t;
 
+  typedef enum logic [1:0] {
+    FORWARD_SOURCE_REGISTER,
+    FORWARD_SOURCE_MEM,
+    FORWARD_SOURCE_WB
+  } forwarding_source_t;
+
   typedef enum logic [2:0] {
     PC_REDIRECT_NEVER  = 3'b000,
     PC_REDIRECT_EQ     = 3'b001,

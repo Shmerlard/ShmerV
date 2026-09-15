@@ -29,6 +29,8 @@ module cpu #(
   logic [31:0] rs2_data_id;
   logic valid_id;
   logic [4:0] rd_id;
+  logic [4:0] rs1_id;
+  logic [4:0] rs2_id;
 
   execute_control_t execute_control_id;
   memory_control_t memory_control_id;
@@ -43,9 +45,12 @@ module cpu #(
 
   logic [31:0] rs1_data_ex;
   logic [31:0] rs2_data_ex;
+  logic [31:0] store_data_ex;
   logic [31:0] imm_ex;
   logic [31:0] pc_ex;
   logic [4:0] rd_ex;
+  logic [4:0] rs1_ex;
+  logic [4:0] rs2_ex;
   logic [31:0] alu_result_ex;
   logic valid_ex;
 
@@ -53,11 +58,18 @@ module cpu #(
   logic [31:0] pc_redirect_address_ex;
   logic [31:0] pc_plus_4_ex;
 
+  forwarding_source_t rs1_forwarding_source_ex;
+  forwarding_source_t rs2_forwarding_source_ex;
+  logic [31:0] forward_data_mem;
+  logic [31:0] forward_data_wb;
+
   // memory signals
   memory_control_t memory_control_mem;
   writeback_control_t writeback_control_mem;
   logic [31:0] alu_result_mem;
-  logic [31:0] rs2_data_mem;
+  // logic [31:0] rs2_data_mem;
+  logic [31:0] store_data_mem;
+
   logic [4:0] rd_mem;
   logic [31:0] dmem_address_mem;
   logic valid_mem;
@@ -73,8 +85,11 @@ module cpu #(
   logic rf_write_enable_wb;
   logic [31:0] pc_plus_4_wb;
 
-  assign dmem_read_address_o  = dmem_address_mem;
+  assign dmem_read_address_o = dmem_address_mem;
   assign dmem_write_address_o = dmem_address_mem;
+
+  assign forward_data_mem = alu_result_mem;
+  assign forward_data_wb = rf_write_data_wb;
 
   if_stage #(
       .RESET_PC(RESET_PC)
@@ -113,6 +128,8 @@ module cpu #(
       .rs2_data_o              (rs2_data_id),
       .immediate_o             (imm_id),
       .rd_o                    (rd_id),
+      .rs1_o                   (rs1_id),
+      .rs2_o                   (rs2_id),
       .execute_control_o       (execute_control_id),
       .memory_control_o        (memory_control_id),
       .writeback_control_o     (writeback_control_id)
@@ -130,6 +147,8 @@ module cpu #(
       .immediate_id_i        (imm_id),
       .pc_id_i               (pc_id),
       .rd_id_i               (rd_id),
+      .rs1_id_i              (rs1_id),
+      .rs2_id_i              (rs2_id),
       .flush_ex_i            (pc_redirect_enable_ex),
       .execute_control_ex_o  (execute_control_ex),
       .valid_ex_o            (valid_ex),
@@ -139,20 +158,27 @@ module cpu #(
       .rs2_data_ex_o         (rs2_data_ex),
       .immediate_ex_o        (imm_ex),
       .pc_ex_o               (pc_ex),
-      .rd_ex_o               (rd_ex)
+      .rd_ex_o               (rd_ex),
+      .rs1_ex_o              (rs1_ex),
+      .rs2_ex_o              (rs2_ex)
   );
 
   ex_stage ex_stage (
-      .valid_i              (valid_ex),
-      .rs1_data_i           (rs1_data_ex),
-      .rs2_data_i           (rs2_data_ex),
-      .execute_control_i    (execute_control_ex),
-      .immediate_i          (imm_ex),
-      .pc_i                 (pc_ex),
-      .alu_result_o         (alu_result_ex),
-      .pc_plus_4_data_o     (pc_plus_4_ex),
-      .pc_redirect_enable_o (pc_redirect_enable_ex),
-      .pc_redirect_address_o(pc_redirect_address_ex)
+      .valid_i                (valid_ex),
+      .rs1_data_i             (rs1_data_ex),
+      .rs2_data_i             (rs2_data_ex),
+      .execute_control_i      (execute_control_ex),
+      .immediate_i            (imm_ex),
+      .pc_i                   (pc_ex),
+      .forward_data_mem_i     (forward_data_mem),
+      .forward_data_wb_i      (forward_data_wb),
+      .rs1_forwarding_source_i(rs1_forwarding_source_ex),
+      .rs2_forwarding_source_i(rs2_forwarding_source_ex),
+      .alu_result_o           (alu_result_ex),
+      .pc_plus_4_data_o       (pc_plus_4_ex),
+      .store_data_o           (store_data_ex),
+      .pc_redirect_enable_o   (pc_redirect_enable_ex),
+      .pc_redirect_address_o  (pc_redirect_address_ex)
   );
 
   ex_mem_reg ex_mem_reg (
@@ -163,21 +189,21 @@ module cpu #(
       .writeback_control_ex_i (writeback_control_ex),
       .alu_result_ex_i        (alu_result_ex),
       .pc_plus_4_ex_i         (pc_plus_4_ex),
-      .rs2_data_ex_i          (rs2_data_ex),
+      .rs2_data_ex_i          (store_data_ex),
       .rd_ex_i                (rd_ex),
       .memory_control_mem_o   (memory_control_mem),
       .valid_mem_o            (valid_mem),
       .writeback_control_mem_o(writeback_control_mem),
       .alu_result_mem_o       (alu_result_mem),
       .pc_plus_4_mem_o        (pc_plus_4_mem),
-      .rs2_data_mem_o         (rs2_data_mem),
+      .rs2_data_mem_o         (store_data_mem),
       .rd_mem_o               (rd_mem)
   );
 
   mem_stage mem_stage (
       .valid_i              (valid_mem),
       .alu_result_i         (alu_result_mem),
-      .rs2_data_i           (rs2_data_mem),
+      .rs2_data_i           (store_data_mem),
       .memory_control_i     (memory_control_mem),
       .memory_address_o     (dmem_address_mem),
       .memory_write_data_o  (dmem_write_data_o),
@@ -210,5 +236,18 @@ module cpu #(
       .pc_plus_4_i        (pc_plus_4_wb),
       .writeback_data_o   (rf_write_data_wb),
       .rf_write_enable_o  (rf_write_enable_wb)
+  );
+
+  hazard_unit hazard_unit (
+      .rs1_ex_i               (rs1_ex),
+      .rs2_ex_i               (rs2_ex),
+      .rd_mem_i               (rd_mem),
+      .rd_wb_i                (rd_wb),
+      .valid_mem_i            (valid_mem),
+      .valid_wb_i             (valid_wb),
+      .reg_write_mem_i        (writeback_control_mem.register_write_enable),
+      .reg_write_wb_i         (writeback_control_wb.register_write_enable),
+      .rs1_forwarding_source_o(rs1_forwarding_source_ex),
+      .rs2_forwarding_source_o(rs2_forwarding_source_ex)
   );
 endmodule
