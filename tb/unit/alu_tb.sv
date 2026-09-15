@@ -39,6 +39,8 @@ module alu_tb;
   endtask
 
   initial begin
+    $dumpfile("build/tests/alu/waveform.fst");
+    $dumpvars(0, alu_tb);
 
     // ADD
     check(32'd10, 32'd20, ALU_ADD, 32'd30);

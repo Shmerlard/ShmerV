@@ -19,6 +19,9 @@ module program_counter_tb;
   always #5 clk = ~clk;
 
   initial begin
+    $dumpfile("build/tests/program_counter/waveform.fst");
+    $dumpvars(0, program_counter_tb);
+
     clk       = 0;
     rst       = 0;
     enable_i  = 0;

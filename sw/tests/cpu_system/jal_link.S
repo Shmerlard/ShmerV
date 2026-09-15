@@ -3,13 +3,11 @@
   .global _start
 
 _start:
-  .ifdef SPIKE_REFERENCE
   lui x10, 0x80000
-  addi x10, x10, 256
-  .else
+  .rept 4
   nop
-  addi x10, x0, 256
-  .endif
+  .endr
+  addi x10, x10, 256
   .rept 4
   nop
   .endr

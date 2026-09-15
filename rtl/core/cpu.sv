@@ -1,7 +1,9 @@
 timeunit 1ns; timeprecision 1ps;
 import core_types::*;
 
-module cpu (
+module cpu #(
+    parameter logic [31:0] RESET_PC = 32'h0000_0000
+) (
     input logic clk,
     input logic rst,
 
@@ -74,7 +76,9 @@ module cpu (
   assign dmem_read_address_o  = dmem_address_mem;
   assign dmem_write_address_o = dmem_address_mem;
 
-  if_stage if_stage (
+  if_stage #(
+      .RESET_PC(RESET_PC)
+  ) if_stage (
       .clk                (clk),
       .rst                (rst),
       .pc_write_enable_i  (1'b1),

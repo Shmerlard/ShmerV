@@ -1,4 +1,6 @@
-module if_stage (
+module if_stage #(
+    parameter logic [31:0] RESET_PC = 32'h0000_0000
+) (
     input logic clk,
     input logic rst,
     input logic pc_write_enable_i,
@@ -18,7 +20,9 @@ module if_stage (
   assign imem_read_address_o = pc_o;
 
 
-  program_counter pc (
+  program_counter #(
+      .RESET_PC(RESET_PC)
+  ) pc (
       .clk      (clk),
       .rst      (rst),
       .enable_i (pc_write_enable_i),

@@ -1,21 +1,27 @@
 timeunit 1ns / 1ps;
 
 module cpu_system_tb;
+  localparam integer PipelineDrainCycles = 5;
+
   logic clk = 1'b0;
   logic rst;
-  integer cycles;
+  integer timeout_cycles;
+  integer elapsed_cycles;
   integer expected_file_handle;
   integer scan_result;
   integer expected_register;
-  integer ignored_cycles;
   string check_type;
   string expected_file;
+  logic test_completed;
+  logic [31:0] test_end_pc;
   logic [31:0] expected_address;
   logic [31:0] expected_value;
   logic [31:0] actual_value;
   string trace_file;
 
-  cpu_system dut (
+  cpu_system #(
+      .RESET_PC(32'h8000_0000)
+  ) dut (
       .clk(clk),
       .rst(rst)
   );
@@ -23,7 +29,8 @@ module cpu_system_tb;
   always #5ns clk = ~clk;
 
   initial begin
-    if (!$value$plusargs("cycles=%d", cycles)) $fatal(1, "Missing +cycles");
+    if (!$value$plusargs("test_end_pc=%h", test_end_pc)) $fatal(1, "Missing +test_end_pc");
+    if (!$value$plusargs("timeout_cycles=%d", timeout_cycles)) timeout_cycles = 1000;
     if (!$value$plusargs("expected_file=%s", expected_file)) $fatal(1, "Missing +expected_file");
     if (!$value$plusargs("trace_file=%s", trace_file))
       trace_file = "build/tests/cpu_system/waveform.fst";
@@ -35,7 +42,19 @@ module cpu_system_tb;
     repeat (2) @(posedge clk);
     rst = 1'b0;
 
-    repeat (cycles) @(posedge clk);
+    test_completed = 1'b0;
+    for (elapsed_cycles = 0; elapsed_cycles < timeout_cycles; elapsed_cycles++) begin
+      @(posedge clk);
+      #1ns;
+      if (dut.cpu.imem_read_address_o == test_end_pc) begin
+        test_completed = 1'b1;
+        break;
+      end
+    end
+    if (!test_completed)
+      $fatal(1, "Timed out after %0d cycles waiting for PC %h", timeout_cycles, test_end_pc);
+
+    repeat (PipelineDrainCycles) @(posedge clk);
     #1ns;
 
     expected_file_handle = $fopen(expected_file, "r");
@@ -47,11 +66,6 @@ module cpu_system_tb;
       scan_result = $fscanf(expected_file_handle, "%s", check_type);
       if (scan_result == 1) begin
         case (check_type)
-          "cycles": begin
-            scan_result = $fscanf(expected_file_handle, "%d", ignored_cycles);
-            if (scan_result != 1) $fatal(1, "Invalid cycles entry in %s", expected_file);
-          end
-
           "memory": begin
             scan_result = $fscanf(expected_file_handle, "%h %h", expected_address, expected_value);
             if (scan_result != 2) $fatal(1, "Invalid memory entry in %s", expected_file);

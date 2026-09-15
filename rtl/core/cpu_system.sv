@@ -1,7 +1,8 @@
 timeunit 1ns / 1ps;
 
 module cpu_system #(
-    parameter string MEMORY_INIT_FILE = ""
+    parameter string MEMORY_INIT_FILE = "",
+    parameter logic [31:0] RESET_PC = 32'h0000_0000
 ) (
     input logic clk,
     input logic rst
@@ -17,7 +18,9 @@ module cpu_system #(
   logic [31:0] dmem_write_address;
   logic [31:0] dmem_write_data;
 
-  cpu cpu (
+  cpu #(
+      .RESET_PC(RESET_PC)
+  ) cpu (
       .clk                 (clk),
       .rst                 (rst),
       .imem_read_data_i    (imem_read_data),

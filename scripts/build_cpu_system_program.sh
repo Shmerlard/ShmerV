@@ -13,6 +13,9 @@ mkdir -p "$output_directory"
 
 riscv32-none-elf-as -march=rv32i -mabi=ilp32 \
   -o "$output_directory/program.o" "$program_source"
-riscv32-none-elf-objcopy -O binary --only-section=.text \
-  "$output_directory/program.o" "$output_directory/program.bin"
+riscv32-none-elf-ld -m elf32lriscv \
+  -T sw/tests/cpu_system/link.ld \
+  -o "$output_directory/program.elf" "$output_directory/program.o"
+riscv32-none-elf-objcopy -O binary \
+  "$output_directory/program.elf" "$output_directory/program.bin"
 od -An -v -w4 -tx4 "$output_directory/program.bin" > "$output_directory/program.hex"

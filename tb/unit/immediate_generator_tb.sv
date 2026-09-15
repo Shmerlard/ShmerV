@@ -30,6 +30,8 @@ module immediate_generator_tb;
   endtask
 
   initial begin
+    $dumpfile("build/tests/immediate_generator/waveform.fst");
+    $dumpvars(0, immediate_generator_tb);
 
     // I-type: +10
     check(32'b000000001010_00001_000_00011_0010011, TYPE_I, 32'd10);

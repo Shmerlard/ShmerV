@@ -28,6 +28,9 @@ module if_stage_tb;
   always #5 clk = ~clk;
 
   initial begin
+    $dumpfile("build/tests/if_stage/waveform.fst");
+    $dumpvars(0, if_stage_tb);
+
     clk                   = 1'b0;
     rst                   = 1'b1;
     pc_write_enable_i     = 1'b1;

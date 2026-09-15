@@ -30,6 +30,9 @@ module memory_tb;
   always #5 clk = ~clk;
 
   initial begin
+    $dumpfile("build/tests/memory/waveform.fst");
+    $dumpvars(0, memory_tb);
+
     port_a_read_address_i = '0;
     port_b_read_address_i = '0;
     port_b_write_address_i = '0;

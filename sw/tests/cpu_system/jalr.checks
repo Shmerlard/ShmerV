@@ -1,0 +1,4 @@
+memory 80000100
+memory 80000104
+register 5
+register 6

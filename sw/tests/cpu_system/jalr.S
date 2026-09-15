@@ -3,14 +3,12 @@
   .global _start
 
 _start:
-  # Give JALR the odd address 0x25; it must clear bit 0 and jump to 0x24.
-  .ifdef SPIKE_REFERENCE
+  # Give JALR the odd address 0x80000035; it must jump to 0x80000034.
   lui x2, 0x80000
-  addi x2, x2, 0x25
-  .else
+  .rept 4
   nop
-  addi x2, x0, 0x25
-  .endif
+  .endr
+  addi x2, x2, 0x35
   .rept 4
   nop
   .endr
@@ -26,13 +24,11 @@ target:
   addi x3, x0, 4
 
 aligned_target:
-  .ifdef SPIKE_REFERENCE
   lui x10, 0x80000
-  addi x10, x10, 256
-  .else
+  .rept 4
   nop
-  addi x10, x0, 256
-  .endif
+  .endr
+  addi x10, x10, 256
   .rept 4
   nop
   .endr
