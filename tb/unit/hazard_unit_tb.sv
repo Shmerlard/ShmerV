@@ -13,6 +13,9 @@ module hazard_unit_tb;
   logic valid_wb_i;
   logic reg_write_mem_i;
   logic reg_write_wb_i;
+  logic halt_pc_o;
+  logic stall_if_id_o;
+  logic bubble_id_ex_o;
   forwarding_source_t rs1_forwarding_source_o;
   forwarding_source_t rs2_forwarding_source_o;
   int unsigned random_seed;
@@ -29,6 +32,9 @@ module hazard_unit_tb;
 
   task automatic check_outputs;
     #1ns;
+    assert (!halt_pc_o);
+    assert (!stall_if_id_o);
+    assert (!bubble_id_ex_o);
     assert (rs1_forwarding_source_o == expected_source(rs1_ex_i));
     assert (rs2_forwarding_source_o == expected_source(rs2_ex_i));
   endtask

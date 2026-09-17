@@ -23,6 +23,8 @@ module cpu #(
   logic [31:0] pc_if;
   logic [31:0] instruction_id;
   logic [31:0] pc_id;
+  logic halt_pc;
+  logic stall_if_id;
 
   // decode signals
   logic [31:0] rs1_data_id;
@@ -31,6 +33,10 @@ module cpu #(
   logic [4:0] rd_id;
   logic [4:0] rs1_id;
   logic [4:0] rs2_id;
+  logic uses_rs1_id;
+  logic uses_rs2_id;
+  logic bubble_id_ex;
+  logic flush_id_ex_reg;
 
   execute_control_t execute_control_id;
   memory_control_t memory_control_id;
@@ -96,7 +102,7 @@ module cpu #(
   ) if_stage (
       .clk                (clk),
       .rst                (rst),
-      .pc_write_enable_i  (1'b1),
+      .pc_write_enable_i  (!halt_pc),
       .imem_read_data_i   (imem_read_data_i),
       .imem_read_address_o(imem_read_address_o),
       .instruction_o      (instruction_if),
@@ -112,6 +118,7 @@ module cpu #(
       .instruction_memory_read_data_i(instruction_if),
       .pc_if_i                       (pc_if),
       .flush_id_i                    (pc_redirect_enable_ex),
+      .stall_if_id_i                 (stall_if_id),
       .valid_id_o                    (valid_id),
       .instruction_id_o              (instruction_id),
       .pc_id_o                       (pc_id)
@@ -130,11 +137,14 @@ module cpu #(
       .rd_o                    (rd_id),
       .rs1_o                   (rs1_id),
       .rs2_o                   (rs2_id),
+      .uses_rs1_o              (uses_rs1_id),
+      .uses_rs2_o              (uses_rs2_id),
       .execute_control_o       (execute_control_id),
       .memory_control_o        (memory_control_id),
       .writeback_control_o     (writeback_control_id)
   );
 
+  assign flush_id_ex_reg = pc_redirect_enable_ex || bubble_id_ex;
   id_ex_reg id_ex_reg (
       .clk                   (clk),
       .rst                   (rst),
@@ -149,7 +159,7 @@ module cpu #(
       .rd_id_i               (rd_id),
       .rs1_id_i              (rs1_id),
       .rs2_id_i              (rs2_id),
-      .flush_ex_i            (pc_redirect_enable_ex),
+      .flush_ex_i            (flush_id_ex_reg),
       .execute_control_ex_o  (execute_control_ex),
       .valid_ex_o            (valid_ex),
       .memory_control_ex_o   (memory_control_ex),
@@ -241,12 +251,19 @@ module cpu #(
   hazard_unit hazard_unit (
       .rs1_ex_i               (rs1_ex),
       .rs2_ex_i               (rs2_ex),
+      .rs1_id_i               (rs1_id),
+      .rs2_id_i               (rs2_id),
+      .uses_rs1_id_i          (uses_rs1_id),
+      .uses_rs2_id_i          (uses_rs2_id),
       .rd_mem_i               (rd_mem),
       .rd_wb_i                (rd_wb),
       .valid_mem_i            (valid_mem),
       .valid_wb_i             (valid_wb),
       .reg_write_mem_i        (writeback_control_mem.register_write_enable),
       .reg_write_wb_i         (writeback_control_wb.register_write_enable),
+      .halt_pc_o              (halt_pc),
+      .stall_if_id_o          (stall_if_id),
+      .bubble_id_ex_o         (bubble_id_ex),
       .rs1_forwarding_source_o(rs1_forwarding_source_ex),
       .rs2_forwarding_source_o(rs2_forwarding_source_ex)
   );

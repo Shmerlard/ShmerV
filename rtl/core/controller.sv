@@ -7,7 +7,9 @@ module controller (
 
     output execute_control_t execute_control_o,
     output memory_control_t memory_control_o,
-    output writeback_control_t writeback_control_o
+    output writeback_control_t writeback_control_o,
+    output logic uses_rs1_o,
+    output logic uses_rs2_o
 );
 
   alu_operation_t alu_operation;
@@ -179,6 +181,25 @@ module controller (
         default: branch_condition = PC_REDIRECT_NEVER;
       endcase
     end
+  end
+
+  always_comb begin
+    uses_rs1_o = 1'b0;
+    uses_rs2_o = 1'b0;
+
+    case (opcode_i)
+      OPCODE_REG, OPCODE_STORE, OPCODE_BRANCH: begin
+        uses_rs1_o = 1'b1;
+        uses_rs2_o = 1'b1;
+      end
+
+      OPCODE_IMM, OPCODE_LOAD, OPCODE_JALR: begin
+        uses_rs1_o = 1'b1;
+      end
+
+      default: begin
+      end
+    endcase
   end
 
 

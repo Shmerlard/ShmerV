@@ -15,6 +15,8 @@ module id_stage (
     output logic [4:0] rd_o,
     output logic [4:0] rs1_o,
     output logic [4:0] rs2_o,
+    output logic uses_rs1_o,
+    output logic uses_rs2_o,
     output execute_control_t execute_control_o,
     output memory_control_t memory_control_o,
     output writeback_control_t writeback_control_o
@@ -54,7 +56,9 @@ module id_stage (
       .funct7_i           (funct7),
       .execute_control_o  (execute_control_o),
       .memory_control_o   (memory_control_o),
-      .writeback_control_o(writeback_control_o)
+      .writeback_control_o(writeback_control_o),
+      .uses_rs1_o         (uses_rs1_o),
+      .uses_rs2_o         (uses_rs2_o)
   );
 
   immediate_generator immediate_generator (
