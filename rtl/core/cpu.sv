@@ -11,6 +11,7 @@ module cpu #(
     input logic [31:0] dmem_read_data_i,
     output logic dmem_write_enable_o,
     output logic dmem_read_enable_o,
+    output logic imem_read_enable_o,
     output logic [31:0] imem_read_address_o,
     output logic [31:0] dmem_read_address_o,
     output logic [31:0] dmem_write_address_o,
@@ -93,6 +94,7 @@ module cpu #(
 
   assign dmem_read_address_o = dmem_address_mem;
   assign dmem_write_address_o = dmem_address_mem;
+  assign imem_read_enable_o = !halt_pc;
 
   assign forward_data_mem = alu_result_mem;
   assign forward_data_wb = rf_write_data_wb;
@@ -102,7 +104,7 @@ module cpu #(
   ) if_stage (
       .clk                (clk),
       .rst                (rst),
-      .pc_write_enable_i  (!halt_pc),
+      .pc_write_enable_i  (imem_read_enable_o),
       .imem_read_data_i   (imem_read_data_i),
       .imem_read_address_o(imem_read_address_o),
       .instruction_o      (instruction_if),
@@ -255,6 +257,10 @@ module cpu #(
       .rs2_id_i               (rs2_id),
       .uses_rs1_id_i          (uses_rs1_id),
       .uses_rs2_id_i          (uses_rs2_id),
+      .valid_id_i             (valid_id),
+      .valid_ex_i             (valid_ex),
+      .rd_ex_i                (rd_ex),
+      .memory_read_ex_i       (memory_control_ex.memory_read_enable),
       .rd_mem_i               (rd_mem),
       .rd_wb_i                (rd_wb),
       .valid_mem_i            (valid_mem),

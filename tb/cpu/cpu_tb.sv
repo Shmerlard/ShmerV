@@ -8,6 +8,7 @@ module cpu_tb;
   logic [31:0] dmem_read_data;
   logic dmem_write_enable;
   logic dmem_read_enable;
+  logic imem_read_enable;
   logic [31:0] imem_read_address;
   logic [31:0] dmem_read_address;
   logic [31:0] dmem_write_address;
@@ -20,6 +21,7 @@ module cpu_tb;
       .dmem_read_data_i    (dmem_read_data),
       .dmem_write_enable_o (dmem_write_enable),
       .dmem_read_enable_o  (dmem_read_enable),
+      .imem_read_enable_o  (imem_read_enable),
       .imem_read_address_o (imem_read_address),
       .dmem_read_address_o (dmem_read_address),
       .dmem_write_address_o(dmem_write_address),
@@ -31,6 +33,7 @@ module cpu_tb;
   ) memory (
       .clk                   (clk),
       .port_a_read_address_i (imem_read_address),
+      .port_a_read_enable_i  (imem_read_enable),
       .port_a_read_data_o    (imem_read_data),
       .port_b_read_address_i (dmem_read_address),
       .port_b_write_address_i(dmem_write_address),

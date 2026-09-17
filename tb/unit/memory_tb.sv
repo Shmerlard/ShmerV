@@ -4,6 +4,7 @@ module memory_tb;
 
   logic clk;
   logic [31:0] port_a_read_address_i;
+  logic port_a_read_enable_i;
   logic [31:0] port_b_read_address_i;
   logic [31:0] port_b_write_address_i;
   logic port_b_write_enable_i;
@@ -17,6 +18,7 @@ module memory_tb;
   ) dut (
       .clk                   (clk),
       .port_a_read_address_i (port_a_read_address_i),
+      .port_a_read_enable_i  (port_a_read_enable_i),
       .port_b_read_address_i (port_b_read_address_i),
       .port_b_write_address_i(port_b_write_address_i),
       .port_b_write_enable_i (port_b_write_enable_i),
@@ -34,6 +36,7 @@ module memory_tb;
     $dumpvars(0, memory_tb);
 
     port_a_read_address_i = '0;
+    port_a_read_enable_i = 1'b1;
     port_b_read_address_i = '0;
     port_b_write_address_i = '0;
     port_b_write_enable_i = 1'b0;
@@ -58,6 +61,14 @@ module memory_tb;
     assert (port_a_read_data_o == 32'h1234_5678)
     else $fatal(1, "Memory read changed asynchronously");
 
+    // Disabled Port A reads hold the current instruction value.
+    port_a_read_enable_i = 1'b0;
+    @(posedge clk);
+    #1;
+    assert (port_a_read_data_o == 32'h1234_5678)
+    else $fatal(1, "Disabled Port A read changed the output");
+
+    port_a_read_enable_i = 1'b1;
     @(posedge clk);
     #1;
     assert (port_a_read_data_o == 32'hDEAD_BEEF)

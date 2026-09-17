@@ -4,6 +4,7 @@ module memory #(
 ) (
     input logic clk,
     input logic [31:0] port_a_read_address_i,
+    input logic port_a_read_enable_i,
     output logic [31:0] port_a_read_data_o,
 
     input logic [31:0] port_b_read_address_i,
@@ -26,7 +27,9 @@ module memory #(
   end
 
   always_ff @(posedge clk) begin
-    port_a_read_data_o <= memory_words[port_a_read_address_i[AddressWidth+1:2]];
+    if (port_a_read_enable_i) begin
+      port_a_read_data_o <= memory_words[port_a_read_address_i[AddressWidth+1:2]];
+    end
 
     if (port_b_read_enable_i) begin
       port_b_read_data_o <= memory_words[port_b_read_address_i[AddressWidth+1:2]];
