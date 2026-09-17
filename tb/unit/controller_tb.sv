@@ -10,6 +10,8 @@ module controller_tb;
   execute_control_t execute_control_o;
   memory_control_t memory_control_o;
   writeback_control_t writeback_control_o;
+  logic uses_rs1_o;
+  logic uses_rs2_o;
 
   controller dut (.*);
 
@@ -26,6 +28,8 @@ module controller_tb;
       assert (execute_control_o.pc_redirect_address_source == PC_REDIRECT_ADDRESS_PC_IMMEDIATE);
       assert (memory_control_o == '0);
       assert (!writeback_control_o.register_write_enable);
+      assert (uses_rs1_o);
+      assert (uses_rs2_o);
     end
   endtask
 
@@ -44,6 +48,8 @@ module controller_tb;
     assert (writeback_control_o.register_write_enable);
     assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_ALU);
     assert (memory_control_o == '0);
+    assert (uses_rs1_o);
+    assert (uses_rs2_o);
 
     // SUB: funct7 selects subtraction.
     funct7_i = 7'b0100000;
@@ -58,6 +64,8 @@ module controller_tb;
     assert (execute_control_o.alu_operation == ALU_ADD);
     assert (execute_control_o.alu_operand_b_select == ALU_OPERAND_B_IMM);
     assert (writeback_control_o.register_write_enable);
+    assert (uses_rs1_o);
+    assert (!uses_rs2_o);
 
     // Load: calculate an address, read memory, and write memory data to rd.
     opcode_i = OPCODE_LOAD;
@@ -69,6 +77,8 @@ module controller_tb;
     assert (!memory_control_o.memory_write_enable);
     assert (writeback_control_o.register_write_enable);
     assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_MEMORY);
+    assert (uses_rs1_o);
+    assert (!uses_rs2_o);
 
     // Store: calculate an address and write memory without register writeback.
     opcode_i = OPCODE_STORE;
@@ -79,6 +89,8 @@ module controller_tb;
     assert (!memory_control_o.memory_read_enable);
     assert (memory_control_o.memory_write_enable);
     assert (!writeback_control_o.register_write_enable);
+    assert (uses_rs1_o);
+    assert (uses_rs2_o);
 
     // JAL: redirect to PC + immediate and write PC + 4 to rd.
     opcode_i = OPCODE_JAL;
@@ -92,6 +104,8 @@ module controller_tb;
     assert (memory_control_o == '0);
     assert (writeback_control_o.register_write_enable);
     assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_PC4);
+    assert (!uses_rs1_o);
+    assert (!uses_rs2_o);
 
     // JALR: redirect to rs1 + immediate and write PC + 4 to rd.
     opcode_i = OPCODE_JALR;
@@ -106,6 +120,8 @@ module controller_tb;
     assert (memory_control_o == '0);
     assert (writeback_control_o.register_write_enable);
     assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_PC4);
+    assert (uses_rs1_o);
+    assert (!uses_rs2_o);
 
     // JALR encodings with a nonzero funct3 are invalid.
     funct3_i = 3'b001;
@@ -125,6 +141,8 @@ module controller_tb;
     assert (memory_control_o == '0);
     assert (writeback_control_o.register_write_enable);
     assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_ALU);
+    assert (!uses_rs1_o);
+    assert (!uses_rs2_o);
 
     // AUIPC: add the upper immediate to PC and write the ALU result to rd.
     opcode_i = OPCODE_AUIPC;
@@ -136,6 +154,8 @@ module controller_tb;
     assert (memory_control_o == '0);
     assert (writeback_control_o.register_write_enable);
     assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_ALU);
+    assert (!uses_rs1_o);
+    assert (!uses_rs2_o);
 
     // Conditional branches.
     check_branch(3'b000, PC_REDIRECT_EQ);
@@ -163,6 +183,8 @@ module controller_tb;
     assert (execute_control_o.alu_operation == ALU_INVALID);
     assert (memory_control_o == '0);
     assert (writeback_control_o == '0);
+    assert (!uses_rs1_o);
+    assert (!uses_rs2_o);
 
     $display("controller tests passed");
     $finish;

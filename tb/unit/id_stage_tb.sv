@@ -16,6 +16,8 @@ module id_stage_tb;
   logic               [ 4:0] rd_o;
   logic               [ 4:0] rs1_o;
   logic               [ 4:0] rs2_o;
+  logic                      uses_rs1_o;
+  logic                      uses_rs2_o;
   execute_control_t          execute_control_o;
   memory_control_t           memory_control_o;
   writeback_control_t        writeback_control_o;
@@ -56,6 +58,8 @@ module id_stage_tb;
     assert (rs2_o == 5'd2);
     assert (rd_o == 5'd3);
     assert (execute_control_o.alu_operation == ALU_ADD);
+    assert (uses_rs1_o);
+    assert (uses_rs2_o);
 
     // ADDI x3, x1, -4: operand B comes from the sign-extended immediate.
     instruction_id_i = 32'b111111111100_00001_000_00011_0010011;
@@ -63,11 +67,15 @@ module id_stage_tb;
     assert (rs1_data_o == 32'h1234_5678);
     assert (immediate_o == 32'hffff_fffc);
     assert (execute_control_o.alu_operation == ALU_ADD);
+    assert (uses_rs1_o);
+    assert (!uses_rs2_o);
 
     // U-type immediate generation.
     instruction_id_i = 32'b00010010001101000101_00011_0110111;
     #1ns;
     assert (immediate_o == 32'h1234_5000);
+    assert (!uses_rs1_o);
+    assert (!uses_rs2_o);
 
     // WB data bypasses an older register-file value before ID/EX captures it.
     instruction_id_i = 32'b0000000_00010_00001_000_00011_0110011;
