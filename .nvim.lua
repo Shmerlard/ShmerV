@@ -1,3 +1,17 @@
+vim.opt.autoread = true
+
+local external_change_group = vim.api.nvim_create_augroup("ShmerVExternalChanges", { clear = true })
+
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHoldI" }, {
+    group = external_change_group,
+    callback = function()
+        if vim.fn.getcmdwintype() == "" then
+            vim.cmd("checktime")
+        end
+    end,
+    desc = "Reload files changed outside Neovim",
+})
+
 vim.keymap.set("n", "<leader>lp", function()
     vim.cmd("silent update")
 
