@@ -75,7 +75,7 @@ module mem_stage_tb;
 
     // Load instruction: only the memory read control is enabled.
     memory_control_i.memory_write_enable = 1'b0;
-    memory_control_i.memory_read_enable  = 1'b1;
+    memory_control_i.memory_read_enable = 1'b1;
     memory_control_i.access_size = MEMORY_ACCESS_WORD;
     alu_result_i = 32'h0000_0100;
     #1ns;

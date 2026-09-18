@@ -68,14 +68,11 @@ module cpu #(
 
   forwarding_source_t rs1_forwarding_source_ex;
   forwarding_source_t rs2_forwarding_source_ex;
-  logic [31:0] forward_data_mem;
-  logic [31:0] forward_data_wb;
 
   // memory signals
   memory_control_t memory_control_mem;
   writeback_control_t writeback_control_mem;
   logic [31:0] alu_result_mem;
-  // logic [31:0] rs2_data_mem;
   logic [31:0] store_data_mem;
 
   logic [4:0] rd_mem;
@@ -93,12 +90,9 @@ module cpu #(
   logic rf_write_enable_wb;
   logic [31:0] pc_plus_4_wb;
 
-  assign dmem_read_address_o = dmem_address_mem;
+  assign dmem_read_address_o  = dmem_address_mem;
   assign dmem_write_address_o = dmem_address_mem;
-  assign imem_read_enable_o = !halt_pc;
-
-  assign forward_data_mem = alu_result_mem;
-  assign forward_data_wb = rf_write_data_wb;
+  assign imem_read_enable_o   = !halt_pc;
 
   if_stage #(
       .RESET_PC(RESET_PC)
@@ -183,8 +177,8 @@ module cpu #(
       .execute_control_i      (execute_control_ex),
       .immediate_i            (imm_ex),
       .pc_i                   (pc_ex),
-      .forward_data_mem_i     (forward_data_mem),
-      .forward_data_wb_i      (forward_data_wb),
+      .forward_data_mem_i     (alu_result_mem),
+      .forward_data_wb_i      (rf_write_data_wb),
       .rs1_forwarding_source_i(rs1_forwarding_source_ex),
       .rs2_forwarding_source_i(rs2_forwarding_source_ex),
       .alu_result_o           (alu_result_ex),

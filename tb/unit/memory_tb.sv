@@ -17,17 +17,17 @@ module memory_tb;
   memory #(
       .MEM_WORDS(1024)
   ) dut (
-      .clk                   (clk),
-      .port_a_read_address_i (port_a_read_address_i),
-      .port_a_read_enable_i  (port_a_read_enable_i),
-      .port_b_read_address_i (port_b_read_address_i),
-      .port_b_write_address_i(port_b_write_address_i),
-      .port_b_write_enable_i (port_b_write_enable_i),
+      .clk                       (clk),
+      .port_a_read_address_i     (port_a_read_address_i),
+      .port_a_read_enable_i      (port_a_read_enable_i),
+      .port_b_read_address_i     (port_b_read_address_i),
+      .port_b_write_address_i    (port_b_write_address_i),
+      .port_b_write_enable_i     (port_b_write_enable_i),
       .port_b_write_byte_enable_i(port_b_write_byte_enable_i),
-      .port_b_read_enable_i  (port_b_read_enable_i),
-      .port_b_write_data_i   (port_b_write_data_i),
-      .port_a_read_data_o    (port_a_read_data_o),
-      .port_b_read_data_o    (port_b_read_data_o)
+      .port_b_read_enable_i      (port_b_read_enable_i),
+      .port_b_write_data_i       (port_b_write_data_i),
+      .port_a_read_data_o        (port_a_read_data_o),
+      .port_b_read_data_o        (port_b_read_data_o)
   );
 
   initial clk = 0;

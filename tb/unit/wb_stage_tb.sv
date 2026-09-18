@@ -33,7 +33,7 @@ module wb_stage_tb;
     assert (rf_write_enable_o);
 
     // Load instruction: write memory data to rd.
-    writeback_control_i.writeback_source = WRITEBACK_SOURCE_MEMORY;
+    writeback_control_i.writeback_source   = WRITEBACK_SOURCE_MEMORY;
     writeback_control_i.memory_access_size = MEMORY_ACCESS_WORD;
     #1ns;
     assert (writeback_data_o == memory_read_data_i);

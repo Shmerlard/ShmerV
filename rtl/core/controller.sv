@@ -48,7 +48,6 @@ module controller (
         execute_control_o.alu_operand_b_select = ALU_OPERAND_B_IMM;
         memory_control_o.memory_read_enable = memory_access_valid;
         memory_control_o.access_size = memory_access_size;
-        memory_control_o.load_unsigned = load_unsigned;
         writeback_control_o.register_write_enable = register_write_enable;
         writeback_control_o.writeback_source = WRITEBACK_SOURCE_MEMORY;
         writeback_control_o.memory_access_size = memory_access_size;

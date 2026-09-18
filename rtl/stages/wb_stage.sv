@@ -27,16 +27,18 @@ module wb_stage (
         if (writeback_control_i.load_unsigned) begin
           formatted_memory_read_data = {24'b0, shifted_memory_read_data[7:0]};
         end else begin
-          formatted_memory_read_data = {{24{shifted_memory_read_data[7]}},
-                                        shifted_memory_read_data[7:0]};
+          formatted_memory_read_data = {
+            {24{shifted_memory_read_data[7]}}, shifted_memory_read_data[7:0]
+          };
         end
       end
       MEMORY_ACCESS_HALF: begin
         if (writeback_control_i.load_unsigned) begin
           formatted_memory_read_data = {16'b0, shifted_memory_read_data[15:0]};
         end else begin
-          formatted_memory_read_data = {{16{shifted_memory_read_data[15]}},
-                                        shifted_memory_read_data[15:0]};
+          formatted_memory_read_data = {
+            {16{shifted_memory_read_data[15]}}, shifted_memory_read_data[15:0]
+          };
         end
       end
       MEMORY_ACCESS_WORD, MEMORY_ACCESS_INVALID: begin

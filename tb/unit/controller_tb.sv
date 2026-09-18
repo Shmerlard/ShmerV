@@ -19,7 +19,6 @@ module controller_tb;
     assert (!memory_control_o.memory_read_enable);
     assert (!memory_control_o.memory_write_enable);
     assert (memory_control_o.access_size == MEMORY_ACCESS_INVALID);
-    assert (!memory_control_o.load_unsigned);
   endtask
 
   task automatic check_branch(input logic [2:0] funct3,

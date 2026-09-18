@@ -96,7 +96,6 @@ package core_types;
     logic memory_read_enable;
     logic memory_write_enable;
     memory_access_size_t access_size;
-    logic load_unsigned;
   } memory_control_t;
 
   typedef struct packed {
