@@ -8,6 +8,7 @@ module memory_tb;
   logic [31:0] port_b_read_address_i;
   logic [31:0] port_b_write_address_i;
   logic port_b_write_enable_i;
+  logic [3:0] port_b_write_byte_enable_i;
   logic port_b_read_enable_i;
   logic [31:0] port_b_write_data_i;
   logic [31:0] port_a_read_data_o;
@@ -22,6 +23,7 @@ module memory_tb;
       .port_b_read_address_i (port_b_read_address_i),
       .port_b_write_address_i(port_b_write_address_i),
       .port_b_write_enable_i (port_b_write_enable_i),
+      .port_b_write_byte_enable_i(port_b_write_byte_enable_i),
       .port_b_read_enable_i  (port_b_read_enable_i),
       .port_b_write_data_i   (port_b_write_data_i),
       .port_a_read_data_o    (port_a_read_data_o),
@@ -40,6 +42,7 @@ module memory_tb;
     port_b_read_address_i = '0;
     port_b_write_address_i = '0;
     port_b_write_enable_i = 1'b0;
+    port_b_write_byte_enable_i = 4'b0000;
     port_b_read_enable_i = 1'b0;
     port_b_write_data_i = '0;
 
@@ -85,6 +88,7 @@ module memory_tb;
     port_b_write_address_i = 32'h0000_0008;
     port_b_write_data_i = 32'hAABB_CCDD;
     port_b_write_enable_i = 1'b1;
+    port_b_write_byte_enable_i = 4'b1111;
     @(posedge clk);
     #1;
     port_b_write_enable_i = 1'b0;
@@ -97,12 +101,25 @@ module memory_tb;
     assert (port_b_read_data_o == 32'hAABB_CCDD)
     else $fatal(1, "Expected AABBCCDD from Port B, got %h", port_b_read_data_o);
 
+    // A byte-enable mask updates selected lanes and preserves the others.
+    port_b_write_data_i = 32'h1122_3344;
+    port_b_write_enable_i = 1'b1;
+    port_b_write_byte_enable_i = 4'b0101;
+    @(posedge clk);
+    #1;
+    port_b_write_enable_i = 1'b0;
+
+    @(posedge clk);
+    #1;
+    assert (port_b_read_data_o == 32'hAA22_CC44)
+    else $fatal(1, "Expected AA22CC44 after masked write, got %h", port_b_read_data_o);
+
     // Disabled Port B reads hold the previous output value.
     port_b_read_enable_i  = 1'b0;
     port_b_read_address_i = 32'h0000_0004;
     @(posedge clk);
     #1;
-    assert (port_b_read_data_o == 32'hAABB_CCDD)
+    assert (port_b_read_data_o == 32'hAA22_CC44)
     else $fatal(1, "Disabled Port B read changed the output");
 
     $display("memory tests passed");

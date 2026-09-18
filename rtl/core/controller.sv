@@ -14,12 +14,20 @@ module controller (
 
   alu_operation_t alu_operation;
   pc_redirect_condition_t branch_condition;
+  memory_access_size_t memory_access_size;
+  logic load_unsigned;
+
+  logic memory_access_valid;
+  logic register_write_enable;
+  assign memory_access_valid   = memory_access_size != MEMORY_ACCESS_INVALID;
+  assign register_write_enable = (alu_operation != ALU_INVALID) && memory_access_valid;
 
   always_comb begin
     execute_control_o   = '0;
     memory_control_o    = '0;
     writeback_control_o = '0;
-
+    memory_control_o.access_size = MEMORY_ACCESS_INVALID;
+    writeback_control_o.memory_access_size = MEMORY_ACCESS_INVALID;
     execute_control_o.alu_operation = alu_operation;
 
     case (opcode_i)
@@ -38,15 +46,20 @@ module controller (
       OPCODE_LOAD: begin
         execute_control_o.alu_operand_a_select = ALU_OPERAND_A_RS1;
         execute_control_o.alu_operand_b_select = ALU_OPERAND_B_IMM;
-        memory_control_o.memory_read_enable = 1'b1;
-        writeback_control_o.register_write_enable = alu_operation != ALU_INVALID;
+        memory_control_o.memory_read_enable = memory_access_valid;
+        memory_control_o.access_size = memory_access_size;
+        memory_control_o.load_unsigned = load_unsigned;
+        writeback_control_o.register_write_enable = register_write_enable;
         writeback_control_o.writeback_source = WRITEBACK_SOURCE_MEMORY;
+        writeback_control_o.memory_access_size = memory_access_size;
+        writeback_control_o.load_unsigned = load_unsigned;
       end
 
       OPCODE_STORE: begin
         execute_control_o.alu_operand_a_select = ALU_OPERAND_A_RS1;
         execute_control_o.alu_operand_b_select = ALU_OPERAND_B_IMM;
-        memory_control_o.memory_write_enable   = 1'b1;
+        memory_control_o.memory_write_enable = memory_access_valid;
+        memory_control_o.access_size = memory_access_size;
       end
 
       OPCODE_JAL: begin
@@ -199,6 +212,38 @@ module controller (
 
       default: begin
       end
+    endcase
+  end
+
+  always_comb begin
+    memory_access_size = MEMORY_ACCESS_INVALID;
+    load_unsigned = 1'b0;
+    case (opcode_i)
+      OPCODE_LOAD: begin
+        case (funct3_i)
+          3'b000:  memory_access_size = MEMORY_ACCESS_BYTE;
+          3'b001:  memory_access_size = MEMORY_ACCESS_HALF;
+          3'b010:  memory_access_size = MEMORY_ACCESS_WORD;
+          3'b100: begin
+            memory_access_size = MEMORY_ACCESS_BYTE;
+            load_unsigned = 1'b1;
+          end
+          3'b101: begin
+            memory_access_size = MEMORY_ACCESS_HALF;
+            load_unsigned = 1'b1;
+          end
+          default: memory_access_size = MEMORY_ACCESS_INVALID;
+        endcase
+      end
+      OPCODE_STORE: begin
+        case (funct3_i)
+          3'b000:  memory_access_size = MEMORY_ACCESS_BYTE;
+          3'b001:  memory_access_size = MEMORY_ACCESS_HALF;
+          3'b010:  memory_access_size = MEMORY_ACCESS_WORD;
+          default: memory_access_size = MEMORY_ACCESS_INVALID;
+        endcase
+      end
+      default: memory_access_size = MEMORY_ACCESS_INVALID;
     endcase
   end
 

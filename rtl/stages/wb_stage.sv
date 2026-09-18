@@ -11,9 +11,40 @@ module wb_stage (
 );
 
   writeback_source_t wb_source;
+  logic [31:0] shifted_memory_read_data;
+  logic [31:0] formatted_memory_read_data;
+
   assign wb_source = writeback_control_i.writeback_source;
+  assign shifted_memory_read_data = memory_read_data_i >> {alu_result_i[1:0], 3'b000};
 
   assign rf_write_enable_o = writeback_control_i.register_write_enable && valid_i;
+
+  always_comb begin
+    formatted_memory_read_data = memory_read_data_i;
+
+    case (writeback_control_i.memory_access_size)
+      MEMORY_ACCESS_BYTE: begin
+        if (writeback_control_i.load_unsigned) begin
+          formatted_memory_read_data = {24'b0, shifted_memory_read_data[7:0]};
+        end else begin
+          formatted_memory_read_data = {{24{shifted_memory_read_data[7]}},
+                                        shifted_memory_read_data[7:0]};
+        end
+      end
+      MEMORY_ACCESS_HALF: begin
+        if (writeback_control_i.load_unsigned) begin
+          formatted_memory_read_data = {16'b0, shifted_memory_read_data[15:0]};
+        end else begin
+          formatted_memory_read_data = {{16{shifted_memory_read_data[15]}},
+                                        shifted_memory_read_data[15:0]};
+        end
+      end
+      MEMORY_ACCESS_WORD, MEMORY_ACCESS_INVALID: begin
+      end
+      default: begin
+      end
+    endcase
+  end
 
   always_comb begin
     writeback_data_o = 32'b0;
@@ -22,7 +53,7 @@ module wb_stage (
         writeback_data_o = alu_result_i;
       end
       WRITEBACK_SOURCE_MEMORY: begin
-        writeback_data_o = memory_read_data_i;
+        writeback_data_o = formatted_memory_read_data;
       end
       WRITEBACK_SOURCE_PC4: begin
         writeback_data_o = pc_plus_4_i;

@@ -10,6 +10,7 @@ module cpu #(
     input logic [31:0] imem_read_data_i,
     input logic [31:0] dmem_read_data_i,
     output logic dmem_write_enable_o,
+    output logic [3:0] dmem_write_byte_enable_o,
     output logic dmem_read_enable_o,
     output logic imem_read_enable_o,
     output logic [31:0] imem_read_address_o,
@@ -213,14 +214,15 @@ module cpu #(
   );
 
   mem_stage mem_stage (
-      .valid_i              (valid_mem),
-      .alu_result_i         (alu_result_mem),
-      .rs2_data_i           (store_data_mem),
-      .memory_control_i     (memory_control_mem),
-      .memory_address_o     (dmem_address_mem),
-      .memory_write_data_o  (dmem_write_data_o),
-      .memory_read_enable_o (dmem_read_enable_o),
-      .memory_write_enable_o(dmem_write_enable_o)
+      .valid_i                   (valid_mem),
+      .alu_result_i              (alu_result_mem),
+      .rs2_data_i                (store_data_mem),
+      .memory_control_i          (memory_control_mem),
+      .memory_address_o          (dmem_address_mem),
+      .memory_write_data_o       (dmem_write_data_o),
+      .memory_write_byte_enable_o(dmem_write_byte_enable_o),
+      .memory_read_enable_o      (dmem_read_enable_o),
+      .memory_write_enable_o     (dmem_write_enable_o)
   );
 
   mem_wb_reg mem_wb_reg (

@@ -32,6 +32,13 @@ package core_types;
   } writeback_source_t;
 
   typedef enum logic [1:0] {
+    MEMORY_ACCESS_BYTE,
+    MEMORY_ACCESS_HALF,
+    MEMORY_ACCESS_WORD,
+    MEMORY_ACCESS_INVALID
+  } memory_access_size_t;
+
+  typedef enum logic [1:0] {
     FORWARD_SOURCE_REGISTER,
     FORWARD_SOURCE_MEM,
     FORWARD_SOURCE_WB
@@ -88,11 +95,15 @@ package core_types;
   typedef struct packed {
     logic memory_read_enable;
     logic memory_write_enable;
+    memory_access_size_t access_size;
+    logic load_unsigned;
   } memory_control_t;
 
   typedef struct packed {
     logic register_write_enable;
     writeback_source_t writeback_source;
+    memory_access_size_t memory_access_size;
+    logic load_unsigned;
   } writeback_control_t;
 
 

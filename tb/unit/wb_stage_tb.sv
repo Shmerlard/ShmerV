@@ -22,6 +22,7 @@ module wb_stage_tb;
     memory_read_data_i = 32'hDEAD_BEEF;
     pc_plus_4_i = 32'h0000_0104;
     writeback_control_i = '0;
+    writeback_control_i.memory_access_size = MEMORY_ACCESS_INVALID;
     #1ns;
 
     // Arithmetic instruction: write the ALU result to rd.
@@ -33,9 +34,67 @@ module wb_stage_tb;
 
     // Load instruction: write memory data to rd.
     writeback_control_i.writeback_source = WRITEBACK_SOURCE_MEMORY;
+    writeback_control_i.memory_access_size = MEMORY_ACCESS_WORD;
     #1ns;
     assert (writeback_data_o == memory_read_data_i);
     assert (rf_write_enable_o);
+
+    // Signed and unsigned byte loads use the address byte offset.
+    memory_read_data_i = 32'h80_7F_01_FF;
+    writeback_control_i.memory_access_size = MEMORY_ACCESS_BYTE;
+    writeback_control_i.load_unsigned = 1'b0;
+    alu_result_i = 32'h0000_0100;
+    #1ns;
+    assert (writeback_data_o == 32'hFFFF_FFFF);
+
+    alu_result_i = 32'h0000_0101;
+    #1ns;
+    assert (writeback_data_o == 32'h0000_0001);
+
+    alu_result_i = 32'h0000_0102;
+    #1ns;
+    assert (writeback_data_o == 32'h0000_007F);
+
+    alu_result_i = 32'h0000_0103;
+    #1ns;
+    assert (writeback_data_o == 32'hFFFF_FF80);
+
+    writeback_control_i.load_unsigned = 1'b1;
+    alu_result_i = 32'h0000_0100;
+    #1ns;
+    assert (writeback_data_o == 32'h0000_00FF);
+
+    alu_result_i = 32'h0000_0101;
+    #1ns;
+    assert (writeback_data_o == 32'h0000_0001);
+
+    alu_result_i = 32'h0000_0102;
+    #1ns;
+    assert (writeback_data_o == 32'h0000_007F);
+
+    alu_result_i = 32'h0000_0103;
+    #1ns;
+    assert (writeback_data_o == 32'h0000_0080);
+
+    // Signed and unsigned halfword loads use the same byte-based offset.
+    writeback_control_i.memory_access_size = MEMORY_ACCESS_HALF;
+    writeback_control_i.load_unsigned = 1'b0;
+    alu_result_i = 32'h0000_0100;
+    #1ns;
+    assert (writeback_data_o == 32'h0000_01FF);
+
+    alu_result_i = 32'h0000_0102;
+    #1ns;
+    assert (writeback_data_o == 32'hFFFF_807F);
+
+    writeback_control_i.load_unsigned = 1'b1;
+    alu_result_i = 32'h0000_0100;
+    #1ns;
+    assert (writeback_data_o == 32'h0000_01FF);
+
+    alu_result_i = 32'h0000_0102;
+    #1ns;
+    assert (writeback_data_o == 32'h0000_807F);
 
     // Jump instruction: write PC + 4 to rd.
     writeback_control_i.writeback_source = WRITEBACK_SOURCE_PC4;

@@ -10,6 +10,7 @@ module memory #(
     input logic [31:0] port_b_read_address_i,
     input logic [31:0] port_b_write_address_i,
     input logic port_b_write_enable_i,
+    input logic [3:0] port_b_write_byte_enable_i,
     input logic port_b_read_enable_i,
     input logic [31:0] port_b_write_data_i,
     output logic [31:0] port_b_read_data_o
@@ -26,7 +27,7 @@ module memory #(
     end
   end
 
-  always_ff @(posedge clk) begin
+  always @(posedge clk) begin
     if (port_a_read_enable_i) begin
       port_a_read_data_o <= memory_words[port_a_read_address_i[AddressWidth+1:2]];
     end
@@ -36,7 +37,14 @@ module memory #(
     end
 
     if (port_b_write_enable_i) begin
-      memory_words[port_b_write_address_i[AddressWidth+1:2]] <= port_b_write_data_i;
+      if (port_b_write_byte_enable_i[0])
+        memory_words[port_b_write_address_i[AddressWidth+1:2]][7:0] <= port_b_write_data_i[7:0];
+      if (port_b_write_byte_enable_i[1])
+        memory_words[port_b_write_address_i[AddressWidth+1:2]][15:8] <= port_b_write_data_i[15:8];
+      if (port_b_write_byte_enable_i[2])
+        memory_words[port_b_write_address_i[AddressWidth+1:2]][23:16] <= port_b_write_data_i[23:16];
+      if (port_b_write_byte_enable_i[3])
+        memory_words[port_b_write_address_i[AddressWidth+1:2]][31:24] <= port_b_write_data_i[31:24];
     end
   end
 

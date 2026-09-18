@@ -9,16 +9,49 @@ module mem_stage (
 
     output logic [31:0] memory_address_o,
     output logic [31:0] memory_write_data_o,
+    output logic [ 3:0] memory_write_byte_enable_o,
 
     output logic memory_read_enable_o,
     output logic memory_write_enable_o
 
 );
+  logic memory_access_aligned;
+  logic [1:0] byte_offset;
+
   assign memory_address_o = alu_result_i;
 
-  assign memory_read_enable_o = memory_control_i.memory_read_enable && valid_i;
-  assign memory_write_enable_o = memory_control_i.memory_write_enable && valid_i;
+  assign memory_read_enable_o =
+      memory_control_i.memory_read_enable && valid_i && memory_access_aligned;
+  assign memory_write_enable_o =
+      memory_control_i.memory_write_enable && valid_i && memory_access_aligned;
 
-  assign memory_write_data_o = rs2_data_i;
+  assign byte_offset = alu_result_i[1:0];
+  assign memory_write_data_o = rs2_data_i << {byte_offset, 3'b000};
+
+  always_comb begin
+    memory_access_aligned = 1'b0;
+    memory_write_byte_enable_o = 4'b0000;
+
+    case (memory_control_i.access_size)
+      MEMORY_ACCESS_BYTE: begin
+        memory_access_aligned = 1'b1;
+        memory_write_byte_enable_o = 4'b0001 << byte_offset;
+      end
+      MEMORY_ACCESS_HALF: begin
+        memory_access_aligned = alu_result_i[0] == 1'b0;
+        if (memory_access_aligned) memory_write_byte_enable_o = 4'b0011 << byte_offset;
+      end
+      MEMORY_ACCESS_WORD: begin
+        memory_access_aligned = alu_result_i[1:0] == 2'b00;
+        if (memory_access_aligned) memory_write_byte_enable_o = 4'b1111;
+      end
+      MEMORY_ACCESS_INVALID: begin
+        memory_access_aligned = 1'b0;
+      end
+      default: begin
+        memory_access_aligned = 1'b0;
+      end
+    endcase
+  end
 
 endmodule

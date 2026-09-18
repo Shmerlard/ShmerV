@@ -15,6 +15,13 @@ module controller_tb;
 
   controller dut (.*);
 
+  task automatic check_memory_disabled;
+    assert (!memory_control_o.memory_read_enable);
+    assert (!memory_control_o.memory_write_enable);
+    assert (memory_control_o.access_size == MEMORY_ACCESS_INVALID);
+    assert (!memory_control_o.load_unsigned);
+  endtask
+
   task automatic check_branch(input logic [2:0] funct3,
                               input pc_redirect_condition_t expected_condition);
     begin
@@ -26,7 +33,7 @@ module controller_tb;
       assert (execute_control_o.alu_operand_b_select == ALU_OPERAND_B_RS2);
       assert (execute_control_o.pc_redirect_condition == expected_condition);
       assert (execute_control_o.pc_redirect_address_source == PC_REDIRECT_ADDRESS_PC_IMMEDIATE);
-      assert (memory_control_o == '0);
+      check_memory_disabled();
       assert (!writeback_control_o.register_write_enable);
       assert (uses_rs1_o);
       assert (uses_rs2_o);
@@ -47,7 +54,7 @@ module controller_tb;
     assert (execute_control_o.alu_operand_b_select == ALU_OPERAND_B_RS2);
     assert (writeback_control_o.register_write_enable);
     assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_ALU);
-    assert (memory_control_o == '0);
+    check_memory_disabled();
     assert (uses_rs1_o);
     assert (uses_rs2_o);
 
@@ -67,8 +74,9 @@ module controller_tb;
     assert (uses_rs1_o);
     assert (!uses_rs2_o);
 
-    // Load: calculate an address, read memory, and write memory data to rd.
+    // Byte load: calculate an address, read memory, and write memory data to rd.
     opcode_i = OPCODE_LOAD;
+    funct3_i = 3'b000;
     #1ns;
     assert (execute_control_o.alu_operation == ALU_ADD);
     assert (execute_control_o.alu_operand_a_select == ALU_OPERAND_A_RS1);
@@ -77,20 +85,81 @@ module controller_tb;
     assert (!memory_control_o.memory_write_enable);
     assert (writeback_control_o.register_write_enable);
     assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_MEMORY);
+    assert (memory_control_o.access_size == MEMORY_ACCESS_BYTE);
+    assert (writeback_control_o.memory_access_size == MEMORY_ACCESS_BYTE);
+    assert (!writeback_control_o.load_unsigned);
     assert (uses_rs1_o);
     assert (!uses_rs2_o);
 
-    // Store: calculate an address and write memory without register writeback.
+    funct3_i = 3'b001;
+    #1ns;
+    assert (memory_control_o.memory_read_enable);
+    assert (memory_control_o.access_size == MEMORY_ACCESS_HALF);
+    assert (writeback_control_o.register_write_enable);
+
+    funct3_i = 3'b010;
+    #1ns;
+    assert (memory_control_o.memory_read_enable);
+    assert (memory_control_o.access_size == MEMORY_ACCESS_WORD);
+    assert (writeback_control_o.register_write_enable);
+
+    funct3_i = 3'b100;
+    #1ns;
+    assert (memory_control_o.memory_read_enable);
+    assert (memory_control_o.access_size == MEMORY_ACCESS_BYTE);
+    assert (writeback_control_o.memory_access_size == MEMORY_ACCESS_BYTE);
+    assert (writeback_control_o.load_unsigned);
+    assert (writeback_control_o.register_write_enable);
+
+    funct3_i = 3'b101;
+    #1ns;
+    assert (memory_control_o.memory_read_enable);
+    assert (memory_control_o.access_size == MEMORY_ACCESS_HALF);
+    assert (writeback_control_o.memory_access_size == MEMORY_ACCESS_HALF);
+    assert (writeback_control_o.load_unsigned);
+    assert (writeback_control_o.register_write_enable);
+
+    // Unsupported load widths have no architectural side effects.
+    funct3_i = 3'b011;
+    #1ns;
+    assert (!memory_control_o.memory_read_enable);
+    assert (memory_control_o.access_size == MEMORY_ACCESS_INVALID);
+    assert (!writeback_control_o.register_write_enable);
+
+    // Byte store: calculate an address and write without register writeback.
     opcode_i = OPCODE_STORE;
+    funct3_i = 3'b000;
     #1ns;
     assert (execute_control_o.alu_operation == ALU_ADD);
     assert (execute_control_o.alu_operand_a_select == ALU_OPERAND_A_RS1);
     assert (execute_control_o.alu_operand_b_select == ALU_OPERAND_B_IMM);
     assert (!memory_control_o.memory_read_enable);
     assert (memory_control_o.memory_write_enable);
+    assert (memory_control_o.access_size == MEMORY_ACCESS_BYTE);
     assert (!writeback_control_o.register_write_enable);
     assert (uses_rs1_o);
     assert (uses_rs2_o);
+
+    funct3_i = 3'b001;
+    #1ns;
+    assert (memory_control_o.memory_write_enable);
+    assert (memory_control_o.access_size == MEMORY_ACCESS_HALF);
+
+    funct3_i = 3'b010;
+    #1ns;
+    assert (memory_control_o.memory_write_enable);
+    assert (memory_control_o.access_size == MEMORY_ACCESS_WORD);
+
+    // Unsupported store widths cannot write memory.
+    funct3_i = 3'b011;
+    #1ns;
+    assert (!memory_control_o.memory_write_enable);
+    assert (memory_control_o.access_size == MEMORY_ACCESS_INVALID);
+
+    funct3_i = 3'b100;
+    #1ns;
+    assert (!memory_control_o.memory_write_enable);
+    assert (memory_control_o.access_size == MEMORY_ACCESS_INVALID);
 
     // JAL: redirect to PC + immediate and write PC + 4 to rd.
     opcode_i = OPCODE_JAL;
@@ -101,7 +170,7 @@ module controller_tb;
     assert (execute_control_o.pc_redirect_condition == PC_REDIRECT_ALWAYS);
     assert (execute_control_o.pc_redirect_address_source == PC_REDIRECT_ADDRESS_PC_IMMEDIATE);
     assert (!execute_control_o.pc_redirect_zero_lsb);
-    assert (memory_control_o == '0);
+    check_memory_disabled();
     assert (writeback_control_o.register_write_enable);
     assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_PC4);
     assert (!uses_rs1_o);
@@ -117,7 +186,7 @@ module controller_tb;
     assert (execute_control_o.pc_redirect_condition == PC_REDIRECT_ALWAYS);
     assert (execute_control_o.pc_redirect_address_source == PC_REDIRECT_ADDRESS_ALU_RESULT);
     assert (execute_control_o.pc_redirect_zero_lsb);
-    assert (memory_control_o == '0);
+    check_memory_disabled();
     assert (writeback_control_o.register_write_enable);
     assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_PC4);
     assert (uses_rs1_o);
@@ -138,7 +207,7 @@ module controller_tb;
     assert (execute_control_o.alu_operand_a_select == ALU_OPERAND_A_ZERO);
     assert (execute_control_o.alu_operand_b_select == ALU_OPERAND_B_IMM);
     assert (execute_control_o.pc_redirect_condition == PC_REDIRECT_NEVER);
-    assert (memory_control_o == '0);
+    check_memory_disabled();
     assert (writeback_control_o.register_write_enable);
     assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_ALU);
     assert (!uses_rs1_o);
@@ -151,7 +220,7 @@ module controller_tb;
     assert (execute_control_o.alu_operand_a_select == ALU_OPERAND_A_PC);
     assert (execute_control_o.alu_operand_b_select == ALU_OPERAND_B_IMM);
     assert (execute_control_o.pc_redirect_condition == PC_REDIRECT_NEVER);
-    assert (memory_control_o == '0);
+    check_memory_disabled();
     assert (writeback_control_o.register_write_enable);
     assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_ALU);
     assert (!uses_rs1_o);
@@ -181,8 +250,10 @@ module controller_tb;
     opcode_i = opcode_t'(7'b1111111);
     #1ns;
     assert (execute_control_o.alu_operation == ALU_INVALID);
-    assert (memory_control_o == '0);
-    assert (writeback_control_o == '0);
+    check_memory_disabled();
+    assert (!writeback_control_o.register_write_enable);
+    assert (writeback_control_o.memory_access_size == MEMORY_ACCESS_INVALID);
+    assert (!writeback_control_o.load_unsigned);
     assert (!uses_rs1_o);
     assert (!uses_rs2_o);
 

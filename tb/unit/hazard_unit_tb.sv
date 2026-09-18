@@ -59,22 +59,22 @@ module hazard_unit_tb;
     $dumpfile("build/tests/hazard_unit/waveform.fst");
     $dumpvars(0, hazard_unit_tb);
 
-    rs1_ex_i        = 5'd1;
-    rs2_ex_i        = 5'd2;
-    rs1_id_i        = 5'd1;
-    rs2_id_i        = 5'd2;
-    uses_rs1_id_i   = 1'b0;
-    uses_rs2_id_i   = 1'b0;
-    valid_id_i      = 1'b0;
-    valid_ex_i      = 1'b0;
-    rd_ex_i         = 5'd0;
-    memory_read_ex_i = 1'b0;
-    rd_mem_i        = 5'd3;
-    rd_wb_i         = 5'd4;
-    valid_mem_i     = 1'b1;
-    valid_wb_i      = 1'b1;
-    reg_write_mem_i = 1'b1;
-    reg_write_wb_i  = 1'b1;
+    rs1_ex_i               = 5'd1;
+    rs2_ex_i               = 5'd2;
+    rs1_id_i               = 5'd1;
+    rs2_id_i               = 5'd2;
+    uses_rs1_id_i          = 1'b0;
+    uses_rs2_id_i          = 1'b0;
+    valid_id_i             = 1'b0;
+    valid_ex_i             = 1'b0;
+    rd_ex_i                = 5'd0;
+    memory_read_ex_i       = 1'b0;
+    rd_mem_i               = 5'd3;
+    rd_wb_i                = 5'd4;
+    valid_mem_i            = 1'b1;
+    valid_wb_i             = 1'b1;
+    reg_write_mem_i        = 1'b1;
+    reg_write_wb_i         = 1'b1;
     writeback_source_mem_i = WRITEBACK_SOURCE_ALU;
     check_outputs();
 
@@ -116,14 +116,14 @@ module hazard_unit_tb;
     writeback_source_mem_i = WRITEBACK_SOURCE_ALU;
 
     // A valid load-use dependency on either source stalls the younger instruction.
-    valid_id_i       = 1'b1;
-    valid_ex_i       = 1'b1;
-    memory_read_ex_i = 1'b1;
-    rd_ex_i          = 5'd10;
-    rs1_id_i         = 5'd10;
-    rs2_id_i         = 5'd11;
-    uses_rs1_id_i    = 1'b1;
-    uses_rs2_id_i    = 1'b0;
+    valid_id_i             = 1'b1;
+    valid_ex_i             = 1'b1;
+    memory_read_ex_i       = 1'b1;
+    rd_ex_i                = 5'd10;
+    rs1_id_i               = 5'd10;
+    rs2_id_i               = 5'd11;
+    uses_rs1_id_i          = 1'b1;
+    uses_rs2_id_i          = 1'b0;
     check_outputs();
 
     rs1_id_i      = 5'd11;
@@ -157,7 +157,7 @@ module hazard_unit_tb;
     valid_id_i = 1'b0;
     check_outputs();
 
-    valid_id_i      = 1'b1;
+    valid_id_i       = 1'b1;
     memory_read_ex_i = 1'b0;
     check_outputs();
 
