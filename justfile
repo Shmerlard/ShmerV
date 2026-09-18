@@ -24,7 +24,7 @@ lint:
   verible-verilog-lint {{sv_sources}}
   verilator --lint-only --timing --top-module smoke_tb {{sv_sources}}
 
-# Run all tests, one module test, all CPU-system programs, or one named program.
+# Run tests, one CPU program, or list CPU programs with: just test cpu_system -l.
 test module="" program="":
   @scripts/run_tests.sh "{{module}}" "{{program}}"
 

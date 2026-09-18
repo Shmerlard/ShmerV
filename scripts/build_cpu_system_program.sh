@@ -11,11 +11,35 @@ output_directory=$2
 
 mkdir -p "$output_directory"
 
-riscv32-none-elf-as -march=rv32i -mabi=ilp32 \
-  -o "$output_directory/program.o" "$program_source"
-riscv32-none-elf-ld -m elf32lriscv \
-  -T sw/tests/cpu_system/link.ld \
-  -o "$output_directory/program.elf" "$output_directory/program.o"
+case "$program_source" in
+  *.S)
+    riscv32-none-elf-as -march=rv32i -mabi=ilp32 \
+      -o "$output_directory/program.o" "$program_source"
+    riscv32-none-elf-ld -m elf32lriscv \
+      -T sw/tests/cpu_system/link.ld \
+      -o "$output_directory/program.elf" "$output_directory/program.o"
+    ;;
+
+  *.c)
+    riscv32-none-elf-gcc -march=rv32i -mabi=ilp32 -O0 \
+      -ffreestanding -fno-pic -fno-stack-protector \
+      -fno-unwind-tables -fno-asynchronous-unwind-tables \
+      -msmall-data-limit=0 -c \
+      -o "$output_directory/program.o" "$program_source"
+    riscv32-none-elf-as -march=rv32i -mabi=ilp32 \
+      -o "$output_directory/start.o" sw/runtime/start.S
+    riscv32-none-elf-ld -m elf32lriscv \
+      -T sw/tests/cpu_system/link.ld \
+      -o "$output_directory/program.elf" \
+      "$output_directory/start.o" "$output_directory/program.o"
+    ;;
+
+  *)
+    echo "Unsupported CPU-system source: $program_source" >&2
+    exit 1
+    ;;
+esac
+
 riscv32-none-elf-objcopy -O binary \
   "$output_directory/program.elf" "$output_directory/program.bin"
 od -An -v -w4 -tx4 "$output_directory/program.bin" > "$output_directory/program.hex"

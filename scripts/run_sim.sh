@@ -13,9 +13,13 @@ if [ "$module" = "cpu_system" ]; then
   if [ -z "$program" ]; then
     echo "Usage: just sim cpu_system PROGRAM"
     echo "Available programs:"
-    for program_source in sw/tests/cpu_system/*.S; do
-      if [ -f "$program_source" ]; then
-        basename "$program_source" .S
+    for program_directory in sw/tests/cpu_system/*; do
+      if [ -d "$program_directory" ]; then
+        program_name=$(basename "$program_directory")
+        if [ -f "$program_directory/$program_name.S" ] \
+          || [ -f "$program_directory/$program_name.c" ]; then
+          echo "$program_name"
+        fi
       fi
     done
     exit 0

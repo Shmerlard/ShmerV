@@ -80,13 +80,27 @@ run_module_test() {
 
 run_cpu_system_program() {
   program_name=$1
-  program_source="sw/tests/cpu_system/$program_name.S"
-  checks_file="sw/tests/cpu_system/$program_name.checks"
+  program_directory="sw/tests/cpu_system/$program_name"
+  assembly_source="$program_directory/$program_name.S"
+  c_source="$program_directory/$program_name.c"
+  checks_file="$program_directory/$program_name.checks"
   program_build_directory="$build_directory/cpu_system/$program_name"
   expected_file="$program_build_directory/program.expected"
 
-  if [ ! -f "$program_source" ] || [ ! -f "$checks_file" ]; then
-    echo "Missing $program_source or $checks_file" >&2
+  if [ -f "$assembly_source" ] && [ -f "$c_source" ]; then
+    echo "Both assembly and C sources exist for cpu_system/$program_name" >&2
+    exit 1
+  elif [ -f "$assembly_source" ]; then
+    program_source=$assembly_source
+  elif [ -f "$c_source" ]; then
+    program_source=$c_source
+  else
+    echo "Missing source for cpu_system/$program_name" >&2
+    exit 1
+  fi
+
+  if [ ! -f "$checks_file" ]; then
+    echo "Missing $checks_file" >&2
     exit 1
   fi
 
@@ -130,8 +144,28 @@ run_cpu_system_program() {
   echo "[PASS]  cpu_system/$program_name"
 }
 
+list_cpu_system_programs() {
+  for program_directory in sw/tests/cpu_system/*; do
+    if [ ! -d "$program_directory" ]; then
+      continue
+    fi
+
+    program_name=$(basename "$program_directory")
+    if [ -f "$program_directory/$program_name.S" ] \
+      || [ -f "$program_directory/$program_name.c" ]; then
+      echo "$program_name"
+    fi
+  done
+}
+
 run_cpu_system_tests() {
   selected_program=$1
+
+  if [ "$selected_program" = "-l" ] || [ "$selected_program" = "--list" ]; then
+    list_cpu_system_programs
+    return
+  fi
+
   build_test cpu_system
 
   if [ -n "$selected_program" ]; then
@@ -140,12 +174,12 @@ run_cpu_system_tests() {
   fi
 
   found_program=0
-  for program_source in sw/tests/cpu_system/*.S; do
-    if [ ! -f "$program_source" ]; then
+  for program_directory in sw/tests/cpu_system/*; do
+    if [ ! -d "$program_directory" ]; then
       continue
     fi
     found_program=1
-    program_name=$(basename "$program_source" .S)
+    program_name=$(basename "$program_directory")
     run_cpu_system_program "$program_name"
   done
 

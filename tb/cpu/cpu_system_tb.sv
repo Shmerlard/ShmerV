@@ -2,6 +2,8 @@ timeunit 1ns / 1ps;
 
 module cpu_system_tb;
   localparam integer PipelineDrainCycles = 5;
+  localparam integer MemoryWords = 8192;
+  localparam integer MemoryAddressWidth = $clog2(MemoryWords);
 
   logic clk = 1'b0;
   logic rst;
@@ -20,7 +22,8 @@ module cpu_system_tb;
   string trace_file;
 
   cpu_system #(
-      .RESET_PC(32'h8000_0000)
+      .MEM_WORDS(MemoryWords),
+      .RESET_PC (32'h8000_0000)
   ) dut (
       .clk(clk),
       .rst(rst)
@@ -69,7 +72,7 @@ module cpu_system_tb;
           "memory": begin
             scan_result = $fscanf(expected_file_handle, "%h %h", expected_address, expected_value);
             if (scan_result != 2) $fatal(1, "Invalid memory entry in %s", expected_file);
-            actual_value = dut.memory.memory_words[expected_address[11:2]];
+            actual_value = dut.memory.memory_words[expected_address[MemoryAddressWidth+1:2]];
             assert (actual_value == expected_value)
             else
               $fatal(

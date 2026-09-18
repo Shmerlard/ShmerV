@@ -1,6 +1,7 @@
 timeunit 1ns / 1ps;
 
 module cpu_system #(
+    parameter int MEM_WORDS = 1024,
     parameter string MEMORY_INIT_FILE = "",
     parameter logic [31:0] RESET_PC = 32'h0000_0000
 ) (
@@ -38,6 +39,7 @@ module cpu_system #(
   );
 
   memory #(
+      .MEM_WORDS(MEM_WORDS),
       .INIT_FILE(MEMORY_INIT_FILE)
   ) memory (
       .clk                       (clk),

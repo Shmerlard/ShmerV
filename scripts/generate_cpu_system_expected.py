@@ -7,7 +7,7 @@ import sys
 
 
 SPIKE_BASE = 0x80000000
-SPIKE_MEMORY_SIZE = 0x1000
+SPIKE_MEMORY_SIZE = 0x8000
 REGISTER_NAMES = (
     "zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
     "s0", "s1", "a0", "a1", "a2", "a3", "a4", "a5",
