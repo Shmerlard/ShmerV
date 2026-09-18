@@ -21,6 +21,7 @@ module hazard_unit_tb;
   logic valid_wb_i;
   logic reg_write_mem_i;
   logic reg_write_wb_i;
+  writeback_source_t writeback_source_mem_i;
   logic halt_pc_o;
   logic stall_if_id_o;
   logic bubble_id_ex_o;
@@ -31,7 +32,8 @@ module hazard_unit_tb;
   hazard_unit dut (.*);
 
   function automatic forwarding_source_t expected_source(input logic [4:0] rs);
-    if (valid_mem_i && reg_write_mem_i && (rd_mem_i != 5'b0) && (rd_mem_i == rs))
+    if (valid_mem_i && reg_write_mem_i && (rd_mem_i != 5'b0)
+        && (writeback_source_mem_i == WRITEBACK_SOURCE_ALU) && (rd_mem_i == rs))
       return FORWARD_SOURCE_MEM;
     if (valid_wb_i && reg_write_wb_i && (rd_wb_i != 5'b0) && (rd_wb_i == rs))
       return FORWARD_SOURCE_WB;
@@ -73,6 +75,7 @@ module hazard_unit_tb;
     valid_wb_i      = 1'b1;
     reg_write_mem_i = 1'b1;
     reg_write_wb_i  = 1'b1;
+    writeback_source_mem_i = WRITEBACK_SOURCE_ALU;
     check_outputs();
 
     // rs1 and rs2 can forward from different stages.
@@ -98,6 +101,19 @@ module hazard_unit_tb;
     valid_mem_i = 1'b0;
     reg_write_wb_i = 1'b0;
     check_outputs();
+
+    // Loads and PC+4 producers cannot forward through the ALU-only MEM path.
+    rs1_ex_i = 5'd5;
+    rd_mem_i = 5'd5;
+    valid_mem_i = 1'b1;
+    reg_write_mem_i = 1'b1;
+    writeback_source_mem_i = WRITEBACK_SOURCE_MEMORY;
+    check_outputs();
+
+    writeback_source_mem_i = WRITEBACK_SOURCE_PC4;
+    check_outputs();
+
+    writeback_source_mem_i = WRITEBACK_SOURCE_ALU;
 
     // A valid load-use dependency on either source stalls the younger instruction.
     valid_id_i       = 1'b1;

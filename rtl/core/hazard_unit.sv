@@ -17,6 +17,7 @@ module hazard_unit (
     input logic valid_wb_i,
     input logic reg_write_mem_i,
     input logic reg_write_wb_i,
+    input writeback_source_t writeback_source_mem_i,
 
     output logic halt_pc_o,
     output logic stall_if_id_o,
@@ -29,7 +30,8 @@ module hazard_unit (
   logic wb_can_forward;
   logic load_use_hazard;
 
-  assign mem_can_forward = valid_mem_i && reg_write_mem_i && (rd_mem_i != 5'b0);
+  assign mem_can_forward = valid_mem_i && reg_write_mem_i && (rd_mem_i != 5'b0)
+      && (writeback_source_mem_i == WRITEBACK_SOURCE_ALU);
   assign wb_can_forward = valid_wb_i && reg_write_wb_i && (rd_wb_i != 5'b0);
 
   assign load_use_hazard = valid_ex_i && memory_read_ex_i && (rd_ex_i != 5'b0)

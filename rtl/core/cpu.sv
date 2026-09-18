@@ -267,6 +267,7 @@ module cpu #(
       .valid_wb_i             (valid_wb),
       .reg_write_mem_i        (writeback_control_mem.register_write_enable),
       .reg_write_wb_i         (writeback_control_wb.register_write_enable),
+      .writeback_source_mem_i (writeback_control_mem.writeback_source),
       .halt_pc_o              (halt_pc),
       .stall_if_id_o          (stall_if_id),
       .bubble_id_ex_o         (bubble_id_ex),
