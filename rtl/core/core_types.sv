@@ -28,7 +28,8 @@ package core_types;
   typedef enum logic [1:0] {
     WRITEBACK_SOURCE_ALU,
     WRITEBACK_SOURCE_MEMORY,
-    WRITEBACK_SOURCE_PC4
+    WRITEBACK_SOURCE_PC4,
+    WRITEBACK_SOURCE_CSR
   } writeback_source_t;
 
   typedef enum logic [1:0] {
@@ -83,6 +84,23 @@ package core_types;
     OPCODE_SYSTEM = 7'b1110011
   } opcode_t;
 
+  // -------------     CSR         ----------------
+  typedef enum logic {
+    TRAP_TYPE_EXCEPTION,
+    TRAP_TYPE_INTERRUPT
+  } trap_type_t;
+
+  typedef enum logic [4:0] {
+    TRAP_CAUSE_ILLEGAL_INSTRUCTION = 5'h02
+    // TRAP_CAUSE_BREAKPOINT          = 5'h03
+  } trap_cause_exception_t;
+
+  typedef enum logic [4:0] {
+    TRAP_CAUSE_MACHINE_SOFTWARE_INTERRUPT = 5'h03,
+    TRAP_CAUSE_MACHINE_EXTERNAL_INTERRUPT = 5'h0b
+  } trap_cause_interrupt_t;
+
+  // ------------- control structs ----------------
   typedef struct packed {
     alu_operand_a_select_t alu_operand_a_select;
     alu_operand_b_select_t alu_operand_b_select;
@@ -96,6 +114,8 @@ package core_types;
     logic memory_read_enable;
     logic memory_write_enable;
     memory_access_size_t access_size;
+    logic csr_write_enable;
+    logic csr_read_enable;
   } memory_control_t;
 
   typedef struct packed {

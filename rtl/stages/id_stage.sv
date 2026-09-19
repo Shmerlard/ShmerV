@@ -15,6 +15,7 @@ module id_stage (
     output logic [4:0] rd_o,
     output logic [4:0] rs1_o,
     output logic [4:0] rs2_o,
+    output logic [11:0] csr_address_o,  // TODO: maybe better name so it wont be linked to csr only
     output logic uses_rs1_o,
     output logic uses_rs2_o,
     output execute_control_t execute_control_o,
@@ -38,6 +39,8 @@ module id_stage (
 
   assign rs1_data_o = rs1_wb_bypass_enable ? writeback_data_i : register_file_rs1_data;
   assign rs2_data_o = rs2_wb_bypass_enable ? writeback_data_i : register_file_rs2_data;
+
+  assign csr_address_o = instruction_id_i[31:20];
 
   instruction_decoder id (
       .instruction_i     (instruction_id_i),

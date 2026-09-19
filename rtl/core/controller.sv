@@ -9,7 +9,8 @@ module controller (
     output memory_control_t memory_control_o,
     output writeback_control_t writeback_control_o,
     output logic uses_rs1_o,
-    output logic uses_rs2_o
+    output logic uses_rs2_o,
+    output logic instruction_invalid_o
 );
 
   alu_operation_t alu_operation;
@@ -30,17 +31,24 @@ module controller (
     writeback_control_o.memory_access_size = MEMORY_ACCESS_INVALID;
     execute_control_o.alu_operation = alu_operation;
 
+    instruction_invalid_o = 1'b0;
     case (opcode_i)
       OPCODE_REG: begin
         execute_control_o.alu_operand_a_select = ALU_OPERAND_A_RS1;
         execute_control_o.alu_operand_b_select = ALU_OPERAND_B_RS2;
         writeback_control_o.register_write_enable = alu_operation != ALU_INVALID;
+        if (alu_operation == ALU_INVALID) begin
+          instruction_invalid_o = 1'b1;
+        end
       end
 
       OPCODE_IMM: begin
         execute_control_o.alu_operand_a_select = ALU_OPERAND_A_RS1;
         execute_control_o.alu_operand_b_select = ALU_OPERAND_B_IMM;
         writeback_control_o.register_write_enable = alu_operation != ALU_INVALID;
+        if (alu_operation == ALU_INVALID) begin
+          instruction_invalid_o = 1'b1;
+        end
       end
 
       OPCODE_LOAD: begin
@@ -52,6 +60,9 @@ module controller (
         writeback_control_o.writeback_source = WRITEBACK_SOURCE_MEMORY;
         writeback_control_o.memory_access_size = memory_access_size;
         writeback_control_o.load_unsigned = load_unsigned;
+        if (!memory_access_valid) begin
+          instruction_invalid_o = 1'b1;
+        end
       end
 
       OPCODE_STORE: begin
@@ -59,6 +70,9 @@ module controller (
         execute_control_o.alu_operand_b_select = ALU_OPERAND_B_IMM;
         memory_control_o.memory_write_enable = memory_access_valid;
         memory_control_o.access_size = memory_access_size;
+        if (!memory_access_valid) begin
+          instruction_invalid_o = 1'b1;
+        end
       end
 
       OPCODE_JAL: begin
@@ -79,6 +93,8 @@ module controller (
           execute_control_o.pc_redirect_zero_lsb = 1'b1;
           writeback_control_o.register_write_enable = 1'b1;
           writeback_control_o.writeback_source = WRITEBACK_SOURCE_PC4;
+        end else begin
+          instruction_invalid_o = 1'b1;
         end
       end
 
@@ -101,9 +117,13 @@ module controller (
         execute_control_o.alu_operand_b_select = ALU_OPERAND_B_RS2;
         execute_control_o.pc_redirect_condition = branch_condition;
         execute_control_o.pc_redirect_address_source = PC_REDIRECT_ADDRESS_PC_IMMEDIATE;
+        if (branch_condition == PC_REDIRECT_NEVER) begin
+          instruction_invalid_o = 1'b1;
+        end
       end
 
       default: begin
+        instruction_invalid_o = 1'b1;
       end
     endcase
   end
@@ -112,27 +132,29 @@ module controller (
 
     case (opcode_i)
       OPCODE_REG: begin
-        case (funct3_i)
-          3'b000: begin
-            case (funct7_i)
-              7'b0000000: alu_operation = ALU_ADD;
-              7'b0100000: alu_operation = ALU_SUB;
-              default:    alu_operation = ALU_INVALID;
+        case (funct7_i)
+          7'b0000000: begin
+            case (funct3_i)
+              3'b000:  alu_operation = ALU_ADD;
+              3'b001:  alu_operation = ALU_SLL;
+              3'b010:  alu_operation = ALU_SLT;
+              3'b011:  alu_operation = ALU_SLTU;
+              3'b100:  alu_operation = ALU_XOR;
+              3'b101:  alu_operation = ALU_SRL;
+              3'b110:  alu_operation = ALU_OR;
+              3'b111:  alu_operation = ALU_AND;
+              default: alu_operation = ALU_INVALID;
             endcase
           end
-          3'b001:  alu_operation = ALU_SLL;
-          3'b010:  alu_operation = ALU_SLT;
-          3'b011:  alu_operation = ALU_SLTU;
-          3'b100:  alu_operation = ALU_XOR;
-          3'b101: begin
-            case (funct7_i)
-              7'b0000000: alu_operation = ALU_SRL;
-              7'b0100000: alu_operation = ALU_SRA;
-              default:    alu_operation = ALU_INVALID;
+
+          7'b0100000: begin
+            case (funct3_i)
+              3'b000:  alu_operation = ALU_SUB;
+              3'b101:  alu_operation = ALU_SRA;
+              default: alu_operation = ALU_INVALID;
             endcase
           end
-          3'b110:  alu_operation = ALU_OR;
-          3'b111:  alu_operation = ALU_AND;
+
           default: alu_operation = ALU_INVALID;
         endcase
       end

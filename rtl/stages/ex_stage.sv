@@ -19,6 +19,7 @@ module ex_stage (
     output logic [31:0] alu_result_o,
     output logic [31:0] pc_plus_4_data_o,
     output logic [31:0] store_data_o,
+    output logic [31:0] forwarded_rs1_data_o,
 
     output logic pc_redirect_enable_o,
     output logic [31:0] pc_redirect_address_o
@@ -42,6 +43,7 @@ module ex_stage (
   assign pc_plus_immediate = immediate_i + pc_i;
 
   assign store_data_o = forwarded_rs2_data;
+  assign forwarded_rs1_data_o = forwarded_rs1_data;
 
   always_comb begin
     case (rs1_forwarding_source_i)
