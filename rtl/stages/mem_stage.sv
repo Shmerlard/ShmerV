@@ -6,7 +6,7 @@ module mem_stage (
     input logic [31:0] pc_plus_4_i,
     input logic [31:0] csr_read_data_i,
     input logic [31:0] csr_write_data_i,  // TODO: better name
-    input logic [31:0] rs2_data_i,  // TODO: better name!
+    input logic [31:0] store_data_mem_i,  // TODO: better name!
     input logic [11:0] csr_address_i,
 
     input memory_control_t memory_control_i,
@@ -38,7 +38,7 @@ module mem_stage (
       memory_control_i.memory_write_enable && valid_i && memory_access_aligned;
 
   assign byte_offset = alu_result_i[1:0];
-  assign memory_write_data_o = rs2_data_i << {byte_offset, 3'b000};
+  assign memory_write_data_o = store_data_mem_i << {byte_offset, 3'b000};
 
   always_comb begin
     memory_access_aligned = 1'b0;
@@ -78,10 +78,10 @@ module mem_stage (
 
   always_comb begin
     case (writeback_control_i.writeback_source)
-      WRITEBACK_SOURCE_ALU:  forward_data_o = alu_result_i;
-      WRITEBACK_SOURCE_PC4:  forward_data_o = pc_plus_4_i;
-      WRITEBACK_SOURCE_CSR:  forward_data_o = csr_read_data_i;
-      default:               forward_data_o = 32'b0;
+      WRITEBACK_SOURCE_ALU: forward_data_o = alu_result_i;
+      WRITEBACK_SOURCE_PC4: forward_data_o = pc_plus_4_i;
+      WRITEBACK_SOURCE_CSR: forward_data_o = csr_read_data_i;
+      default:              forward_data_o = 32'b0;
     endcase
   end
 

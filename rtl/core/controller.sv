@@ -23,6 +23,7 @@ module controller (
   assign memory_access_valid   = memory_access_size != MEMORY_ACCESS_INVALID;
   assign register_write_enable = (alu_operation != ALU_INVALID) && memory_access_valid;
 
+  // control bits assignment
   always_comb begin
     execute_control_o   = '0;
     memory_control_o    = '0;
@@ -30,6 +31,7 @@ module controller (
     memory_control_o.access_size = MEMORY_ACCESS_INVALID;
     writeback_control_o.memory_access_size = MEMORY_ACCESS_INVALID;
     execute_control_o.alu_operation = alu_operation;
+
 
     instruction_invalid_o = 1'b0;
     case (opcode_i)
@@ -70,6 +72,7 @@ module controller (
         execute_control_o.alu_operand_b_select = ALU_OPERAND_B_IMM;
         memory_control_o.memory_write_enable = memory_access_valid;
         memory_control_o.access_size = memory_access_size;
+        execute_control_o.store_data_select = STORE_DATA_FORWARDED_RS2;
         if (!memory_access_valid) begin
           instruction_invalid_o = 1'b1;
         end
@@ -122,11 +125,25 @@ module controller (
         end
       end
 
+      OPCODE_SYSTEM: begin
+        case (csr_instruction_t'(funct3_i))
+          CSR_INSTRUCTION_CSRRW: begin
+              execute_control_o.store_data_select = STORE_DATA_FORWARDED_RS1;
+          end
+          default: begin
+            instruction_invalid_o = 1'b1;
+          end
+        endcase
+
+      end
+
       default: begin
         instruction_invalid_o = 1'b1;
       end
     endcase
   end
+
+  // alu operation assignment
   always_comb begin
     alu_operation = ALU_INVALID;
 
@@ -201,6 +218,7 @@ module controller (
     endcase
   end
 
+  // branch condition assignment
   always_comb begin
     branch_condition = PC_REDIRECT_NEVER;
 
@@ -217,6 +235,7 @@ module controller (
     end
   end
 
+  // uses rs1, rs2 assignment
   always_comb begin
     uses_rs1_o = 1'b0;
     uses_rs2_o = 1'b0;
@@ -236,6 +255,7 @@ module controller (
     endcase
   end
 
+  // Memory access size signal assignment
   always_comb begin
     memory_access_size = MEMORY_ACCESS_INVALID;
     load_unsigned = 1'b0;
@@ -267,6 +287,7 @@ module controller (
       default: memory_access_size = MEMORY_ACCESS_INVALID;
     endcase
   end
+
 
 
 endmodule

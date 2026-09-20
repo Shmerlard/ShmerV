@@ -42,7 +42,6 @@ module ex_stage (
   assign pc_plus_4_data_o = pc_i + 32'd4;
   assign pc_plus_immediate = immediate_i + pc_i;
 
-  assign store_data_o = forwarded_rs2_data;
   assign forwarded_rs1_data_o = forwarded_rs1_data;
 
   always_comb begin
@@ -108,6 +107,16 @@ module ex_stage (
     endcase
 
     if (execute_control_i.pc_redirect_zero_lsb) pc_redirect_address_o[0] = 1'b0;
+  end
+
+  always_comb begin
+    case (execute_control_i.store_data_select)
+      STORE_DATA_FORWARDED_RS1: store_data_o = forwarded_rs1_data;
+      STORE_DATA_FORWARDED_RS2: store_data_o = forwarded_rs2_data;
+      default: begin
+      end
+    endcase
+
   end
 
   assign pc_redirect_enable_o = pc_redirect_condition_met && valid_i;
