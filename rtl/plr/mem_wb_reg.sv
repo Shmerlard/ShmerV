@@ -8,21 +8,21 @@ module mem_wb_reg (
     input writeback_control_t writeback_control_mem_i,
     input logic [31:0] alu_result_mem_i,
     input logic [31:0] pc_plus_4_mem_i,
-    input logic [31:0] memory_read_data_mem_i,
+    input logic [31:0] dmemory_load_data_mem_i,
     input logic [4:0] rd_mem_i,
-    input logic [31:0] csr_read_data_i,
+    input logic [31:0] csr_load_data_i,
 
     output writeback_control_t writeback_control_wb_o,
     output logic valid_wb_o,
     output logic [31:0] alu_result_wb_o,
     output logic [31:0] pc_plus_4_wb_o,
-    output logic [31:0] memory_read_data_wb_o,
+    output logic [31:0] dmemory_load_data_wb_o,
     output logic [4:0] rd_wb_o,
-    output logic [31:0] csr_read_data_wb_o
+    output logic [31:0] csr_load_data_wb_o
 );
 
-  assign memory_read_data_wb_o = memory_read_data_mem_i;
-  assign csr_read_data_wb_o = csr_read_data_i;
+  assign dmemory_load_data_wb_o = dmemory_load_data_mem_i;
+  assign csr_load_data_wb_o = csr_load_data_i;
 
   always_ff @(posedge clk) begin
     if (rst) begin

@@ -128,7 +128,7 @@ module controller (
       OPCODE_SYSTEM: begin
         case (csr_instruction_t'(funct3_i))
           CSR_INSTRUCTION_CSRRW: begin
-              execute_control_o.store_data_select = STORE_DATA_FORWARDED_RS1;
+            execute_control_o.store_data_select = STORE_DATA_FORWARDED_RS1;
           end
           default: begin
             instruction_invalid_o = 1'b1;

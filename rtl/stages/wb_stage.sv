@@ -3,7 +3,9 @@ module wb_stage (
     input logic valid_i,
     input writeback_control_t writeback_control_i,
     input logic [31:0] alu_result_i,
-    input logic [31:0] memory_read_data_i,
+    input logic [31:0] memory_load_data_i,
+    input logic [31:0] csr_load_data_i,
+
     input logic [31:0] pc_plus_4_i,
     output logic [31:0] writeback_data_o,
     output logic rf_write_enable_o
@@ -15,12 +17,12 @@ module wb_stage (
   logic [31:0] formatted_memory_read_data;
 
   assign wb_source = writeback_control_i.writeback_source;
-  assign shifted_memory_read_data = memory_read_data_i >> {alu_result_i[1:0], 3'b000};
+  assign shifted_memory_read_data = memory_load_data_i >> {alu_result_i[1:0], 3'b000};
 
   assign rf_write_enable_o = writeback_control_i.register_write_enable && valid_i;
 
   always_comb begin
-    formatted_memory_read_data = memory_read_data_i;
+    formatted_memory_read_data = memory_load_data_i;
 
     case (writeback_control_i.memory_access_size)
       MEMORY_ACCESS_BYTE: begin

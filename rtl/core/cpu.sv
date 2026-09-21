@@ -7,16 +7,16 @@ module cpu #(
     input logic clk,
     input logic rst,
 
-    input logic [31:0] imem_read_data_i,
-    input logic [31:0] dmem_read_data_i,
+    input logic [31:0] imem_load_data_i,
+    input logic [31:0] dmem_load_data_i,
+    output logic [31:0] dmem_store_data_o,
     output logic dmem_write_enable_o,
     output logic [3:0] dmem_write_byte_enable_o,
     output logic dmem_read_enable_o,
     output logic imem_read_enable_o,
     output logic [31:0] imem_read_address_o,
     output logic [31:0] dmem_read_address_o,
-    output logic [31:0] dmem_write_address_o,
-    output logic [31:0] dmem_write_data_o
+    output logic [31:0] dmem_write_address_o
 
 );
 
@@ -40,6 +40,7 @@ module cpu #(
   logic bubble_id_ex;
   logic flush_id_ex_reg;
   logic [11:0] csr_address_id;
+  logic instruction_invalid_id;
 
   execute_control_t execute_control_id;
   memory_control_t memory_control_id;
@@ -78,7 +79,7 @@ module cpu #(
   memory_control_t memory_control_mem;
   writeback_control_t writeback_control_mem;
   logic [31:0] alu_result_mem;
-  logic [31:0] store_data_mem;
+  logic [31:0] store_data_in_mem;
   logic [31:0] rs1_data_mem;  // TODO: better name!
   logic [31:0] forward_data_mem;
 
@@ -87,11 +88,17 @@ module cpu #(
   logic valid_mem;
   logic [31:0] pc_plus_4_mem;
 
+  logic [31:0] dmemory_load_data_out_mem;
+  // logic [31:0] csr_store_data;
+  // logic [31:0] csr_load_data;
+  logic [31:0] csr_load_data_out_mem;
+
   logic [11:0] csr_address_mem;
   // writeback signals
   writeback_control_t writeback_control_wb;
   logic [31:0] alu_result_wb;
-  logic [31:0] memory_read_data_wb;
+  logic [31:0] memory_load_data_wb;
+  logic [31:0] csr_load_data_wb;
   logic [4:0] rd_wb;
   logic valid_wb;
   logic [31:0] rf_write_data_wb;
@@ -103,8 +110,8 @@ module cpu #(
   trap_type_t trap_type;
   trap_cause_exception_t trap_cause_exception;
   logic [11:0] csr_address_to_csr;
-  logic [31:0] csr_read_data_mem;
-  logic [31:0] csr_write_data_mem;
+  logic [31:0] csr_load_data_mem;
+  logic [31:0] csr_store_data_mem;
   logic csr_read_enable;
   logic csr_write_enable;
 
@@ -112,9 +119,10 @@ module cpu #(
   assign trap_type = TRAP_TYPE_EXCEPTION;
   assign trap_cause_exception = trap_cause_exception_t'(0);
 
+  // assign dmem_store_data_o = dmem_store_data;
 
 
-  assign dmem_read_address_o = dmem_address_mem;
+  assign dmem_read_address_o = dmem_address_mem;  // TODO: Combine into one
   assign dmem_write_address_o = dmem_address_mem;
   assign imem_read_enable_o = !halt_pc;
 
@@ -124,7 +132,7 @@ module cpu #(
       .clk                (clk),
       .rst                (rst),
       .pc_write_enable_i  (imem_read_enable_o),
-      .imem_read_data_i   (imem_read_data_i),
+      .imem_read_data_i   (imem_load_data_i),
       .imem_read_address_o(imem_read_address_o),
       .instruction_o      (instruction_if),
       .pc_o               (pc_if),
@@ -147,7 +155,7 @@ module cpu #(
 
   id_stage id_stage (
       .clk                     (clk),
-      .valid_i                 (valid_id),
+      // .valid_i                 (valid_id),
       .instruction_id_i        (instruction_id),
       .writeback_data_i        (rf_write_data_wb),
       .writeback_rd_i          (rd_wb),
@@ -163,7 +171,8 @@ module cpu #(
       .uses_rs2_o              (uses_rs2_id),
       .execute_control_o       (execute_control_id),
       .memory_control_o        (memory_control_id),
-      .writeback_control_o     (writeback_control_id)
+      .writeback_control_o     (writeback_control_id),
+      .instruction_invalid_o   (instruction_invalid_id)
   );
 
   assign flush_id_ex_reg = pc_redirect_enable_ex || bubble_id_ex;
@@ -235,32 +244,37 @@ module cpu #(
       .writeback_control_mem_o(writeback_control_mem),
       .alu_result_mem_o       (alu_result_mem),
       .pc_plus_4_mem_o        (pc_plus_4_mem),
-      .store_data_mem_o       (store_data_mem),
+      .store_data_mem_o       (store_data_in_mem),
       .rs1_data_mem_o         (rs1_data_mem),
       .rd_mem_o               (rd_mem),
       .csr_address_mem_o      (csr_address_mem)
   );
 
   mem_stage mem_stage (
-      .valid_i                   (valid_mem),
-      .alu_result_i              (alu_result_mem),
-      .pc_plus_4_i               (pc_plus_4_mem),
-      .csr_read_data_i           (csr_read_data_mem),
-      .csr_write_data_i          (rs1_data_mem),
-      .store_data_mem_i          (store_data_mem),
-      .csr_address_i             (csr_address_mem),
-      .memory_control_i          (memory_control_mem),
-      .writeback_control_i       (writeback_control_mem),
+      .valid_i            (valid_mem),
+      .memory_control_i   (memory_control_mem),
+      .writeback_control_i(writeback_control_mem),
+      .alu_result_i       (alu_result_mem),
+      .pc_plus_4_i        (pc_plus_4_mem),
+      .store_data_in_mem_i(store_data_in_mem),
+
       .memory_address_o          (dmem_address_mem),
-      .memory_write_data_o       (dmem_write_data_o),
       .memory_write_byte_enable_o(dmem_write_byte_enable_o),
       .memory_read_enable_o      (dmem_read_enable_o),
       .memory_write_enable_o     (dmem_write_enable_o),
-      .csr_address_o             (csr_address_to_csr),
-      .csr_write_data_o          (csr_write_data_mem),
-      .csr_read_enable_o         (csr_read_enable),
-      .csr_write_enable_o        (csr_write_enable),
-      .forward_data_o            (forward_data_mem)
+      .memory_store_data_o       (dmem_store_data_o),
+      .memory_load_data_i        (dmem_load_data_i),
+      .memory_load_data_out_mem_o(dmemory_load_data_out_mem),
+
+      .csr_read_enable_o      (csr_read_enable),
+      .csr_write_enable_o     (csr_write_enable),
+      .csr_address_i          (csr_address_mem),
+      .csr_address_o          (csr_address_to_csr),
+      .csr_store_data_o       (csr_store_data_mem),
+      .csr_load_data_i        (csr_load_data_mem),
+      .csr_load_data_out_mem_o(csr_load_data_out_mem),
+
+      .forward_data_o(forward_data_mem)
   );
 
   mem_wb_reg mem_wb_reg (
@@ -270,21 +284,24 @@ module cpu #(
       .writeback_control_mem_i(writeback_control_mem),
       .alu_result_mem_i       (alu_result_mem),
       .pc_plus_4_mem_i        (pc_plus_4_mem),
-      .memory_read_data_mem_i (dmem_read_data_i),
+      .dmemory_load_data_mem_i(dmemory_load_data_out_mem),
       .rd_mem_i               (rd_mem),
+      .csr_load_data_i        (csr_load_data_out_mem),
       .writeback_control_wb_o (writeback_control_wb),
       .valid_wb_o             (valid_wb),
       .alu_result_wb_o        (alu_result_wb),
       .pc_plus_4_wb_o         (pc_plus_4_wb),
-      .memory_read_data_wb_o  (memory_read_data_wb),
-      .rd_wb_o                (rd_wb)
+      .dmemory_load_data_wb_o (memory_load_data_wb),
+      .rd_wb_o                (rd_wb),
+      .csr_load_data_wb_o     (csr_load_data_wb)
   );
 
   wb_stage wb_stage (
       .valid_i            (valid_wb),
       .writeback_control_i(writeback_control_wb),
       .alu_result_i       (alu_result_wb),
-      .memory_read_data_i (memory_read_data_wb),
+      .memory_load_data_i (memory_load_data_wb),
+      .csr_load_data_i    (csr_load_data_wb),
       .pc_plus_4_i        (pc_plus_4_wb),
       .writeback_data_o   (rf_write_data_wb),
       .rf_write_enable_o  (rf_write_enable_wb)
@@ -326,7 +343,7 @@ module cpu #(
       .trap_cause_exception_i(trap_cause_exception),
       .trap_instruction_ex_i (instruction_ex),
       .csr_address_i         (csr_address_to_csr),
-      .csr_write_data_i      (csr_write_data_mem),
-      .csr_read_data_o       (csr_read_data_mem)
+      .csr_write_data_i      (csr_store_data_mem),
+      .csr_load_data_o       (csr_load_data_mem)
   );
 endmodule

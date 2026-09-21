@@ -13,7 +13,7 @@ module csr (
     input logic [11:0] csr_address_i,
     input logic [31:0] csr_write_data_i,
 
-    output logic [31:0] csr_read_data_o
+    output logic [31:0] csr_load_data_o
 );
 
   logic [31:0] mstatus;

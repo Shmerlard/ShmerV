@@ -129,6 +129,7 @@ package core_types;
     logic memory_read_enable;
     logic memory_write_enable;
     memory_access_size_t access_size;
+    // TODO: add a selector between the csr and memory
     logic csr_write_enable;
     logic csr_read_enable;
   } memory_control_t;
