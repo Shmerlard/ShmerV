@@ -33,7 +33,7 @@ module hazard_unit_tb;
 
   function automatic forwarding_source_t expected_source(input logic [4:0] rs);
     if (valid_mem_i && reg_write_mem_i && (rd_mem_i != 5'b0)
-        && (writeback_source_mem_i == WRITEBACK_SOURCE_ALU) && (rd_mem_i == rs))
+        && (writeback_source_mem_i != WRITEBACK_SOURCE_MEMORY) && (rd_mem_i == rs))
       return FORWARD_SOURCE_MEM;
     if (valid_wb_i && reg_write_wb_i && (rd_wb_i != 5'b0) && (rd_wb_i == rs))
       return FORWARD_SOURCE_WB;
@@ -102,7 +102,7 @@ module hazard_unit_tb;
     reg_write_wb_i = 1'b0;
     check_outputs();
 
-    // Loads and PC+4 producers cannot forward through the ALU-only MEM path.
+    // Loads cannot forward from MEM because their result is not ready there.
     rs1_ex_i = 5'd5;
     rd_mem_i = 5'd5;
     valid_mem_i = 1'b1;

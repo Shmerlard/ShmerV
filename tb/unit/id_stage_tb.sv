@@ -16,11 +16,13 @@ module id_stage_tb;
   logic               [ 4:0] rd_o;
   logic               [ 4:0] rs1_o;
   logic               [ 4:0] rs2_o;
+  logic               [11:0] csr_address_o;
   logic                      uses_rs1_o;
   logic                      uses_rs2_o;
   execute_control_t          execute_control_o;
   memory_control_t           memory_control_o;
   writeback_control_t        writeback_control_o;
+  logic                      instruction_invalid_o;
 
   id_stage dut (.*);
 
@@ -57,6 +59,7 @@ module id_stage_tb;
     assert (rs1_o == 5'd1);
     assert (rs2_o == 5'd2);
     assert (rd_o == 5'd3);
+    assert (csr_address_o == instruction_id_i[31:20]);
     assert (execute_control_o.alu_operation == ALU_ADD);
     assert (uses_rs1_o);
     assert (uses_rs2_o);
@@ -69,6 +72,7 @@ module id_stage_tb;
     assert (execute_control_o.alu_operation == ALU_ADD);
     assert (uses_rs1_o);
     assert (!uses_rs2_o);
+    assert (!instruction_invalid_o);
 
     // U-type immediate generation.
     instruction_id_i = 32'b00010010001101000101_00011_0110111;

@@ -12,6 +12,7 @@ module controller_tb;
   writeback_control_t writeback_control_o;
   logic uses_rs1_o;
   logic uses_rs2_o;
+  logic instruction_invalid_o;
 
   controller dut (.*);
 
@@ -198,6 +199,7 @@ module controller_tb;
     assert (execute_control_o.pc_redirect_condition == PC_REDIRECT_NEVER);
     assert (!execute_control_o.pc_redirect_zero_lsb);
     assert (!writeback_control_o.register_write_enable);
+    assert (instruction_invalid_o);
 
     // LUI: write the upper immediate to rd through the ALU.
     opcode_i = OPCODE_LUI;
@@ -239,11 +241,13 @@ module controller_tb;
     #1ns;
     assert (execute_control_o.alu_operation == ALU_INVALID);
     assert (execute_control_o.pc_redirect_condition == PC_REDIRECT_NEVER);
+    assert (instruction_invalid_o);
 
     funct3_i = 3'b011;
     #1ns;
     assert (execute_control_o.alu_operation == ALU_INVALID);
     assert (execute_control_o.pc_redirect_condition == PC_REDIRECT_NEVER);
+    assert (instruction_invalid_o);
 
     // Unknown opcode: no memory or register writes are allowed.
     opcode_i = opcode_t'(7'b1111111);
@@ -255,6 +259,7 @@ module controller_tb;
     assert (!writeback_control_o.load_unsigned);
     assert (!uses_rs1_o);
     assert (!uses_rs2_o);
+    assert (instruction_invalid_o);
 
     $display("controller tests passed");
     $finish;
