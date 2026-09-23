@@ -104,6 +104,13 @@ module wb_stage_tb;
     assert (writeback_data_o == pc_plus_4_i);
     assert (rf_write_enable_o);
 
+    // CSR instruction: write the old CSR value to rd.
+    csr_load_data_i = 32'hCAFE_BABE;
+    writeback_control_i.writeback_source = WRITEBACK_SOURCE_CSR;
+    #1ns;
+    assert (writeback_data_o == csr_load_data_i);
+    assert (rf_write_enable_o);
+
     // Instruction without register writeback.
     writeback_control_i.register_write_enable = 1'b0;
     #1ns;

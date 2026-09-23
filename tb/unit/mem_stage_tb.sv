@@ -46,7 +46,8 @@ module mem_stage_tb;
     assert (!memory_read_enable_o && !memory_write_enable_o);
 
     // Byte stores select and align each byte lane.
-    memory_control_i.memory_write_enable = 1'b1;
+    memory_control_i.write_enable = 1'b1;
+    memory_control_i.target = MEMORY_TARGET_DMEMORY;
     memory_control_i.access_size = MEMORY_ACCESS_BYTE;
     for (int offset = 0; offset < 4; offset++) begin
       alu_result_i = 32'h0000_0100 + offset;
@@ -91,8 +92,9 @@ module mem_stage_tb;
     assert (!memory_write_enable_o);
 
     // Load instruction: only the memory read control is enabled.
-    memory_control_i.memory_write_enable = 1'b0;
-    memory_control_i.memory_read_enable = 1'b1;
+    memory_control_i.write_enable = 1'b0;
+    memory_control_i.read_enable = 1'b1;
+    memory_control_i.target = MEMORY_TARGET_DMEMORY;
     memory_control_i.access_size = MEMORY_ACCESS_WORD;
     alu_result_i = 32'h0000_0100;
     #1ns;
@@ -100,16 +102,24 @@ module mem_stage_tb;
     assert (!memory_write_enable_o);
     assert (memory_load_data_out_mem_o == memory_load_data_i);
 
-    // CSR signals are passed through and gated by valid.
-    memory_control_i.memory_read_enable = 1'b0;
-    memory_control_i.csr_read_enable = 1'b1;
-    memory_control_i.csr_write_enable = 1'b1;
+    // CSR target selects only the CSR interface.
+    memory_control_i.read_enable = 1'b1;
+    memory_control_i.write_enable = 1'b1;
+    memory_control_i.target = MEMORY_TARGET_CSR;
     #1ns;
+    assert (!memory_read_enable_o);
+    assert (!memory_write_enable_o);
     assert (csr_read_enable_o);
     assert (csr_write_enable_o);
     assert (csr_address_o == csr_address_i);
     assert (csr_store_data_o == store_data_in_mem_i);
     assert (csr_load_data_out_mem_o == csr_load_data_i);
+
+    // Invalid pipeline entries cannot access either target.
+    valid_i = 1'b0;
+    #1ns;
+    assert (!csr_read_enable_o);
+    assert (!csr_write_enable_o);
 
     $display("mem_stage tests passed");
     $finish;

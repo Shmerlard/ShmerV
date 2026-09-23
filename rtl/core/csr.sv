@@ -1,4 +1,5 @@
 import core_types::*;
+import csr_types::*;
 module csr (
     input logic clk,
     input logic rst,
@@ -38,7 +39,34 @@ module csr (
         mepc[31:2] <= trap_pc_ex_i[31:2];
         mcause <= {trap_type_i, {26{1'b0}}, trap_cause};
         mtval <= mtval_new;
+      end else begin
+        if (csr_write_enable_i) begin
+          case (csr_address_t'(csr_address_i))
+            CSR_ADDRESS_MSTATUS: mstatus <= csr_write_data_i;
+            CSR_ADDRESS_MTVEC:   mtvec <= csr_write_data_i;
+            CSR_ADDRESS_MEPC:    mepc <= csr_write_data_i;
+            CSR_ADDRESS_MCAUSE:  mcause <= csr_write_data_i;
+            CSR_ADDRESS_MTVAL:   mtval <= csr_write_data_i;
+
+            default: begin
+            end
+          endcase
+        end
       end
+    end
+  end
+
+  always_comb begin
+    csr_load_data_o = 32'b0;
+    if (csr_read_enable_i) begin
+      case (csr_address_t'(csr_address_i))
+        CSR_ADDRESS_MSTATUS: csr_load_data_o = mstatus;
+        CSR_ADDRESS_MTVEC:   csr_load_data_o = mtvec;
+        CSR_ADDRESS_MEPC:    csr_load_data_o = mepc;
+        CSR_ADDRESS_MCAUSE:  csr_load_data_o = mcause;
+        CSR_ADDRESS_MTVAL:   csr_load_data_o = mtval;
+        default: csr_load_data_o = 32'b0;
+      endcase
     end
   end
 

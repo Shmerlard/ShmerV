@@ -1,5 +1,6 @@
 timeunit 1ns; timeprecision 1ps;
 import core_types::*;
+import csr_types::*;
 
 module cpu #(
     parameter logic [31:0] RESET_PC = 32'h0000_0000
@@ -298,26 +299,27 @@ module cpu #(
   );
 
   hazard_unit hazard_unit (
-      .rs1_ex_i               (rs1_ex),
-      .rs2_ex_i               (rs2_ex),
-      .rs1_id_i               (rs1_id),
-      .rs2_id_i               (rs2_id),
-      .uses_rs1_id_i          (uses_rs1_id),
-      .uses_rs2_id_i          (uses_rs2_id),
-      .valid_id_i             (valid_id),
-      .valid_ex_i             (valid_ex),
-      .rd_ex_i                (rd_ex),
-      .memory_read_ex_i       (memory_control_ex.memory_read_enable),
-      .rd_mem_i               (rd_mem),
-      .rd_wb_i                (rd_wb),
-      .valid_mem_i            (valid_mem),
-      .valid_wb_i             (valid_wb),
-      .reg_write_mem_i        (writeback_control_mem.register_write_enable),
-      .reg_write_wb_i         (writeback_control_wb.register_write_enable),
-      .writeback_source_mem_i (writeback_control_mem.writeback_source),
-      .halt_pc_o              (halt_pc),
-      .stall_if_id_o          (stall_if_id),
-      .bubble_id_ex_o         (bubble_id_ex),
+      .rs1_ex_i(rs1_ex),
+      .rs2_ex_i(rs2_ex),
+      .rs1_id_i(rs1_id),
+      .rs2_id_i(rs2_id),
+      .uses_rs1_id_i(uses_rs1_id),
+      .uses_rs2_id_i(uses_rs2_id),
+      .valid_id_i(valid_id),
+      .valid_ex_i(valid_ex),
+      .rd_ex_i(rd_ex),
+      .memory_read_ex_i       (memory_control_ex.read_enable &&
+                               memory_control_ex.target == MEMORY_TARGET_DMEMORY),
+      .rd_mem_i(rd_mem),
+      .rd_wb_i(rd_wb),
+      .valid_mem_i(valid_mem),
+      .valid_wb_i(valid_wb),
+      .reg_write_mem_i(writeback_control_mem.register_write_enable),
+      .reg_write_wb_i(writeback_control_wb.register_write_enable),
+      .writeback_source_mem_i(writeback_control_mem.writeback_source),
+      .halt_pc_o(halt_pc),
+      .stall_if_id_o(stall_if_id),
+      .bubble_id_ex_o(bubble_id_ex),
       .rs1_forwarding_source_o(rs1_forwarding_source_ex),
       .rs2_forwarding_source_o(rs2_forwarding_source_ex)
   );
@@ -336,4 +338,5 @@ module cpu #(
       .csr_write_data_i      (csr_store_data_mem),
       .csr_load_data_o       (csr_load_data_mem)
   );
+
 endmodule

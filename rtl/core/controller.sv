@@ -1,9 +1,11 @@
 import core_types::*;
+import csr_types::*;
 
 module controller (
     input opcode_t opcode_i,
     input logic [2:0] funct3_i,
     input logic [6:0] funct7_i,
+    input logic [4:0] rd_i,
 
     output execute_control_t execute_control_o,
     output memory_control_t memory_control_o,
@@ -56,8 +58,10 @@ module controller (
       OPCODE_LOAD: begin
         execute_control_o.alu_operand_a_select = ALU_OPERAND_A_RS1;
         execute_control_o.alu_operand_b_select = ALU_OPERAND_B_IMM;
-        memory_control_o.memory_read_enable = memory_access_valid;
+        memory_control_o.read_enable = memory_access_valid;
+        memory_control_o.target = MEMORY_TARGET_DMEMORY;
         memory_control_o.access_size = memory_access_size;
+
         writeback_control_o.register_write_enable = register_write_enable;
         writeback_control_o.writeback_source = WRITEBACK_SOURCE_MEMORY;
         writeback_control_o.memory_access_size = memory_access_size;
@@ -70,7 +74,8 @@ module controller (
       OPCODE_STORE: begin
         execute_control_o.alu_operand_a_select = ALU_OPERAND_A_RS1;
         execute_control_o.alu_operand_b_select = ALU_OPERAND_B_IMM;
-        memory_control_o.memory_write_enable = memory_access_valid;
+        memory_control_o.write_enable = memory_access_valid;
+        memory_control_o.target = MEMORY_TARGET_DMEMORY;
         memory_control_o.access_size = memory_access_size;
         execute_control_o.store_data_select = STORE_DATA_FORWARDED_RS2;
         if (!memory_access_valid) begin
@@ -125,16 +130,36 @@ module controller (
         end
       end
 
+      // TODO: later move all the cases into different block
       OPCODE_SYSTEM: begin
         case (csr_instruction_t'(funct3_i))
           CSR_INSTRUCTION_CSRRW: begin
             execute_control_o.store_data_select = STORE_DATA_FORWARDED_RS1;
+            memory_control_o.target = MEMORY_TARGET_CSR;
+            memory_control_o.read_enable = rd_i != 5'b0;
+            memory_control_o.write_enable = 1'b1;
+            writeback_control_o.writeback_source = WRITEBACK_SOURCE_CSR;
+            writeback_control_o.register_write_enable = rd_i != 5'b0;
+          end
+          CSR_INSTRUCTION_CSRRS: begin
+            instruction_invalid_o = 1'b1;
+          end
+          CSR_INSTRUCTION_CSRRC: begin
+            instruction_invalid_o = 1'b1;
+          end
+          CSR_INSTRUCTION_CSRRWI: begin
+            instruction_invalid_o = 1'b1;
+          end
+          CSR_INSTRUCTION_CSRRSI: begin
+            instruction_invalid_o = 1'b1;
+          end
+          CSR_INSTRUCTION_CSRRCI: begin
+            instruction_invalid_o = 1'b1;
           end
           default: begin
             instruction_invalid_o = 1'b1;
           end
         endcase
-
       end
 
       default: begin
@@ -250,6 +275,20 @@ module controller (
         uses_rs1_o = 1'b1;
       end
 
+      OPCODE_SYSTEM: begin
+        case (csr_instruction_t'(funct3_i))
+          CSR_INSTRUCTION_CSRRW: uses_rs1_o = 1'b1;
+          CSR_INSTRUCTION_CSRRS: uses_rs1_o = 1'b1;
+          CSR_INSTRUCTION_CSRRC: uses_rs1_o = 1'b1;
+
+          CSR_INSTRUCTION_CSRRWI: uses_rs1_o = 1'b0;
+          CSR_INSTRUCTION_CSRRSI: uses_rs1_o = 1'b0;
+          CSR_INSTRUCTION_CSRRCI: uses_rs1_o = 1'b0;
+
+          default: uses_rs1_o = 1'b0;
+        endcase
+      end
+
       default: begin
       end
     endcase
@@ -284,6 +323,15 @@ module controller (
           default: memory_access_size = MEMORY_ACCESS_INVALID;
         endcase
       end
+      OPCODE_IMM: memory_access_size = MEMORY_ACCESS_INVALID;
+      OPCODE_AUIPC: memory_access_size = MEMORY_ACCESS_INVALID;
+      OPCODE_REG: memory_access_size = MEMORY_ACCESS_INVALID;
+      OPCODE_LUI: memory_access_size = MEMORY_ACCESS_INVALID;
+      OPCODE_BRANCH: memory_access_size = MEMORY_ACCESS_INVALID;
+      OPCODE_JALR: memory_access_size = MEMORY_ACCESS_INVALID;
+      OPCODE_JAL: memory_access_size = MEMORY_ACCESS_INVALID;
+      OPCODE_SYSTEM: memory_access_size = MEMORY_ACCESS_INVALID;
+      // OPCODE
       default: memory_access_size = MEMORY_ACCESS_INVALID;
     endcase
   end

@@ -16,7 +16,7 @@ module mem_stage (
     output logic memory_write_enable_o,
     output logic [31:0] memory_store_data_o,
     input logic [31:0] memory_load_data_i,
-    output logic [31:0] memory_load_data_out_mem_o,  // TODO: better name!
+    output logic [31:0] memory_load_data_out_mem_o,
 
 
     output logic csr_read_enable_o,
@@ -25,7 +25,7 @@ module mem_stage (
     output logic [11:0] csr_address_o,
     output logic [31:0] csr_store_data_o,
     input logic [31:0] csr_load_data_i,
-    output logic [31:0] csr_load_data_out_mem_o,  // TODO: better name!
+    output logic [31:0] csr_load_data_out_mem_o,
 
     output logic [31:0] forward_data_o
 
@@ -33,20 +33,33 @@ module mem_stage (
   logic memory_access_aligned;
   logic [1:0] byte_offset;
 
+  memory_target_t target;
+  assign target = memory_control_i.target;
   assign memory_address_o = alu_result_i;
 
-  assign memory_read_enable_o =
-      memory_control_i.memory_read_enable && valid_i && memory_access_aligned;
-  assign memory_write_enable_o =
-      memory_control_i.memory_write_enable && valid_i && memory_access_aligned;
 
-  assign byte_offset = alu_result_i[1:0];
-  assign memory_store_data_o = store_data_in_mem_i << {byte_offset, 3'b000};
-  assign csr_store_data_o = store_data_in_mem_i;
+  // DMemory Control
+  always_comb begin
+    memory_read_enable_o =
+        memory_control_i.read_enable && valid_i && memory_access_aligned && target == MEMORY_TARGET_DMEMORY;
+    memory_write_enable_o =
+        memory_control_i.write_enable && valid_i && memory_access_aligned && target == MEMORY_TARGET_DMEMORY;
 
-  assign memory_load_data_out_mem_o = memory_load_data_i;
-  assign csr_load_data_out_mem_o = csr_load_data_i;
+    byte_offset = alu_result_i[1:0];
+    memory_store_data_o = store_data_in_mem_i << {byte_offset, 3'b000};
+    memory_load_data_out_mem_o = memory_load_data_i;
+  end
 
+  // CSR Control
+  always_comb begin
+    csr_store_data_o = store_data_in_mem_i;
+    csr_load_data_out_mem_o = csr_load_data_i;
+    csr_read_enable_o = memory_control_i.read_enable && valid_i && target == MEMORY_TARGET_CSR;
+    csr_write_enable_o = memory_control_i.write_enable && valid_i && target == MEMORY_TARGET_CSR;
+    csr_address_o = csr_address_i;
+  end
+
+  // Dmemory byte enable
   always_comb begin
     memory_access_aligned = 1'b0;
     memory_write_byte_enable_o = 4'b0000;
@@ -73,13 +86,7 @@ module mem_stage (
     endcase
   end
 
-  always_comb begin
-    csr_read_enable_o = memory_control_i.csr_read_enable && valid_i;
-    csr_write_enable_o = memory_control_i.csr_write_enable && valid_i;
-
-    csr_address_o = csr_address_i;
-  end
-
+  // forward data selection
   always_comb begin
     case (writeback_control_i.writeback_source)
       WRITEBACK_SOURCE_ALU: forward_data_o = alu_result_i;

@@ -58,6 +58,7 @@ module id_stage (
       .opcode_i             (opcode),
       .funct3_i             (funct3),
       .funct7_i             (funct7),
+      .rd_i                 (rd_o),
       .execute_control_o    (execute_control_o),
       .memory_control_o     (memory_control_o),
       .writeback_control_o  (writeback_control_o),

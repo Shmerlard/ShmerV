@@ -53,15 +53,10 @@ module wb_stage (
   always_comb begin
     writeback_data_o = 32'b0;
     case (wb_source)
-      WRITEBACK_SOURCE_ALU: begin
-        writeback_data_o = alu_result_i;
-      end
-      WRITEBACK_SOURCE_MEMORY: begin
-        writeback_data_o = formatted_memory_read_data;
-      end
-      WRITEBACK_SOURCE_PC4: begin
-        writeback_data_o = pc_plus_4_i;
-      end
+      WRITEBACK_SOURCE_ALU: writeback_data_o = alu_result_i;
+      WRITEBACK_SOURCE_MEMORY: writeback_data_o = formatted_memory_read_data;
+      WRITEBACK_SOURCE_PC4: writeback_data_o = pc_plus_4_i;
+      WRITEBACK_SOURCE_CSR: writeback_data_o = csr_load_data_i;
       default: begin
         writeback_data_o = 32'b0;
       end
