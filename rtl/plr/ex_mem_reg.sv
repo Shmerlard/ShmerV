@@ -9,7 +9,6 @@ module ex_mem_reg (
     input writeback_control_t writeback_control_ex_i,
     input logic [31:0] alu_result_ex_i,
     input logic [31:0] pc_plus_4_ex_i,
-    input logic [31:0] forwarded_rs1_data_ex_i,
     input logic [31:0] store_data_ex_i,  //TODO: find better name
     input logic [4:0] rd_ex_i,
     input logic [11:0] csr_address_ex_i,
@@ -20,7 +19,6 @@ module ex_mem_reg (
     output logic [31:0] alu_result_mem_o,
     output logic [31:0] pc_plus_4_mem_o,
     output logic [31:0] store_data_mem_o,
-    output logic [31:0] rs1_data_mem_o,
     output logic [4:0] rd_mem_o,
     output logic [11:0] csr_address_mem_o
 );
@@ -33,7 +31,6 @@ module ex_mem_reg (
       alu_result_mem_o        <= '0;
       pc_plus_4_mem_o         <= '0;
       store_data_mem_o        <= '0;
-      rs1_data_mem_o          <= '0;
       rd_mem_o                <= '0;
       csr_address_mem_o       <= '0;
     end else begin
@@ -43,7 +40,6 @@ module ex_mem_reg (
       alu_result_mem_o        <= alu_result_ex_i;
       pc_plus_4_mem_o         <= pc_plus_4_ex_i;
       store_data_mem_o        <= store_data_ex_i;
-      rs1_data_mem_o          <= forwarded_rs1_data_ex_i;
       rd_mem_o                <= rd_ex_i;
       csr_address_mem_o       <= csr_address_ex_i;
     end

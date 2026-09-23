@@ -15,8 +15,7 @@ module cpu #(
     output logic dmem_read_enable_o,
     output logic imem_read_enable_o,
     output logic [31:0] imem_read_address_o,
-    output logic [31:0] dmem_read_address_o,
-    output logic [31:0] dmem_write_address_o
+    output logic [31:0] dmem_address_o
 
 );
 
@@ -56,7 +55,6 @@ module cpu #(
   logic [31:0] rs1_data_ex;
   logic [31:0] rs2_data_ex;
   logic [31:0] store_data_ex;
-  logic [31:0] forwarded_rs1_data_ex;
   logic [31:0] imm_ex;
   logic [31:0] pc_ex;
   logic [4:0] rd_ex;
@@ -80,7 +78,6 @@ module cpu #(
   writeback_control_t writeback_control_mem;
   logic [31:0] alu_result_mem;
   logic [31:0] store_data_in_mem;
-  logic [31:0] rs1_data_mem;  // TODO: better name!
   logic [31:0] forward_data_mem;
 
   logic [4:0] rd_mem;
@@ -119,11 +116,7 @@ module cpu #(
   assign trap_type = TRAP_TYPE_EXCEPTION;
   assign trap_cause_exception = trap_cause_exception_t'(0);
 
-  // assign dmem_store_data_o = dmem_store_data;
-
-
-  assign dmem_read_address_o = dmem_address_mem;  // TODO: Combine into one
-  assign dmem_write_address_o = dmem_address_mem;
+  assign dmem_address_o = dmem_address_mem;
   assign imem_read_enable_o = !halt_pc;
 
   if_stage #(
@@ -222,7 +215,6 @@ module cpu #(
       .alu_result_o           (alu_result_ex),
       .pc_plus_4_data_o       (pc_plus_4_ex),
       .store_data_o           (store_data_ex),
-      .forwarded_rs1_data_o   (forwarded_rs1_data_ex),     /// TODO: better name!
       .pc_redirect_enable_o   (pc_redirect_enable_ex),
       .pc_redirect_address_o  (pc_redirect_address_ex)
   );
@@ -235,7 +227,6 @@ module cpu #(
       .writeback_control_ex_i (writeback_control_ex),
       .alu_result_ex_i        (alu_result_ex),
       .pc_plus_4_ex_i         (pc_plus_4_ex),
-      .forwarded_rs1_data_ex_i(forwarded_rs1_data_ex),
       .store_data_ex_i        (store_data_ex),
       .rd_ex_i                (rd_ex),
       .csr_address_ex_i       (csr_address_ex),
@@ -245,7 +236,6 @@ module cpu #(
       .alu_result_mem_o       (alu_result_mem),
       .pc_plus_4_mem_o        (pc_plus_4_mem),
       .store_data_mem_o       (store_data_in_mem),
-      .rs1_data_mem_o         (rs1_data_mem),
       .rd_mem_o               (rd_mem),
       .csr_address_mem_o      (csr_address_mem)
   );

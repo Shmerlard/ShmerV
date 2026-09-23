@@ -16,7 +16,6 @@ module ex_stage_tb;
   logic               [31:0] alu_result_o;
   logic               [31:0] pc_plus_4_data_o;
   logic               [31:0] store_data_o;
-  logic               [31:0] forwarded_rs1_data_o;
   logic                      pc_redirect_enable_o;
   logic               [31:0] pc_redirect_address_o;
   int unsigned               random_seed;
@@ -63,7 +62,6 @@ module ex_stage_tb;
 
     assert (alu_result_o == 32'd13);
     assert (store_data_o == 32'd10);
-    assert (forwarded_rs1_data_o == rs1_data_i);
     assert (pc_plus_4_data_o == 32'h0000_0104);
     assert (!pc_redirect_enable_o);
 
@@ -73,7 +71,6 @@ module ex_stage_tb;
     #1ns;
     assert (alu_result_o == 32'h3333_3333);
     assert (store_data_o == 32'h1111_1111);
-    assert (forwarded_rs1_data_o == forward_data_mem_i);
 
     // Forward rs1 from WB and rs2 from MEM independently.
     rs1_forwarding_source_i = FORWARD_SOURCE_WB;
@@ -81,7 +78,6 @@ module ex_stage_tb;
     #1ns;
     assert (alu_result_o == 32'h3333_3333);
     assert (store_data_o == 32'h2222_2222);
-    assert (forwarded_rs1_data_o == forward_data_wb_i);
 
     // Stores select either independently forwarded source operand.
     execute_control_i.store_data_select = STORE_DATA_FORWARDED_RS2;
