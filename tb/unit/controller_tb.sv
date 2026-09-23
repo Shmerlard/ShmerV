@@ -340,6 +340,74 @@ module controller_tb;
     assert (!memory_control_o.write_enable);
     assert (writeback_control_o.register_write_enable);
 
+    // CSRRWI replaces the CSR with the zero-extended immediate.
+    funct3_i = CSR_INSTRUCTION_CSRRWI;
+    rs1_i = 5'd21;
+    rd_i = 5'd2;
+    #1ns;
+    assert (execute_control_o.store_data_select == STORE_DATA_CSR_IMMEDIATE);
+    assert (memory_control_o.target == MEMORY_TARGET_CSR);
+    assert (memory_control_o.read_enable);
+    assert (memory_control_o.write_enable);
+    assert (memory_control_o.csr_write_operation == CSR_WRITE_REPLACE);
+    assert (writeback_control_o.register_write_enable);
+    assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_CSR);
+    assert (!uses_rs1_o);
+    assert (!uses_rs2_o);
+    assert (!instruction_invalid_o);
+
+    // CSRRWI with rd=x0 suppresses the read but still writes the immediate.
+    rd_i = 5'd0;
+    #1ns;
+    assert (!memory_control_o.read_enable);
+    assert (memory_control_o.write_enable);
+    assert (!writeback_control_o.register_write_enable);
+
+    // CSRRSI sets the bits selected by the immediate.
+    funct3_i = CSR_INSTRUCTION_CSRRSI;
+    rs1_i = 5'd8;
+    rd_i = 5'd2;
+    #1ns;
+    assert (execute_control_o.store_data_select == STORE_DATA_CSR_IMMEDIATE);
+    assert (memory_control_o.target == MEMORY_TARGET_CSR);
+    assert (memory_control_o.read_enable);
+    assert (memory_control_o.write_enable);
+    assert (memory_control_o.csr_write_operation == CSR_WRITE_SET);
+    assert (writeback_control_o.register_write_enable);
+    assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_CSR);
+    assert (!uses_rs1_o);
+    assert (!uses_rs2_o);
+    assert (!instruction_invalid_o);
+
+    // CSRRSI with zimm=0 reads without writing the CSR.
+    rs1_i = 5'd0;
+    #1ns;
+    assert (memory_control_o.read_enable);
+    assert (!memory_control_o.write_enable);
+    assert (writeback_control_o.register_write_enable);
+
+    // CSRRCI clears the bits selected by the immediate.
+    funct3_i = CSR_INSTRUCTION_CSRRCI;
+    rs1_i = 5'd4;
+    #1ns;
+    assert (execute_control_o.store_data_select == STORE_DATA_CSR_IMMEDIATE);
+    assert (memory_control_o.target == MEMORY_TARGET_CSR);
+    assert (memory_control_o.read_enable);
+    assert (memory_control_o.write_enable);
+    assert (memory_control_o.csr_write_operation == CSR_WRITE_CLEAR);
+    assert (writeback_control_o.register_write_enable);
+    assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_CSR);
+    assert (!uses_rs1_o);
+    assert (!uses_rs2_o);
+    assert (!instruction_invalid_o);
+
+    // CSRRCI with zimm=0 reads without writing the CSR.
+    rs1_i = 5'd0;
+    #1ns;
+    assert (memory_control_o.read_enable);
+    assert (!memory_control_o.write_enable);
+    assert (writeback_control_o.register_write_enable);
+
     // Unknown opcode: no memory or register writes are allowed.
     opcode_i = opcode_t'(7'b1111111);
     #1ns;

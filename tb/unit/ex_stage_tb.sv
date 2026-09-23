@@ -7,6 +7,7 @@ module ex_stage_tb;
   logic               [31:0] rs1_data_i;
   logic               [31:0] rs2_data_i;
   logic               [31:0] immediate_i;
+  logic                [4:0] csr_immediate_i;
   execute_control_t          execute_control_i;
   logic               [31:0] pc_i;
   logic               [31:0] forward_data_mem_i;
@@ -49,6 +50,7 @@ module ex_stage_tb;
     valid_i                                = 1'b1;
     rs2_data_i                             = 32'd3;
     immediate_i                            = 32'd7;
+    csr_immediate_i                        = 5'd21;
     forward_data_mem_i                     = 32'h1111_1111;
     forward_data_wb_i                      = 32'h2222_2222;
     rs1_forwarding_source_i                = FORWARD_SOURCE_REGISTER;
@@ -86,6 +88,12 @@ module ex_stage_tb;
 
     rs1_forwarding_source_i = FORWARD_SOURCE_REGISTER;
     rs2_forwarding_source_i = FORWARD_SOURCE_REGISTER;
+    execute_control_i.store_data_select = STORE_DATA_FORWARDED_RS1;
+
+    // CSR immediate instructions zero-extend the instruction's rs1 field.
+    execute_control_i.store_data_select = STORE_DATA_CSR_IMMEDIATE;
+    #1ns;
+    assert (store_data_o == 32'd21);
     execute_control_i.store_data_select = STORE_DATA_FORWARDED_RS1;
 
     // Register plus immediate.

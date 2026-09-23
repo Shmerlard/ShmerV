@@ -68,9 +68,10 @@ package core_types;
     PC_REDIRECT_ADDRESS_ALU_RESULT
   } pc_redirect_address_source_t;
 
-  typedef enum logic {
+  typedef enum logic [1:0] {
     STORE_DATA_FORWARDED_RS1,
-    STORE_DATA_FORWARDED_RS2
+    STORE_DATA_FORWARDED_RS2,
+    STORE_DATA_CSR_IMMEDIATE
   } store_data_select_t;
 
   typedef enum logic [2:0] {

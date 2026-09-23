@@ -208,6 +208,7 @@ module cpu #(
       .rs2_data_i             (rs2_data_ex),
       .execute_control_i      (execute_control_ex),
       .immediate_i            (imm_ex),
+      .csr_immediate_i        (rs1_ex),
       .pc_i                   (pc_ex),
       .forward_data_mem_i     (forward_data_mem),
       .forward_data_wb_i      (rf_write_data_wb),

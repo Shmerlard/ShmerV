@@ -9,6 +9,7 @@ module ex_stage (
     input execute_control_t execute_control_i,
 
     input logic [31:0] immediate_i,
+    input logic [4:0] csr_immediate_i,
     input logic [31:0] pc_i,
 
     input logic [31:0] forward_data_mem_i,
@@ -110,10 +111,9 @@ module ex_stage (
     case (execute_control_i.store_data_select)
       STORE_DATA_FORWARDED_RS1: store_data_o = forwarded_rs1_data;
       STORE_DATA_FORWARDED_RS2: store_data_o = forwarded_rs2_data;
-      default: begin
-      end
+      STORE_DATA_CSR_IMMEDIATE: store_data_o = {27'b0, csr_immediate_i};
+      default:                  store_data_o = '0;
     endcase
-
   end
 
   assign pc_redirect_enable_o = pc_redirect_condition_met && valid_i;
