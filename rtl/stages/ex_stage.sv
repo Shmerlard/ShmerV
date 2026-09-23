@@ -9,7 +9,7 @@ module ex_stage (
     input execute_control_t execute_control_i,
 
     input logic [31:0] immediate_i,
-    input logic [4:0] csr_immediate_i,
+    input logic [ 4:0] csr_immediate_i,
     input logic [31:0] pc_i,
 
     input logic [31:0] forward_data_mem_i,

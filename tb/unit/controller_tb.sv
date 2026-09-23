@@ -312,7 +312,7 @@ module controller_tb;
 
     // CSRRS with rd=x0 still reads and modifies the CSR.
     rs1_i = 5'd1;
-    rd_i = 5'd0;
+    rd_i  = 5'd0;
     #1ns;
     assert (memory_control_o.read_enable);
     assert (memory_control_o.write_enable);

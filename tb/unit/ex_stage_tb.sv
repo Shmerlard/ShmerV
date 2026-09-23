@@ -7,7 +7,7 @@ module ex_stage_tb;
   logic               [31:0] rs1_data_i;
   logic               [31:0] rs2_data_i;
   logic               [31:0] immediate_i;
-  logic                [4:0] csr_immediate_i;
+  logic               [ 4:0] csr_immediate_i;
   execute_control_t          execute_control_i;
   logic               [31:0] pc_i;
   logic               [31:0] forward_data_mem_i;

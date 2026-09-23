@@ -23,8 +23,12 @@ module controller (
 
   logic memory_access_valid;
   logic register_write_enable;
+  logic csr_instruction_valid;
+  logic csr_instruction_uses_immediate;
+  csr_write_operation_t decoded_csr_write_operation;
   assign memory_access_valid   = memory_access_size != MEMORY_ACCESS_INVALID;
   assign register_write_enable = (alu_operation != ALU_INVALID) && memory_access_valid;
+
 
   // control bits assignment
   always_comb begin
@@ -131,67 +135,24 @@ module controller (
         end
       end
 
-      // TODO: later move all the cases into different block
       OPCODE_SYSTEM: begin
-        case (csr_instruction_t'(funct3_i))
-          CSR_INSTRUCTION_CSRRW: begin
-            execute_control_o.store_data_select = STORE_DATA_FORWARDED_RS1;
-            memory_control_o.target = MEMORY_TARGET_CSR;
-            memory_control_o.read_enable = rd_i != 5'b0;
-            memory_control_o.write_enable = 1'b1;
-            memory_control_o.csr_write_operation = CSR_WRITE_REPLACE;
-            writeback_control_o.writeback_source = WRITEBACK_SOURCE_CSR;
-            writeback_control_o.register_write_enable = rd_i != 5'b0;
-          end
-          CSR_INSTRUCTION_CSRRS: begin
-            execute_control_o.store_data_select = STORE_DATA_FORWARDED_RS1;
-            memory_control_o.target = MEMORY_TARGET_CSR;
-            memory_control_o.read_enable = 1'b1;
-            memory_control_o.write_enable = rs1_i != 5'b0;
-            memory_control_o.csr_write_operation = CSR_WRITE_SET;
-            writeback_control_o.writeback_source = WRITEBACK_SOURCE_CSR;
-            writeback_control_o.register_write_enable = rd_i != 5'b0;
-          end
-          CSR_INSTRUCTION_CSRRC: begin
-            execute_control_o.store_data_select = STORE_DATA_FORWARDED_RS1;
-            memory_control_o.target = MEMORY_TARGET_CSR;
-            memory_control_o.read_enable = 1'b1;
-            memory_control_o.write_enable = rs1_i != 5'b0;
-            memory_control_o.csr_write_operation = CSR_WRITE_CLEAR;
-            writeback_control_o.writeback_source = WRITEBACK_SOURCE_CSR;
-            writeback_control_o.register_write_enable = rd_i != 5'b0;
-          end
-          CSR_INSTRUCTION_CSRRWI: begin
+        if (csr_instruction_valid) begin
+          execute_control_o.store_data_select = STORE_DATA_FORWARDED_RS1;
+          if (csr_instruction_uses_immediate)
             execute_control_o.store_data_select = STORE_DATA_CSR_IMMEDIATE;
-            memory_control_o.target = MEMORY_TARGET_CSR;
-            memory_control_o.read_enable = rd_i != 5'b0;
-            memory_control_o.write_enable = 1'b1;
-            memory_control_o.csr_write_operation = CSR_WRITE_REPLACE;
-            writeback_control_o.writeback_source = WRITEBACK_SOURCE_CSR;
-            writeback_control_o.register_write_enable = rd_i != 5'b0;
-          end
-          CSR_INSTRUCTION_CSRRSI: begin
-            execute_control_o.store_data_select = STORE_DATA_CSR_IMMEDIATE;
-            memory_control_o.target = MEMORY_TARGET_CSR;
-            memory_control_o.read_enable = 1'b1;
-            memory_control_o.write_enable = rs1_i != 5'b0;
-            memory_control_o.csr_write_operation = CSR_WRITE_SET;
-            writeback_control_o.writeback_source = WRITEBACK_SOURCE_CSR;
-            writeback_control_o.register_write_enable = rd_i != 5'b0;
-          end
-          CSR_INSTRUCTION_CSRRCI: begin
-            execute_control_o.store_data_select = STORE_DATA_CSR_IMMEDIATE;
-            memory_control_o.target = MEMORY_TARGET_CSR;
-            memory_control_o.read_enable = 1'b1;
-            memory_control_o.write_enable = rs1_i != 5'b0;
-            memory_control_o.csr_write_operation = CSR_WRITE_CLEAR;
-            writeback_control_o.writeback_source = WRITEBACK_SOURCE_CSR;
-            writeback_control_o.register_write_enable = rd_i != 5'b0;
-          end
-          default: begin
-            instruction_invalid_o = 1'b1;
-          end
-        endcase
+
+          memory_control_o.target = MEMORY_TARGET_CSR;
+          memory_control_o.read_enable =
+              (decoded_csr_write_operation == CSR_WRITE_REPLACE) ? rd_i != 5'b0 : 1'b1;
+          memory_control_o.write_enable =
+              (decoded_csr_write_operation == CSR_WRITE_REPLACE) || (rs1_i != 5'b0);
+          memory_control_o.csr_write_operation = decoded_csr_write_operation;
+
+          writeback_control_o.writeback_source = WRITEBACK_SOURCE_CSR;
+          writeback_control_o.register_write_enable = rd_i != 5'b0;
+        end else begin
+          instruction_invalid_o = 1'b1;
+        end
       end
 
       default: begin
@@ -271,6 +232,10 @@ module controller (
         if (branch_condition != PC_REDIRECT_NEVER) alu_operation = ALU_SUB;
       end
 
+      OPCODE_SYSTEM: begin
+        alu_operation = ALU_INVALID;
+      end
+
       default: alu_operation = ALU_INVALID;
     endcase
   end
@@ -308,19 +273,15 @@ module controller (
       end
 
       OPCODE_SYSTEM: begin
-        case (csr_instruction_t'(funct3_i))
-          CSR_INSTRUCTION_CSRRW: uses_rs1_o = 1'b1;
-          CSR_INSTRUCTION_CSRRS: uses_rs1_o = 1'b1;
-          CSR_INSTRUCTION_CSRRC: uses_rs1_o = 1'b1;
-
-          CSR_INSTRUCTION_CSRRWI: uses_rs1_o = 1'b0;
-          CSR_INSTRUCTION_CSRRSI: uses_rs1_o = 1'b0;
-          CSR_INSTRUCTION_CSRRCI: uses_rs1_o = 1'b0;
-
-          default: uses_rs1_o = 1'b0;
-        endcase
+        uses_rs1_o = csr_instruction_valid && !csr_instruction_uses_immediate;
       end
 
+      OPCODE_LUI: begin
+      end
+      OPCODE_AUIPC: begin
+      end
+      OPCODE_JAL: begin
+      end
       default: begin
       end
     endcase
@@ -368,6 +329,43 @@ module controller (
     endcase
   end
 
+  // csr instructions signals assignments
+  always_comb begin
+    csr_instruction_valid = 1'b0;
+    csr_instruction_uses_immediate = 1'b0;
+    decoded_csr_write_operation = CSR_WRITE_REPLACE;
 
+    case (csr_instruction_t'(funct3_i))
+      CSR_INSTRUCTION_CSRRW: begin
+        csr_instruction_valid = 1'b1;
+        decoded_csr_write_operation = CSR_WRITE_REPLACE;
+      end
+      CSR_INSTRUCTION_CSRRS: begin
+        csr_instruction_valid = 1'b1;
+        decoded_csr_write_operation = CSR_WRITE_SET;
+      end
+      CSR_INSTRUCTION_CSRRC: begin
+        csr_instruction_valid = 1'b1;
+        decoded_csr_write_operation = CSR_WRITE_CLEAR;
+      end
+      CSR_INSTRUCTION_CSRRWI: begin
+        csr_instruction_valid = 1'b1;
+        csr_instruction_uses_immediate = 1'b1;
+        decoded_csr_write_operation = CSR_WRITE_REPLACE;
+      end
+      CSR_INSTRUCTION_CSRRSI: begin
+        csr_instruction_valid = 1'b1;
+        csr_instruction_uses_immediate = 1'b1;
+        decoded_csr_write_operation = CSR_WRITE_SET;
+      end
+      CSR_INSTRUCTION_CSRRCI: begin
+        csr_instruction_valid = 1'b1;
+        csr_instruction_uses_immediate = 1'b1;
+        decoded_csr_write_operation = CSR_WRITE_CLEAR;
+      end
+      default: begin
+      end
+    endcase
+  end
 
 endmodule
