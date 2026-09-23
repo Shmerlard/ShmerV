@@ -24,6 +24,12 @@ package csr_types;
     CSR_INSTRUCTION_CSRRCI = 3'b111
   } csr_instruction_t;
 
+  typedef enum logic [1:0] {
+    CSR_WRITE_REPLACE,
+    CSR_WRITE_SET,
+    CSR_WRITE_CLEAR
+  } csr_write_operation_t;
+
   typedef enum logic [11:0] {
     CSR_ADDRESS_MSTATUS = 12'h300,
     CSR_ADDRESS_MTVEC   = 12'h305,

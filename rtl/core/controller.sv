@@ -5,6 +5,7 @@ module controller (
     input opcode_t opcode_i,
     input logic [2:0] funct3_i,
     input logic [6:0] funct7_i,
+    input logic [4:0] rs1_i,
     input logic [4:0] rd_i,
 
     output execute_control_t execute_control_o,
@@ -138,14 +139,27 @@ module controller (
             memory_control_o.target = MEMORY_TARGET_CSR;
             memory_control_o.read_enable = rd_i != 5'b0;
             memory_control_o.write_enable = 1'b1;
+            memory_control_o.csr_write_operation = CSR_WRITE_REPLACE;
             writeback_control_o.writeback_source = WRITEBACK_SOURCE_CSR;
             writeback_control_o.register_write_enable = rd_i != 5'b0;
           end
           CSR_INSTRUCTION_CSRRS: begin
-            instruction_invalid_o = 1'b1;
+            execute_control_o.store_data_select = STORE_DATA_FORWARDED_RS1;
+            memory_control_o.target = MEMORY_TARGET_CSR;
+            memory_control_o.read_enable = 1'b1;
+            memory_control_o.write_enable = rs1_i != 5'b0;
+            memory_control_o.csr_write_operation = CSR_WRITE_SET;
+            writeback_control_o.writeback_source = WRITEBACK_SOURCE_CSR;
+            writeback_control_o.register_write_enable = rd_i != 5'b0;
           end
           CSR_INSTRUCTION_CSRRC: begin
-            instruction_invalid_o = 1'b1;
+            execute_control_o.store_data_select = STORE_DATA_FORWARDED_RS1;
+            memory_control_o.target = MEMORY_TARGET_CSR;
+            memory_control_o.read_enable = 1'b1;
+            memory_control_o.write_enable = rs1_i != 5'b0;
+            memory_control_o.csr_write_operation = CSR_WRITE_CLEAR;
+            writeback_control_o.writeback_source = WRITEBACK_SOURCE_CSR;
+            writeback_control_o.register_write_enable = rd_i != 5'b0;
           end
           CSR_INSTRUCTION_CSRRWI: begin
             instruction_invalid_o = 1'b1;

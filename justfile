@@ -1,5 +1,6 @@
 build_dir := "build"
 sv_sources := `find rtl tb -type f -name '*.sv' | sort | tr '\n' ' '`
+verilator_sources := `find rtl tb -type f -name '*.sv' ! -path 'rtl/types/*_types.sv' | sort | tr '\n' ' '`
 
 # Show the command list when Just is run without arguments.
 default:
@@ -22,7 +23,7 @@ format-check:
 # Run Verible and Verilator lint checks.
 lint:
   verible-verilog-lint {{sv_sources}}
-  verilator --lint-only --timing --top-module smoke_tb {{sv_sources}}
+  verilator --lint-only --timing --top-module cpu_system rtl/types/csr_types.sv rtl/types/core_types.sv {{verilator_sources}}
 
 # Run tests, one CPU program, or list CPU programs with: just test cpu_system -l.
 test module="" program="":

@@ -265,6 +265,7 @@ module controller_tb;
     assert (memory_control_o.target == MEMORY_TARGET_CSR);
     assert (memory_control_o.read_enable);
     assert (memory_control_o.write_enable);
+    assert (memory_control_o.csr_write_operation == CSR_WRITE_REPLACE);
     assert (execute_control_o.store_data_select == STORE_DATA_FORWARDED_RS1);
     assert (writeback_control_o.register_write_enable);
     assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_CSR);
@@ -286,6 +287,58 @@ module controller_tb;
     #1ns;
     assert (memory_control_o.read_enable);
     assert (memory_control_o.write_enable);
+
+    // CSRRS reads the CSR and sets the bits selected by rs1.
+    funct3_i = CSR_INSTRUCTION_CSRRS;
+    rs1_i = 5'd1;
+    rd_i = 5'd2;
+    #1ns;
+    assert (memory_control_o.target == MEMORY_TARGET_CSR);
+    assert (memory_control_o.read_enable);
+    assert (memory_control_o.write_enable);
+    assert (memory_control_o.csr_write_operation == CSR_WRITE_SET);
+    assert (writeback_control_o.register_write_enable);
+    assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_CSR);
+    assert (uses_rs1_o);
+    assert (!uses_rs2_o);
+    assert (!instruction_invalid_o);
+
+    // CSRRS with rs1=x0 reads without writing the CSR.
+    rs1_i = 5'd0;
+    #1ns;
+    assert (memory_control_o.read_enable);
+    assert (!memory_control_o.write_enable);
+    assert (writeback_control_o.register_write_enable);
+
+    // CSRRS with rd=x0 still reads and modifies the CSR.
+    rs1_i = 5'd1;
+    rd_i = 5'd0;
+    #1ns;
+    assert (memory_control_o.read_enable);
+    assert (memory_control_o.write_enable);
+    assert (!writeback_control_o.register_write_enable);
+
+    // CSRRC reads the CSR and clears the bits selected by rs1.
+    funct3_i = CSR_INSTRUCTION_CSRRC;
+    rs1_i = 5'd1;
+    rd_i = 5'd2;
+    #1ns;
+    assert (memory_control_o.target == MEMORY_TARGET_CSR);
+    assert (memory_control_o.read_enable);
+    assert (memory_control_o.write_enable);
+    assert (memory_control_o.csr_write_operation == CSR_WRITE_CLEAR);
+    assert (writeback_control_o.register_write_enable);
+    assert (writeback_control_o.writeback_source == WRITEBACK_SOURCE_CSR);
+    assert (uses_rs1_o);
+    assert (!uses_rs2_o);
+    assert (!instruction_invalid_o);
+
+    // CSRRC with rs1=x0 reads without writing the CSR.
+    rs1_i = 5'd0;
+    #1ns;
+    assert (memory_control_o.read_enable);
+    assert (!memory_control_o.write_enable);
+    assert (writeback_control_o.register_write_enable);
 
     // Unknown opcode: no memory or register writes are allowed.
     opcode_i = opcode_t'(7'b1111111);

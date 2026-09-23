@@ -41,7 +41,7 @@ build_test() {
   fi
 
   mkdir -p "$test_build_directory"
-  package_sources=$(find rtl -type f -name '*_types.sv' | sort)
+  package_sources="rtl/types/csr_types.sv rtl/types/core_types.sv"
   rtl_library_arguments="+libext+.sv"
   for rtl_directory in $(find rtl -type d | sort); do
     rtl_library_arguments="$rtl_library_arguments -y $rtl_directory"

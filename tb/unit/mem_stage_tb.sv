@@ -106,6 +106,7 @@ module mem_stage_tb;
     memory_control_i.read_enable = 1'b1;
     memory_control_i.write_enable = 1'b1;
     memory_control_i.target = MEMORY_TARGET_CSR;
+    memory_control_i.csr_write_operation = CSR_WRITE_REPLACE;
     #1ns;
     assert (!memory_read_enable_o);
     assert (!memory_write_enable_o);
@@ -114,6 +115,16 @@ module mem_stage_tb;
     assert (csr_address_o == csr_address_i);
     assert (csr_store_data_o == store_data_in_mem_i);
     assert (csr_load_data_out_mem_o == csr_load_data_i);
+
+    // CSRRS writes the old CSR value with the mask bits set.
+    memory_control_i.csr_write_operation = CSR_WRITE_SET;
+    #1ns;
+    assert (csr_store_data_o == (csr_load_data_i | store_data_in_mem_i));
+
+    // CSRRC writes the old CSR value with the mask bits cleared.
+    memory_control_i.csr_write_operation = CSR_WRITE_CLEAR;
+    #1ns;
+    assert (csr_store_data_o == (csr_load_data_i & ~store_data_in_mem_i));
 
     // Invalid pipeline entries cannot access either target.
     valid_i = 1'b0;

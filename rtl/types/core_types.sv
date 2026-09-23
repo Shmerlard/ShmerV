@@ -1,5 +1,7 @@
 package core_types;
 
+  import csr_types::*;
+
   typedef enum logic [3:0] {
     ALU_ADD,
     ALU_SUB,
@@ -110,6 +112,7 @@ package core_types;
     logic write_enable;
     memory_access_size_t access_size;
     memory_target_t target;
+    csr_write_operation_t csr_write_operation;
   } memory_control_t;
 
   typedef struct packed {

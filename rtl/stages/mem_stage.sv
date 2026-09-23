@@ -1,4 +1,5 @@
 import core_types::*;
+import csr_types::*;
 
 module mem_stage (
     input logic valid_i,
@@ -52,11 +53,17 @@ module mem_stage (
 
   // CSR Control
   always_comb begin
-    csr_store_data_o = store_data_in_mem_i;
     csr_load_data_out_mem_o = csr_load_data_i;
     csr_read_enable_o = memory_control_i.read_enable && valid_i && target == MEMORY_TARGET_CSR;
     csr_write_enable_o = memory_control_i.write_enable && valid_i && target == MEMORY_TARGET_CSR;
     csr_address_o = csr_address_i;
+
+    case (memory_control_i.csr_write_operation)
+      CSR_WRITE_REPLACE: csr_store_data_o = store_data_in_mem_i;
+      CSR_WRITE_SET: csr_store_data_o = csr_load_data_i | store_data_in_mem_i;
+      CSR_WRITE_CLEAR: csr_store_data_o = csr_load_data_i & ~store_data_in_mem_i;
+      default: csr_store_data_o = 32'b0;
+    endcase
   end
 
   // Dmemory byte enable
