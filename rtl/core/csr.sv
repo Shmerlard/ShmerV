@@ -14,7 +14,8 @@ module csr (
     input logic [11:0] csr_address_i,
     input logic [31:0] csr_write_data_i,
 
-    output logic [31:0] csr_load_data_o
+    output logic [31:0] csr_load_data_o,
+    output logic csr_access_illegal_o
 );
 
   logic [31:0] mstatus;
@@ -24,8 +25,20 @@ module csr (
   logic [31:0] mcause;
   logic [31:0] mtval;
 
-  logic [ 4:0] trap_cause;
+  logic [4:0] trap_cause;
   logic [31:0] mtval_new;
+
+  logic csr_write_access_illegal;
+  logic csr_read_access_illegal;
+  assign csr_access_illegal_o = csr_write_access_illegal || csr_read_access_illegal;
+
+  logic write_to_read_only;
+  assign write_to_read_only = csr_write_enable_i && csr_address_read_only(csr_address_i);
+  logic unsupported_address;
+  assign unsupported_address = !csr_address_supported(csr_address_i);
+  assign csr_write_access_illegal = csr_write_enable_i && (unsupported_address || csr_address_read_only(
+      csr_address_i
+  ));
 
   always_ff @(posedge clk) begin
     if (rst == 1'b1) begin
@@ -41,16 +54,20 @@ module csr (
         mtval <= mtval_new;
       end else begin
         if (csr_write_enable_i) begin
-          case (csr_address_t'(csr_address_i))
-            CSR_ADDRESS_MSTATUS: mstatus <= csr_write_data_i;
-            CSR_ADDRESS_MTVEC:   mtvec <= csr_write_data_i;
-            CSR_ADDRESS_MEPC:    mepc <= csr_write_data_i;
-            CSR_ADDRESS_MCAUSE:  mcause <= csr_write_data_i;
-            CSR_ADDRESS_MTVAL:   mtval <= csr_write_data_i;
+          if (unsupported_address) begin
+          end else
+          if (write_to_read_only) begin
+          end else
+            case (csr_address_t'(csr_address_i))
+              CSR_ADDRESS_MSTATUS: mstatus <= csr_write_data_i;
+              CSR_ADDRESS_MTVEC:   mtvec <= csr_write_data_i;
+              CSR_ADDRESS_MEPC:    mepc <= csr_write_data_i;
+              CSR_ADDRESS_MCAUSE:  mcause <= csr_write_data_i;
+              CSR_ADDRESS_MTVAL:   mtval <= csr_write_data_i;
 
-            default: begin
-            end
-          endcase
+              default: begin
+              end
+            endcase
         end
       end
     end
@@ -58,15 +75,19 @@ module csr (
 
   always_comb begin
     csr_load_data_o = 32'b0;
+    csr_read_access_illegal = 1'b0;
     if (csr_read_enable_i) begin
-      case (csr_address_t'(csr_address_i))
-        CSR_ADDRESS_MSTATUS: csr_load_data_o = mstatus;
-        CSR_ADDRESS_MTVEC:   csr_load_data_o = mtvec;
-        CSR_ADDRESS_MEPC:    csr_load_data_o = mepc;
-        CSR_ADDRESS_MCAUSE:  csr_load_data_o = mcause;
-        CSR_ADDRESS_MTVAL:   csr_load_data_o = mtval;
-        default: csr_load_data_o = 32'b0;
-      endcase
+      if (unsupported_address) begin
+        csr_read_access_illegal = 1'b1;
+      end else
+        case (csr_address_t'(csr_address_i))
+          CSR_ADDRESS_MSTATUS: csr_load_data_o = mstatus;
+          CSR_ADDRESS_MTVEC:   csr_load_data_o = mtvec;
+          CSR_ADDRESS_MEPC:    csr_load_data_o = mepc;
+          CSR_ADDRESS_MCAUSE:  csr_load_data_o = mcause;
+          CSR_ADDRESS_MTVAL:   csr_load_data_o = mtval;
+          default: csr_load_data_o = 32'b0;
+        endcase
     end
   end
 

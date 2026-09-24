@@ -112,6 +112,7 @@ module cpu #(
   logic [31:0] csr_store_data_mem;
   logic csr_read_enable;
   logic csr_write_enable;
+  logic csr_access_illegal;
 
   assign trap_taken = 1'b0;
   assign trap_type = TRAP_TYPE_EXCEPTION;
@@ -337,7 +338,12 @@ module cpu #(
       .trap_instruction_ex_i (instruction_ex),
       .csr_address_i         (csr_address_to_csr),
       .csr_write_data_i      (csr_store_data_mem),
-      .csr_load_data_o       (csr_load_data_mem)
+      .csr_load_data_o       (csr_load_data_mem),
+      .csr_access_illegal_o  (csr_access_illegal)
+  );
+
+  trap_control_unit trap_control_unit (
+      .csr_access_illegal_i(csr_access_illegal)
   );
 
 endmodule
