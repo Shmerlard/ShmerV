@@ -18,6 +18,7 @@
               gnumake
               just
               python3
+              xdg-terminal-exec
               zsh
 
               # RTL development

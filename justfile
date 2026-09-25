@@ -30,8 +30,9 @@ test module="" program="":
   @scripts/run_tests.sh "{{module}}" "{{program}}"
 
 # Run one test with tracing enabled, then open its waveform in Surfer.
-sim module program="":
-  @scripts/run_sim.sh "{{module}}" "{{program}}"
+# Add --elf for a CPU-system program to open its disassembly in another window.
+sim module program="" display="":
+  @scripts/run_sim.sh "{{module}}" "{{program}}" "{{display}}"
 
 # Open an existing waveform without rerunning the test.
 wave module program="":

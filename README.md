@@ -20,6 +20,7 @@ just test cpu_system basic        # Run one CPU software test
 just test cpu_system -l           # List CPU software tests
 just sim alu                      # Run with tracing and open Surfer
 just sim cpu_system basic         # Trace one CPU software test
+just sim cpu_system basic --elf   # Also open the ELF disassembly
 just wave alu                     # Reopen an existing waveform
 just wave cpu_system basic        # Reopen a CPU waveform
 just clean                        # Remove generated build files

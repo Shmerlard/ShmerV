@@ -3,6 +3,16 @@ set -eu
 
 module=${1:-}
 program=${2:-}
+display=${3:-}
+
+case "$display" in
+  ""|--elf) ;;
+  *)
+    echo "Unknown display option: $display" >&2
+    echo "Usage: just sim MODULE [PROGRAM] [--elf]" >&2
+    exit 1
+    ;;
+esac
 
 if [ -z "$module" ]; then
   echo "Usage: just sim MODULE [PROGRAM]" >&2
@@ -25,11 +35,17 @@ if [ "$module" = "cpu_system" ]; then
     exit 0
   fi
   waveform="build/cpu_system/$program/waveform.fst"
+  elf_file="build/cpu_system/$program/program.elf"
 elif [ -n "$program" ]; then
   echo "A program name is only valid for cpu_system" >&2
   exit 1
 else
   waveform="build/tests/$module/waveform.fst"
+fi
+
+if [ "$display" = "--elf" ] && [ "$module" != "cpu_system" ]; then
+  echo "--elf is only valid for cpu_system simulations" >&2
+  exit 1
 fi
 
 # Do not open a stale waveform if the traced build or run fails early.
@@ -44,6 +60,10 @@ if [ ! -f "$waveform" ]; then
     exit 1
   fi
   exit "$test_status"
+fi
+
+if [ "$display" = "--elf" ]; then
+  scripts/open_elf.sh "$elf_file"
 fi
 
 viewer_status=0
