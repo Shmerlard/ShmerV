@@ -63,7 +63,7 @@ module csr (
           end else
             case (csr_address_t'(csr_address_i))
               CSR_ADDRESS_MSTATUS: mstatus <= csr_write_data_i;
-              CSR_ADDRESS_MTVEC:   mtvec <= csr_write_data_i;
+              CSR_ADDRESS_MTVEC:   mtvec <= {csr_write_data_i[31:2], 2'b00};
               CSR_ADDRESS_MEPC:    mepc <= csr_write_data_i;
               CSR_ADDRESS_MCAUSE:  mcause <= csr_write_data_i;
               CSR_ADDRESS_MTVAL:   mtval <= csr_write_data_i;

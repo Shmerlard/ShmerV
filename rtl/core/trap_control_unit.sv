@@ -21,6 +21,8 @@ module trap_control_unit (
 
   assign trap_pending = valid_mem_i && (illegal_instruction_mem_i || csr_access_illegal_i);
 
+  assign pc_redirect_enable_trap_o = trap_taken_o;
+
   always_comb begin
     trap_taken_o           = 1'b0;
     trap_type_o            = TRAP_TYPE_EXCEPTION;
