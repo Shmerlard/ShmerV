@@ -1,4 +1,9 @@
 package csr_types;
+  localparam int MSTATUS_MIE_BIT = 3;
+  localparam int MSTATUS_MPIE_BIT = 7;
+  localparam int MSTATUS_MPP_LSB = 11;
+  localparam int MSTATUS_MPP_MSB = 12;
+  localparam logic [1:0] MSTATUS_MPP_MACHINE = 2'b11;
 
   typedef enum logic {
     TRAP_TYPE_EXCEPTION,

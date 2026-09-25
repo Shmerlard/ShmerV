@@ -8,6 +8,10 @@ _start:
   la x5, trap_handler
   csrw mtvec, x5
 
+  # Trap entry must move MIE into MPIE, then clear MIE.
+  addi x6, x0, 8
+  csrw mstatus, x6
+
   # These older instructions must complete before the trap is taken.
   addi x2, x0, 2
   addi x3, x0, 3
@@ -26,6 +30,7 @@ trap_handler:
   csrr x11, mepc
   csrr x12, mtval
   addi x13, x0, 13
+  csrr x14, mstatus
 
 _test_end:
   j _test_end

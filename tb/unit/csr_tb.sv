@@ -17,6 +17,7 @@ module csr_tb;
   logic [31:0] csr_write_data_i;
   logic [31:0] csr_load_data_o;
   logic csr_access_illegal_o;
+  logic [31:0] csr_mtvec_o;
 
   csr dut (.*);
 

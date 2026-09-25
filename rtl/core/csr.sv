@@ -26,8 +26,14 @@ module csr (
   logic [31:0] mcause;
   logic [31:0] mtval;
 
-  logic [4:0] trap_cause;
+  logic [ 4:0] trap_cause;
   logic [31:0] mtval_new;
+  logic [31:0] mstatus_write_value;
+
+  always_comb begin
+    mstatus_write_value = csr_write_data_i;
+    mstatus_write_value[MSTATUS_MPP_MSB:MSTATUS_MPP_LSB] = MSTATUS_MPP_MACHINE;
+  end
 
   logic csr_write_access_illegal;
   logic csr_read_access_illegal;
@@ -52,9 +58,12 @@ module csr (
       mtval <= 32'b0;
     end else begin
       if (trap_taken_i == 1'b1) begin
-        mepc[31:2] <= trap_pc_ex_i[31:2];
+        mepc <= {trap_pc_ex_i[31:2], 2'b00};
         mcause <= {trap_type_i, {26{1'b0}}, trap_cause};
         mtval <= mtval_new;
+        mstatus[MSTATUS_MPIE_BIT] <= mstatus[MSTATUS_MIE_BIT];
+        mstatus[MSTATUS_MIE_BIT] <= 1'b0;
+        mstatus[MSTATUS_MPP_MSB:MSTATUS_MPP_LSB] <= MSTATUS_MPP_MACHINE;
       end else begin
         if (csr_write_enable_i) begin
           if (unsupported_address) begin
@@ -62,9 +71,9 @@ module csr (
           if (write_to_read_only) begin
           end else
             case (csr_address_t'(csr_address_i))
-              CSR_ADDRESS_MSTATUS: mstatus <= csr_write_data_i;
+              CSR_ADDRESS_MSTATUS: mstatus <= mstatus_write_value;
               CSR_ADDRESS_MTVEC:   mtvec <= {csr_write_data_i[31:2], 2'b00};
-              CSR_ADDRESS_MEPC:    mepc <= csr_write_data_i;
+              CSR_ADDRESS_MEPC:    mepc <= {csr_write_data_i[31:2], 2'b00};
               CSR_ADDRESS_MCAUSE:  mcause <= csr_write_data_i;
               CSR_ADDRESS_MTVAL:   mtval <= csr_write_data_i;
 
@@ -95,6 +104,7 @@ module csr (
   end
 
   always_comb begin
+    mtval_new = 32'b0;
     case (trap_type_i)
       TRAP_TYPE_EXCEPTION: begin
         case (trap_cause_exception_i)
