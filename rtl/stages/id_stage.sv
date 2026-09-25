@@ -21,7 +21,7 @@ module id_stage (
     output execute_control_t execute_control_o,
     output memory_control_t memory_control_o,
     output writeback_control_t writeback_control_o,
-    output instruction_invalid_o
+    output illegal_instruction_o
 
 );
   opcode_t opcode;
@@ -65,7 +65,7 @@ module id_stage (
       .writeback_control_o  (writeback_control_o),
       .uses_rs1_o           (uses_rs1_o),
       .uses_rs2_o           (uses_rs2_o),
-      .instruction_invalid_o(instruction_invalid_o)
+      .illegal_instruction_o(illegal_instruction_o)
   );
 
   immediate_generator immediate_generator (

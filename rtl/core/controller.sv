@@ -13,7 +13,7 @@ module controller (
     output writeback_control_t writeback_control_o,
     output logic uses_rs1_o,
     output logic uses_rs2_o,
-    output logic instruction_invalid_o
+    output logic illegal_instruction_o
 );
 
   alu_operation_t alu_operation;
@@ -40,14 +40,14 @@ module controller (
     execute_control_o.alu_operation = alu_operation;
 
 
-    instruction_invalid_o = 1'b0;
+    illegal_instruction_o = 1'b0;
     case (opcode_i)
       OPCODE_REG: begin
         execute_control_o.alu_operand_a_select = ALU_OPERAND_A_RS1;
         execute_control_o.alu_operand_b_select = ALU_OPERAND_B_RS2;
         writeback_control_o.register_write_enable = alu_operation != ALU_INVALID;
         if (alu_operation == ALU_INVALID) begin
-          instruction_invalid_o = 1'b1;
+          illegal_instruction_o = 1'b1;
         end
       end
 
@@ -56,7 +56,7 @@ module controller (
         execute_control_o.alu_operand_b_select = ALU_OPERAND_B_IMM;
         writeback_control_o.register_write_enable = alu_operation != ALU_INVALID;
         if (alu_operation == ALU_INVALID) begin
-          instruction_invalid_o = 1'b1;
+          illegal_instruction_o = 1'b1;
         end
       end
 
@@ -72,7 +72,7 @@ module controller (
         writeback_control_o.memory_access_size = memory_access_size;
         writeback_control_o.load_unsigned = load_unsigned;
         if (!memory_access_valid) begin
-          instruction_invalid_o = 1'b1;
+          illegal_instruction_o = 1'b1;
         end
       end
 
@@ -84,7 +84,7 @@ module controller (
         memory_control_o.access_size = memory_access_size;
         execute_control_o.store_data_select = STORE_DATA_FORWARDED_RS2;
         if (!memory_access_valid) begin
-          instruction_invalid_o = 1'b1;
+          illegal_instruction_o = 1'b1;
         end
       end
 
@@ -107,7 +107,7 @@ module controller (
           writeback_control_o.register_write_enable = 1'b1;
           writeback_control_o.writeback_source = WRITEBACK_SOURCE_PC4;
         end else begin
-          instruction_invalid_o = 1'b1;
+          illegal_instruction_o = 1'b1;
         end
       end
 
@@ -131,7 +131,7 @@ module controller (
         execute_control_o.pc_redirect_condition = branch_condition;
         execute_control_o.pc_redirect_address_source = PC_REDIRECT_ADDRESS_PC_IMMEDIATE;
         if (branch_condition == PC_REDIRECT_NEVER) begin
-          instruction_invalid_o = 1'b1;
+          illegal_instruction_o = 1'b1;
         end
       end
 
@@ -151,12 +151,12 @@ module controller (
           writeback_control_o.writeback_source = WRITEBACK_SOURCE_CSR;
           writeback_control_o.register_write_enable = rd_i != 5'b0;
         end else begin
-          instruction_invalid_o = 1'b1;
+          illegal_instruction_o = 1'b1;
         end
       end
 
       default: begin
-        instruction_invalid_o = 1'b1;
+        illegal_instruction_o = 1'b1;
       end
     endcase
   end

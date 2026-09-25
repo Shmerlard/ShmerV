@@ -15,7 +15,8 @@ module csr (
     input logic [31:0] csr_write_data_i,
 
     output logic [31:0] csr_load_data_o,
-    output logic csr_access_illegal_o
+    output logic csr_access_illegal_o,
+    output logic [31:0] csr_mtvec_o
 );
 
   logic [31:0] mstatus;
@@ -31,6 +32,8 @@ module csr (
   logic csr_write_access_illegal;
   logic csr_read_access_illegal;
   assign csr_access_illegal_o = csr_write_access_illegal || csr_read_access_illegal;
+
+  assign csr_mtvec_o = mtvec;
 
   logic write_to_read_only;
   assign write_to_read_only = csr_write_enable_i && csr_address_read_only(csr_address_i);

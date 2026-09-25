@@ -11,6 +11,7 @@ module mem_wb_reg (
     input logic [31:0] dmemory_load_data_mem_i,
     input logic [4:0] rd_mem_i,
     input logic [31:0] csr_load_data_i,
+    input logic flush_mem_wb_i,
 
     output writeback_control_t writeback_control_wb_o,
     output logic valid_wb_o,
@@ -32,6 +33,8 @@ module mem_wb_reg (
       pc_plus_4_wb_o         <= '0;
       rd_wb_o                <= '0;
       csr_load_data_wb_o     <= '0;
+    end else if (flush_mem_wb_i) begin
+      valid_wb_o <= 1'b0;
     end else begin
       valid_wb_o             <= valid_mem_i;
       writeback_control_wb_o <= writeback_control_mem_i;
