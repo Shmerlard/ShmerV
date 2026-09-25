@@ -5,12 +5,14 @@ module controller (
     input opcode_t opcode_i,
     input logic [2:0] funct3_i,
     input logic [6:0] funct7_i,
+    input logic [11:0] funct12_i,
     input logic [4:0] rs1_i,
     input logic [4:0] rd_i,
 
     output execute_control_t execute_control_o,
     output memory_control_t memory_control_o,
     output writeback_control_t writeback_control_o,
+    output system_operation_t system_operation_o,
     output logic uses_rs1_o,
     output logic uses_rs2_o,
     output logic illegal_instruction_o
@@ -26,6 +28,7 @@ module controller (
   logic csr_instruction_valid;
   logic csr_instruction_uses_immediate;
   csr_write_operation_t decoded_csr_write_operation;
+  system_operation_t decoded_system_operation;
   assign memory_access_valid   = memory_access_size != MEMORY_ACCESS_INVALID;
   assign register_write_enable = (alu_operation != ALU_INVALID) && memory_access_valid;
 
@@ -35,6 +38,7 @@ module controller (
     execute_control_o   = '0;
     memory_control_o    = '0;
     writeback_control_o = '0;
+    system_operation_o  = decoded_system_operation;
     memory_control_o.access_size = MEMORY_ACCESS_INVALID;
     writeback_control_o.memory_access_size = MEMORY_ACCESS_INVALID;
     execute_control_o.alu_operation = alu_operation;
@@ -150,7 +154,7 @@ module controller (
 
           writeback_control_o.writeback_source = WRITEBACK_SOURCE_CSR;
           writeback_control_o.register_write_enable = rd_i != 5'b0;
-        end else begin
+        end else if (decoded_system_operation == SYSTEM_OPERATION_NONE) begin
           illegal_instruction_o = 1'b1;
         end
       end
@@ -159,6 +163,19 @@ module controller (
         illegal_instruction_o = 1'b1;
       end
     endcase
+  end
+
+  always_comb begin
+    decoded_system_operation = SYSTEM_OPERATION_NONE;
+
+    if (opcode_i == OPCODE_SYSTEM && funct3_i == 3'b000 && rs1_i == 5'b0 && rd_i == 5'b0) begin
+      case (funct12_i)
+        12'h000: decoded_system_operation = SYSTEM_OPERATION_ECALL;
+        12'h001: decoded_system_operation = SYSTEM_OPERATION_EBREAK;
+        12'h302: decoded_system_operation = SYSTEM_OPERATION_MRET;
+        default: decoded_system_operation = SYSTEM_OPERATION_NONE;
+      endcase
+    end
   end
 
   // alu operation assignment

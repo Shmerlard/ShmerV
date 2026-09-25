@@ -8,6 +8,7 @@ module id_ex_reg (
     input execute_control_t execute_control_id_i,
     input memory_control_t memory_control_id_i,
     input writeback_control_t writeback_control_id_i,
+    input system_operation_t system_operation_id_i,
     input logic [31:0] rs1_data_id_i,
     input logic [31:0] rs2_data_id_i,
     input logic [31:0] immediate_id_i,
@@ -24,6 +25,7 @@ module id_ex_reg (
     output logic valid_ex_o,
     output memory_control_t memory_control_ex_o,
     output writeback_control_t writeback_control_ex_o,
+    output system_operation_t system_operation_ex_o,
     output logic [31:0] rs1_data_ex_o,
     output logic [31:0] rs2_data_ex_o,
     output logic [31:0] immediate_ex_o,
@@ -43,6 +45,7 @@ module id_ex_reg (
       execute_control_ex_o     <= '0;
       memory_control_ex_o      <= '0;
       writeback_control_ex_o   <= '0;
+      system_operation_ex_o    <= SYSTEM_OPERATION_NONE;
       rs1_data_ex_o            <= '0;
       rs2_data_ex_o            <= '0;
       immediate_ex_o           <= '0;
@@ -52,6 +55,7 @@ module id_ex_reg (
       rs2_ex_o                 <= '0;
       instruction_ex_o         <= '0;
       illegal_instruction_ex_o <= 1'b0;
+      system_operation_ex_o    <= SYSTEM_OPERATION_NONE;
       csr_address_ex_o         <= '0;
     end else if (flush_id_ex_i) begin
       valid_ex_o               <= 1'b0;
@@ -61,6 +65,7 @@ module id_ex_reg (
       execute_control_ex_o     <= execute_control_id_i;
       memory_control_ex_o      <= memory_control_id_i;
       writeback_control_ex_o   <= writeback_control_id_i;
+      system_operation_ex_o    <= system_operation_id_i;
       rs1_data_ex_o            <= rs1_data_id_i;
       rs2_data_ex_o            <= rs2_data_id_i;
       immediate_ex_o           <= immediate_id_i;

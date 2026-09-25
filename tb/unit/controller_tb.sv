@@ -7,15 +7,20 @@ module controller_tb;
   opcode_t opcode_i;
   logic [2:0] funct3_i;
   logic [6:0] funct7_i;
+  logic [11:0] funct12_i;
   logic [4:0] rs1_i;
   logic [4:0] rd_i;
 
   execute_control_t execute_control_o;
   memory_control_t memory_control_o;
   writeback_control_t writeback_control_o;
+  system_operation_t system_operation_o;
   logic uses_rs1_o;
   logic uses_rs2_o;
   logic instruction_invalid_o;
+  logic illegal_instruction_o;
+
+  assign instruction_invalid_o = illegal_instruction_o;
 
   controller dut (.*);
 
@@ -51,6 +56,7 @@ module controller_tb;
     opcode_i = OPCODE_REG;
     funct3_i = 3'b000;
     funct7_i = 7'b0000000;
+    funct12_i = 12'b0;
     rs1_i = 5'd1;
     rd_i = 5'd2;
     #1ns;
@@ -206,6 +212,31 @@ module controller_tb;
     assert (execute_control_o.pc_redirect_condition == PC_REDIRECT_NEVER);
     assert (!execute_control_o.pc_redirect_zero_lsb);
     assert (!writeback_control_o.register_write_enable);
+    assert (instruction_invalid_o);
+
+    // Exact funct12 encodings select the supported non-CSR SYSTEM operations.
+    opcode_i  = OPCODE_SYSTEM;
+    funct3_i  = 3'b000;
+    funct12_i = 12'h000;
+    rs1_i     = 5'b0;
+    rd_i      = 5'b0;
+    #1ns;
+    assert (system_operation_o == SYSTEM_OPERATION_ECALL);
+    assert (!instruction_invalid_o);
+
+    funct12_i = 12'h001;
+    #1ns;
+    assert (system_operation_o == SYSTEM_OPERATION_EBREAK);
+    assert (!instruction_invalid_o);
+
+    funct12_i = 12'h302;
+    #1ns;
+    assert (system_operation_o == SYSTEM_OPERATION_MRET);
+    assert (!instruction_invalid_o);
+
+    funct12_i = 12'h123;
+    #1ns;
+    assert (system_operation_o == SYSTEM_OPERATION_NONE);
     assert (instruction_invalid_o);
 
     // LUI: write the upper immediate to rd through the ALU.

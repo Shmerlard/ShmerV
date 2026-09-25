@@ -21,12 +21,14 @@ module id_stage (
     output execute_control_t execute_control_o,
     output memory_control_t memory_control_o,
     output writeback_control_t writeback_control_o,
+    output system_operation_t system_operation_o,
     output illegal_instruction_o
 
 );
   opcode_t opcode;
   logic [2:0] funct3;
   logic [6:0] funct7;
+  logic [11:0] funct12;
   logic [31:0] register_file_rs1_data;
   logic [31:0] register_file_rs2_data;
   logic rs1_wb_bypass_enable;
@@ -41,7 +43,8 @@ module id_stage (
   assign rs1_data_o = rs1_wb_bypass_enable ? writeback_data_i : register_file_rs1_data;
   assign rs2_data_o = rs2_wb_bypass_enable ? writeback_data_i : register_file_rs2_data;
 
-  assign csr_address_o = instruction_id_i[31:20];
+  assign funct12 = instruction_id_i[31:20];
+  assign csr_address_o = funct12;
 
   instruction_decoder id (
       .instruction_i     (instruction_id_i),
@@ -58,11 +61,13 @@ module id_stage (
       .opcode_i             (opcode),
       .funct3_i             (funct3),
       .funct7_i             (funct7),
+      .funct12_i            (funct12),
       .rs1_i                (rs1_o),
       .rd_i                 (rd_o),
       .execute_control_o    (execute_control_o),
       .memory_control_o     (memory_control_o),
       .writeback_control_o  (writeback_control_o),
+      .system_operation_o   (system_operation_o),
       .uses_rs1_o           (uses_rs1_o),
       .uses_rs2_o           (uses_rs2_o),
       .illegal_instruction_o(illegal_instruction_o)

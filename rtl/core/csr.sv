@@ -7,6 +7,7 @@ module csr (
     input logic csr_read_enable_i,
     input logic csr_write_enable_i,
     input logic trap_taken_i,
+    input logic mret_taken_i,
     input logic [31:0] trap_pc_ex_i,
     input trap_type_t trap_type_i,
     input trap_cause_exception_t trap_cause_exception_i,
@@ -16,7 +17,7 @@ module csr (
 
     output logic [31:0] csr_load_data_o,
     output logic csr_access_illegal_o,
-    output logic [31:0] csr_mtvec_o
+    output logic [31:0] csr_pc_redirect_address_o
 );
 
   logic [31:0] mstatus;
@@ -39,7 +40,7 @@ module csr (
   logic csr_read_access_illegal;
   assign csr_access_illegal_o = csr_write_access_illegal || csr_read_access_illegal;
 
-  assign csr_mtvec_o = mtvec;
+  assign csr_pc_redirect_address_o = mret_taken_i ? mepc : mtvec;
 
   logic write_to_read_only;
   assign write_to_read_only = csr_write_enable_i && csr_address_read_only(csr_address_i);
@@ -64,6 +65,9 @@ module csr (
         mstatus[MSTATUS_MPIE_BIT] <= mstatus[MSTATUS_MIE_BIT];
         mstatus[MSTATUS_MIE_BIT] <= 1'b0;
         mstatus[MSTATUS_MPP_MSB:MSTATUS_MPP_LSB] <= MSTATUS_MPP_MACHINE;
+      end else if (mret_taken_i) begin
+        mstatus[MSTATUS_MIE_BIT] <= mstatus[MSTATUS_MPIE_BIT];
+        mstatus[MSTATUS_MPIE_BIT] <= 1'b1;
       end else begin
         if (csr_write_enable_i) begin
           if (unsupported_address) begin

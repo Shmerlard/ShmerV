@@ -22,7 +22,11 @@ module id_stage_tb;
   execute_control_t          execute_control_o;
   memory_control_t           memory_control_o;
   writeback_control_t        writeback_control_o;
+  system_operation_t         system_operation_o;
   logic                      instruction_invalid_o;
+  logic                      illegal_instruction_o;
+
+  assign instruction_invalid_o = illegal_instruction_o;
 
   id_stage dut (.*);
 

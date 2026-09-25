@@ -84,6 +84,13 @@ package core_types;
     TYPE_INVALID
   } instruction_type_t;
 
+  typedef enum logic [1:0] {
+    SYSTEM_OPERATION_NONE,
+    SYSTEM_OPERATION_ECALL,
+    SYSTEM_OPERATION_EBREAK,
+    SYSTEM_OPERATION_MRET
+  } system_operation_t;
+
   typedef enum logic [6:0] {
     OPCODE_LOAD   = 7'b0000011,
     OPCODE_IMM    = 7'b0010011,

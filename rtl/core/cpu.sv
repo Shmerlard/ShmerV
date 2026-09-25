@@ -33,7 +33,7 @@ module cpu #(
   logic [31:0] pc_redirect_address_ex;
   logic pc_redirect_enable_ex;
   logic pc_redirect_enable_trap;
-  logic [31:0] csr_mtvec;
+  logic [31:0] pc_redirect_address_csr;
 
   // Pipeline flow control
   logic valid_id;
@@ -80,6 +80,9 @@ module cpu #(
   writeback_control_t writeback_control_ex;
   writeback_control_t writeback_control_mem;
   writeback_control_t writeback_control_wb;
+  system_operation_t system_operation_id;
+  system_operation_t system_operation_ex;
+  system_operation_t system_operation_mem;
 
   // Operand, execute, and forwarding data
   logic [31:0] rs1_data_id;
@@ -109,7 +112,9 @@ module cpu #(
 
   // CSR and trap control
   logic trap_taken;
+  logic mret_taken;
   trap_type_t trap_type;
+
   trap_cause_exception_t trap_cause_exception;
   logic [11:0] csr_address_to_csr;
   logic [31:0] csr_load_data_mem;
@@ -125,7 +130,7 @@ module cpu #(
   logic [31:0] rf_write_data_wb;
   logic rf_write_enable_wb;
 
-  assign pc_redirect_address = pc_redirect_enable_trap ? csr_mtvec : pc_redirect_address_ex;
+  assign pc_redirect_address = pc_redirect_enable_trap ? pc_redirect_address_csr : pc_redirect_address_ex;
   assign pc_redirect_enable = pc_redirect_enable_trap || pc_redirect_enable_ex;
   assign pc_write_enable = !pc_stall || pc_redirect_enable;
   assign flush_if_id_reg = pc_redirect_enable || flush_if_id_reg_from_trap;
@@ -181,6 +186,7 @@ module cpu #(
       .execute_control_o       (execute_control_id),
       .memory_control_o        (memory_control_id),
       .writeback_control_o     (writeback_control_id),
+      .system_operation_o      (system_operation_id),
       .illegal_instruction_o   (illegal_instruction_id)
   );
 
@@ -191,6 +197,7 @@ module cpu #(
       .execute_control_id_i    (execute_control_id),
       .memory_control_id_i     (memory_control_id),
       .writeback_control_id_i  (writeback_control_id),
+      .system_operation_id_i   (system_operation_id),
       .rs1_data_id_i           (rs1_data_id),
       .rs2_data_id_i           (rs2_data_id),
       .immediate_id_i          (imm_id),
@@ -206,6 +213,7 @@ module cpu #(
       .valid_ex_o              (valid_ex),
       .memory_control_ex_o     (memory_control_ex),
       .writeback_control_ex_o  (writeback_control_ex),
+      .system_operation_ex_o   (system_operation_ex),
       .rs1_data_ex_o           (rs1_data_ex),
       .rs2_data_ex_o           (rs2_data_ex),
       .immediate_ex_o          (imm_ex),
@@ -243,6 +251,7 @@ module cpu #(
       .valid_ex_i               (valid_ex),
       .memory_control_ex_i      (memory_control_ex),
       .writeback_control_ex_i   (writeback_control_ex),
+      .system_operation_ex_i    (system_operation_ex),
       .alu_result_ex_i          (alu_result_ex),
       .pc_ex_i                  (pc_ex),
       .pc_plus_4_ex_i           (pc_plus_4_ex),
@@ -255,6 +264,7 @@ module cpu #(
       .memory_control_mem_o     (memory_control_mem),
       .valid_mem_o              (valid_mem),
       .writeback_control_mem_o  (writeback_control_mem),
+      .system_operation_mem_o   (system_operation_mem),
       .alu_result_mem_o         (alu_result_mem),
       .pc_mem_o                 (pc_mem),
       .pc_plus_4_mem_o          (pc_plus_4_mem),
@@ -349,29 +359,32 @@ module cpu #(
   );
 
   csr csr (
-      .clk                   (clk),
-      .rst                   (rst),
-      .csr_read_enable_i     (csr_read_enable),
-      .csr_write_enable_i    (csr_write_enable),
-      .trap_taken_i          (trap_taken),
-      .trap_pc_ex_i          (pc_mem),
-      .trap_type_i           (trap_type),
-      .trap_cause_exception_i(trap_cause_exception),
-      .trap_instruction_ex_i (instruction_mem),
-      .csr_address_i         (csr_address_to_csr),
-      .csr_write_data_i      (csr_store_data_mem),
-      .csr_load_data_o       (csr_load_data_mem),
-      .csr_access_illegal_o  (csr_access_illegal),
-      .csr_mtvec_o           (csr_mtvec)
+      .clk                      (clk),
+      .rst                      (rst),
+      .csr_read_enable_i        (csr_read_enable),
+      .csr_write_enable_i       (csr_write_enable),
+      .trap_taken_i             (trap_taken),
+      .mret_taken_i             (mret_taken),
+      .trap_pc_ex_i             (pc_mem),
+      .trap_type_i              (trap_type),
+      .trap_cause_exception_i   (trap_cause_exception),
+      .trap_instruction_ex_i    (instruction_mem),
+      .csr_address_i            (csr_address_to_csr),
+      .csr_write_data_i         (csr_store_data_mem),
+      .csr_load_data_o          (csr_load_data_mem),
+      .csr_access_illegal_o     (csr_access_illegal),
+      .csr_pc_redirect_address_o(pc_redirect_address_csr)
   );
 
   trap_control_unit trap_control_unit (
       .valid_mem_i              (valid_mem),
       .illegal_instruction_mem_i(illegal_instruction_mem),
+      .system_operation_mem_i   (system_operation_mem),
       .csr_access_illegal_i     (csr_access_illegal),
       .fault_pc_i               (pc_mem),
       .fault_instruction_i      (instruction_mem),
       .trap_taken_o             (trap_taken),
+      .mret_taken_o             (mret_taken),
       .trap_type_o              (trap_type),
       .trap_cause_exception_o   (trap_cause_exception),
       .flush_if_id_reg_o        (flush_if_id_reg_from_trap),

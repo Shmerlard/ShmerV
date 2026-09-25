@@ -7,6 +7,7 @@ module ex_mem_reg (
     input logic                      valid_ex_i,
     input memory_control_t           memory_control_ex_i,
     input writeback_control_t        writeback_control_ex_i,
+    input system_operation_t         system_operation_ex_i,
     input logic               [31:0] alu_result_ex_i,
     input logic               [31:0] pc_ex_i,
     input logic               [31:0] pc_plus_4_ex_i,
@@ -20,6 +21,7 @@ module ex_mem_reg (
     output memory_control_t memory_control_mem_o,
     output logic valid_mem_o,
     output writeback_control_t writeback_control_mem_o,
+    output system_operation_t system_operation_mem_o,
     output logic [31:0] alu_result_mem_o,
     output logic [31:0] pc_mem_o,
     output logic [31:0] pc_plus_4_mem_o,
@@ -35,11 +37,13 @@ module ex_mem_reg (
       valid_mem_o               <= 1'b0;
       memory_control_mem_o      <= '0;
       writeback_control_mem_o   <= '0;
+      system_operation_mem_o    <= SYSTEM_OPERATION_NONE;
       alu_result_mem_o          <= '0;
       pc_mem_o                  <= '0;
       pc_plus_4_mem_o           <= '0;
       instruction_mem_o         <= '0;
       illegal_instruction_mem_o <= 1'b0;
+      system_operation_mem_o    <= SYSTEM_OPERATION_NONE;
       store_data_mem_o          <= '0;
       rd_mem_o                  <= '0;
       csr_address_mem_o         <= '0;
@@ -50,6 +54,7 @@ module ex_mem_reg (
       valid_mem_o               <= valid_ex_i;
       memory_control_mem_o      <= memory_control_ex_i;
       writeback_control_mem_o   <= writeback_control_ex_i;
+      system_operation_mem_o    <= system_operation_ex_i;
       alu_result_mem_o          <= alu_result_ex_i;
       pc_mem_o                  <= pc_ex_i;
       pc_plus_4_mem_o           <= pc_plus_4_ex_i;
