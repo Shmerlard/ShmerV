@@ -38,6 +38,14 @@ sim module program="" display="":
 wave module program="":
   @scripts/open_wave.sh "{{module}}" "{{program}}"
 
+# Build a standalone peripheral target for the Tang Nano 9K.
+fpga-build design:
+  @scripts/build_standalone_fpga.sh "{{design}}"
+
+# Load a standalone target into SRAM, or pass "flash" for persistent storage.
+fpga-flash design mode="sram":
+  @scripts/flash_standalone_fpga.sh "{{design}}" "{{mode}}"
+
 # Remove all generated build files.
 clean:
   rm -rf {{build_dir}}

@@ -27,6 +27,9 @@
               verible
               verilator
               yosys
+              nextpnr
+              openfpgaloader
+              python3Packages.apycula
 
               # RISC-V software toolchain
               dtc

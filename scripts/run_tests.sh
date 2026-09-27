@@ -55,7 +55,7 @@ build_test() {
   if ! verilator --binary --timing --timescale-override 1ns/1ns $trace_arguments \
     --top-module "${test_module}_tb" \
     --Mdir "$test_build_directory/obj" -o "${test_module}_test" \
-    $package_sources tb/core_types_import.sv $rtl_library_arguments "$testbench" \
+    $package_sources tb/core_types_import.sv $rtl_library_arguments "$rtl_source" "$testbench" \
     > "$test_build_directory/build.log" 2>&1; then
     echo "[FAIL]  $test_module build"
     cat "$test_build_directory/build.log"

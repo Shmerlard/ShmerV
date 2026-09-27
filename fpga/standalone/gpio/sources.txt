@@ -1,0 +1,2 @@
+rtl/peripherals/gpio_module.sv
+fpga/standalone/gpio/gpio_fpga_top.sv
