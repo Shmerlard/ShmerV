@@ -9,6 +9,7 @@ module csr_tb;
   logic csr_read_enable_i;
   logic csr_write_enable_i;
   logic trap_taken_i;
+  logic mret_taken_i;
   logic [31:0] trap_pc_ex_i;
   trap_type_t trap_type_i;
   trap_cause_exception_t trap_cause_exception_i;
@@ -17,7 +18,7 @@ module csr_tb;
   logic [31:0] csr_write_data_i;
   logic [31:0] csr_load_data_o;
   logic csr_access_illegal_o;
-  logic [31:0] csr_mtvec_o;
+  logic [31:0] csr_pc_redirect_address_o;
 
   csr dut (.*);
 
@@ -31,6 +32,7 @@ module csr_tb;
     csr_read_enable_i = 1'b0;
     csr_write_enable_i = 1'b0;
     trap_taken_i = 1'b0;
+    mret_taken_i = 1'b0;
     trap_pc_ex_i = '0;
     trap_type_i = TRAP_TYPE_EXCEPTION;
     trap_cause_exception_i = TRAP_CAUSE_ILLEGAL_INSTRUCTION;

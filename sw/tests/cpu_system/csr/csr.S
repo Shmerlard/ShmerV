@@ -31,17 +31,17 @@ _start:
   csrrs x11, mtvec, x0
 
   # CSRRWI writes the immediate and returns the old CSR value.
-  csrrwi x12, mtvec, 21
-  csrrwi x13, mtvec, 3
+  csrrwi x12, mtvec, 20
+  csrrwi x13, mtvec, 4
 
   # rd=x0 still writes the immediate.
-  csrrwi x0, mtvec, 17
+  csrrwi x0, mtvec, 16
 
   # CSRRSI sets immediate-selected bits and returns the old value.
   csrrsi x14, mtvec, 8
 
   # CSRRCI clears immediate-selected bits and returns the old value.
-  csrrci x15, mtvec, 1
+  csrrci x15, mtvec, 8
 
   # zimm=0 reads without modifying the CSR.
   csrrsi x16, mtvec, 0
