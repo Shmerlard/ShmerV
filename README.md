@@ -1,6 +1,6 @@
 # ShmerV
 
-ShmerV is a learning-focused RV32I five-stage pipelined CPU written in SystemVerilog. The current repository contains the CPU RTL, module testbenches, and small assembly programs that test the complete CPU and memory system.
+ShmerV is a learning-focused RV32I five-stage pipelined CPU and small SoC written in SystemVerilog. It currently runs compiled C firmware on a Tang Nano 9K and drives physical LEDs through an MMIO GPIO peripheral.
 
 ## Quick Start
 
@@ -23,6 +23,9 @@ just sim cpu_system basic         # Trace one CPU software test
 just sim cpu_system basic --elf   # Also open the ELF disassembly
 just wave alu                     # Reopen an existing waveform
 just wave cpu_system basic        # Reopen a CPU waveform
+just fpga-list                    # List FPGA targets, programs, and built images
+just fpga-build cpu_system gpio_pattern
+just fpga-flash cpu_system gpio_pattern
 just clean                        # Remove generated build files
 ```
 
@@ -38,5 +41,9 @@ just lint
 
 - `rtl/` contains the hardware.
 - `tb/` contains SystemVerilog testbenches and persistent Surfer layouts.
-- `sw/tests/cpu_system/<program>/` contains assembly or C programs and human-written `.checks` files.
+- `tb/cpu/programs/<program>/` contains test-only assembly or C programs and human-written `.checks` files.
+- `sw/programs/` contains bare-metal programs intended to run on the FPGA system.
 - `build/` contains generated programs, logs, test executables, expected values, and waveforms.
+
+See [Project structure](docs/project-structure.md) for directory ownership and
+the FPGA/software relationship.
