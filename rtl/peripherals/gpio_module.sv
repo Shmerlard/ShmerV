@@ -1,4 +1,4 @@
-module gpio #(
+module gpio_module #(
     parameter int WIDTH = 8,
     parameter logic [WIDTH-1:0] ALT_MASK = '0,
     parameter logic [WIDTH-1:0] IRQ_MASK = '0
@@ -63,7 +63,8 @@ module gpio #(
   always_comb begin
     rising_edge_input = ~prev_input & sync_ff2 & IRQ_MASK;
     falling_edge_input = prev_input & ~sync_ff2 & IRQ_MASK;
-    selected_edge = ~dir_reg & ~effective_sel & ((rising_edge_input & ~ies_reg) | (falling_edge_input & ies_reg));
+    selected_edge = ~dir_reg & ~effective_sel
+        & ((rising_edge_input & ~ies_reg) | (falling_edge_input & ies_reg));
   end
 
   always_ff @(posedge clk) begin

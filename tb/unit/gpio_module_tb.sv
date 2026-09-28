@@ -2,8 +2,8 @@ timeunit 1ns / 1ps;
 
 module gpio_module_tb;
   localparam int WIDTH = 8;
-  localparam logic [WIDTH-1:0] ALT_MASK = 8'b0000_0011;
-  localparam logic [WIDTH-1:0] IRQ_MASK = 8'b0000_1101;
+  localparam logic [WIDTH-1:0] AltMask = 8'b0000_0011;
+  localparam logic [WIDTH-1:0] IrqMask = 8'b0000_1101;
 
   logic clk = 1'b0;
   logic rst;
@@ -23,10 +23,10 @@ module gpio_module_tb;
   logic mmio_read_enable_i;
   logic irq_o;
 
-  gpio #(
+  gpio_module #(
       .WIDTH(WIDTH),
-      .ALT_MASK(ALT_MASK),
-      .IRQ_MASK(IRQ_MASK)
+      .ALT_MASK(AltMask),
+      .IRQ_MASK(IrqMask)
   ) dut (
       .*
   );
@@ -109,7 +109,7 @@ module gpio_module_tb;
     write_register(5'h04, 8'hFF);
     write_register(5'h05, 8'h00);
     read_register(5'h04, read_data);
-    assert (read_data == IRQ_MASK)
+    assert (read_data == IrqMask)
     else $fatal(1, "IE did not apply IRQ_MASK: %b", read_data);
 
     // Return the synchronized input to a known low state and clear all flags.
@@ -149,7 +149,7 @@ module gpio_module_tb;
     write_register(5'h07, 8'hFF);
     write_register(5'h06, 8'hFF);
     read_register(5'h06, read_data);
-    assert (read_data == IRQ_MASK)
+    assert (read_data == IrqMask)
     else $fatal(1, "software IFG set did not apply IRQ_MASK: %b", read_data);
 
     // Output pins do not generate GPIO interrupt flags.
