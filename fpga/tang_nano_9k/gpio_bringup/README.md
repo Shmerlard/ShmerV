@@ -12,6 +12,6 @@ Write: set the DIP switches, hold pin 31, and press pin 48.
 
 This test bypasses `pin_oe_o`, so it does not test `DIR` or tri-state behavior.
 
-Build: `just fpga-build gpio`
+Build: `just fpga-build gpio_bringup`
 
-Temporary SRAM load: `just fpga-flash gpio`
+Temporary SRAM load: `just fpga-flash gpio_bringup`

@@ -38,13 +38,29 @@ sim module program="" display="":
 wave module program="":
   @scripts/simulation/open_wave.sh "{{module}}" "{{program}}"
 
-# Build a standalone peripheral target for the Tang Nano 9K.
-fpga-build design:
-  @scripts/build_standalone_fpga.sh "{{design}}"
+# Synthesize the standalone CPU and print a generic cell-count report.
+synth:
+  @scripts/fpga/synthesize_cpu.sh
 
-# Load a standalone target into SRAM, or pass "flash" for persistent storage.
-fpga-flash design mode="sram":
-  @scripts/flash_standalone_fpga.sh "{{design}}" "{{mode}}"
+# Map the standalone CPU to Tang Nano 9K Gowin primitives.
+synth-gowin:
+  @scripts/fpga/synthesize_cpu_gowin.sh
+
+# Place and route a synthesis-only CPU wrapper for the Tang Nano 9K.
+place-gowin:
+  @scripts/fpga/place_cpu_gowin.sh
+
+# List FPGA targets, programs, built images, or all three.
+fpga-list kind="all":
+  @scripts/fpga/list.sh "{{kind}}"
+
+# Build a Tang Nano 9K target, optionally with a selected program.
+fpga-build target="" program="":
+  @scripts/fpga/build_target.sh "{{target}}" "{{program}}"
+
+# Load a built image into SRAM, or pass "flash" for persistent storage.
+fpga-flash target="" selection="" mode="":
+  @scripts/fpga/flash_target.sh "{{target}}" "{{selection}}" "{{mode}}"
 
 # Remove all generated build files.
 clean:

@@ -1,4 +1,4 @@
-module gpio_fpga_top (
+module gpio_bringup_top (
     input  logic [7:0] dip_n_i,
     input  logic       clock_button_n_i,
     input  logic       reset_button_n_i,
@@ -7,7 +7,7 @@ module gpio_fpga_top (
 );
   logic [7:0] pin_output;
 
-  gpio #(
+  gpio_module #(
       .WIDTH(8),
       .ALT_MASK('0),
       .IRQ_MASK('0)
