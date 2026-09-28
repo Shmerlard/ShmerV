@@ -1,13 +1,14 @@
 #!/bin/sh
 set -eu
 
-if [ "$#" -ne 2 ]; then
-  echo "Usage: $0 PROGRAM_SOURCE OUTPUT_DIRECTORY" >&2
+if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
+  echo "Usage: $0 PROGRAM_SOURCE OUTPUT_DIRECTORY [LINKER_SCRIPT]" >&2
   exit 1
 fi
 
 program_source=$1
 output_directory=$2
+linker_script=${3:-sw/linker/simulation_32k.ld}
 
 mkdir -p "$output_directory"
 
@@ -16,7 +17,7 @@ case "$program_source" in
     riscv32-none-elf-as -march=rv32i -mabi=ilp32 \
       -o "$output_directory/program.o" "$program_source"
     riscv32-none-elf-ld -m elf32lriscv \
-      -T sw/tests/cpu_system/link.ld \
+      -T "$linker_script" \
       -o "$output_directory/program.elf" "$output_directory/program.o"
     ;;
 
@@ -29,7 +30,7 @@ case "$program_source" in
     riscv32-none-elf-as -march=rv32i -mabi=ilp32 \
       -o "$output_directory/start.o" sw/runtime/start.S
     riscv32-none-elf-ld -m elf32lriscv \
-      -T sw/tests/cpu_system/link.ld \
+      -T "$linker_script" \
       -o "$output_directory/program.elf" \
       "$output_directory/start.o" "$output_directory/program.o"
     ;;

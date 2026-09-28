@@ -27,16 +27,16 @@ lint:
 
 # Run tests, one CPU program, or list CPU programs with: just test cpu_system -l.
 test module="" program="":
-  @scripts/run_tests.sh "{{module}}" "{{program}}"
+  @scripts/test/run_tests.sh "{{module}}" "{{program}}"
 
 # Run one test with tracing enabled, then open its waveform in Surfer.
 # Add --elf for a CPU-system program to open its disassembly in another window.
 sim module program="" display="":
-  @scripts/run_sim.sh "{{module}}" "{{program}}" "{{display}}"
+  @scripts/simulation/run_sim.sh "{{module}}" "{{program}}" "{{display}}"
 
 # Open an existing waveform without rerunning the test.
 wave module program="":
-  @scripts/open_wave.sh "{{module}}" "{{program}}"
+  @scripts/simulation/open_wave.sh "{{module}}" "{{program}}"
 
 # Build a standalone peripheral target for the Tang Nano 9K.
 fpga-build design:

@@ -23,7 +23,7 @@ if [ "$module" = "cpu_system" ]; then
   if [ -z "$program" ]; then
     echo "Usage: just sim cpu_system PROGRAM"
     echo "Available programs:"
-    for program_directory in sw/tests/cpu_system/*; do
+    for program_directory in tb/cpu/programs/*; do
       if [ -d "$program_directory" ]; then
         program_name=$(basename "$program_directory")
         if [ -f "$program_directory/$program_name.S" ] \
@@ -52,7 +52,7 @@ fi
 rm -f "$waveform"
 
 test_status=0
-scripts/run_tests.sh "$module" "$program" trace || test_status=$?
+scripts/test/run_tests.sh "$module" "$program" trace || test_status=$?
 
 if [ ! -f "$waveform" ]; then
   echo "No waveform was generated: $waveform" >&2
@@ -63,11 +63,11 @@ if [ ! -f "$waveform" ]; then
 fi
 
 if [ "$display" = "--elf" ]; then
-  scripts/open_elf.sh "$elf_file"
+  scripts/simulation/open_elf.sh "$elf_file"
 fi
 
 viewer_status=0
-scripts/open_wave.sh "$module" "$program" || viewer_status=$?
+scripts/simulation/open_wave.sh "$module" "$program" || viewer_status=$?
 
 if [ "$test_status" -ne 0 ]; then
   exit "$test_status"

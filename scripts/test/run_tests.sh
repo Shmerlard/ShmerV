@@ -55,7 +55,7 @@ build_test() {
   if ! verilator --binary --timing --timescale-override 1ns/1ns $trace_arguments \
     --top-module "${test_module}_tb" \
     --Mdir "$test_build_directory/obj" -o "${test_module}_test" \
-    $package_sources tb/core_types_import.sv $rtl_library_arguments "$rtl_source" "$testbench" \
+    $package_sources tb/support/package_imports.sv $rtl_library_arguments "$rtl_source" "$testbench" \
     > "$test_build_directory/build.log" 2>&1; then
     echo "[FAIL]  $test_module build"
     cat "$test_build_directory/build.log"
@@ -80,7 +80,7 @@ run_module_test() {
 
 run_cpu_system_program() {
   program_name=$1
-  program_directory="sw/tests/cpu_system/$program_name"
+  program_directory="tb/cpu/programs/$program_name"
   assembly_source="$program_directory/$program_name.S"
   c_source="$program_directory/$program_name.c"
   checks_file="$program_directory/$program_name.checks"
@@ -107,7 +107,7 @@ run_cpu_system_program() {
   mkdir -p "$program_build_directory"
 
   echo "[RUN]   cpu_system/$program_name"
-  if ! scripts/build_cpu_system_program.sh "$program_source" "$program_build_directory" \
+  if ! scripts/software/build_program.sh "$program_source" "$program_build_directory" \
     > "$program_build_directory/build.log" 2>&1; then
     echo "[FAIL]  cpu_system/$program_name build"
     cat "$program_build_directory/build.log"
@@ -115,7 +115,7 @@ run_cpu_system_program() {
   fi
 
   echo "[SPIKE] cpu_system/$program_name"
-  if ! python3 scripts/generate_cpu_system_expected.py \
+  if ! python3 scripts/test/generate_expected.py \
     "$checks_file" "$program_build_directory/program.elf" "$expected_file" \
     > "$program_build_directory/spike.log" 2>&1; then
     echo "[FAIL]  cpu_system/$program_name Spike reference"
@@ -145,7 +145,7 @@ run_cpu_system_program() {
 }
 
 list_cpu_system_programs() {
-  for program_directory in sw/tests/cpu_system/*; do
+  for program_directory in tb/cpu/programs/*; do
     if [ ! -d "$program_directory" ]; then
       continue
     fi
@@ -174,7 +174,7 @@ run_cpu_system_tests() {
   fi
 
   found_program=0
-  for program_directory in sw/tests/cpu_system/*; do
+  for program_directory in tb/cpu/programs/*; do
     if [ ! -d "$program_directory" ]; then
       continue
     fi
@@ -198,7 +198,7 @@ if [ -z "$module" ]; then
 
   find tb -type f -name '*_tb.sv' -exec basename {} _tb.sv \; \
     | sort \
-    | xargs -r -n1 -P "$test_jobs" scripts/run_tests.sh
+    | xargs -r -n1 -P "$test_jobs" scripts/test/run_tests.sh
 elif [ "$module" = "cpu_system" ]; then
   run_cpu_system_tests "$program"
   if [ -n "${TEST_TOTAL:-}" ]; then
