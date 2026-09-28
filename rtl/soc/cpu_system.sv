@@ -10,9 +10,13 @@ module cpu_system #(
     input logic clk,
     input logic rst,
 
-    input  logic [7:0] gpio_pin_i,
-    output logic [7:0] gpio_pin_o,
-    output logic [7:0] gpio_pin_oe_o,
+    input  logic [7:0] gpio0_pin_i,
+    output logic [7:0] gpio0_pin_o,
+    output logic [7:0] gpio0_pin_oe_o,
+
+    input  logic [7:0] gpio1_pin_i,
+    output logic [7:0] gpio1_pin_o,
+    output logic [7:0] gpio1_pin_oe_o,
 
     output logic peripheral_irq_o,
     output logic address_overlap_o
@@ -84,9 +88,12 @@ module cpu_system #(
       .read_enable_i      (peripheral_read_enable),
       .write_enable_i     (peripheral_write_enable),
       .read_data_o        (peripheral_read_data),
-      .gpio_pin_i         (gpio_pin_i),
-      .gpio_pin_o         (gpio_pin_o),
-      .gpio_pin_oe_o      (gpio_pin_oe_o),
+      .gpio0_pin_i        (gpio0_pin_i),
+      .gpio0_pin_o        (gpio0_pin_o),
+      .gpio0_pin_oe_o     (gpio0_pin_oe_o),
+      .gpio1_pin_i        (gpio1_pin_i),
+      .gpio1_pin_o        (gpio1_pin_o),
+      .gpio1_pin_oe_o     (gpio1_pin_oe_o),
       .irq_o              (peripheral_irq_o)
   );
 

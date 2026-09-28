@@ -60,6 +60,7 @@ sources=$(tr '\n' ' ' < "$sources_file")
 mkdir -p "$build_directory" "$images_directory"
 
 yosys -Q -l "$build_directory/synthesis.log" -p "
+  read_verilog -lib +/gowin/cells_sim.v
   read_slang --top $top $sources
   synth_gowin -family gw1n -top $top -json $build_directory/netlist.json
 "

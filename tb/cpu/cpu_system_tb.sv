@@ -20,9 +20,12 @@ module cpu_system_tb;
   logic [31:0] expected_value;
   logic [31:0] actual_value;
   string trace_file;
-  logic [7:0] gpio_pin_i;
-  logic [7:0] gpio_pin_o;
-  logic [7:0] gpio_pin_oe_o;
+  logic [7:0] gpio0_pin_i;
+  logic [7:0] gpio0_pin_o;
+  logic [7:0] gpio0_pin_oe_o;
+  logic [7:0] gpio1_pin_i;
+  logic [7:0] gpio1_pin_o;
+  logic [7:0] gpio1_pin_oe_o;
   logic peripheral_irq_o;
   logic address_overlap_o;
 
@@ -33,9 +36,12 @@ module cpu_system_tb;
   ) dut (
       .clk              (clk),
       .rst              (rst),
-      .gpio_pin_i       (gpio_pin_i),
-      .gpio_pin_o       (gpio_pin_o),
-      .gpio_pin_oe_o    (gpio_pin_oe_o),
+      .gpio0_pin_i      (gpio0_pin_i),
+      .gpio0_pin_o      (gpio0_pin_o),
+      .gpio0_pin_oe_o   (gpio0_pin_oe_o),
+      .gpio1_pin_i      (gpio1_pin_i),
+      .gpio1_pin_o      (gpio1_pin_o),
+      .gpio1_pin_oe_o   (gpio1_pin_oe_o),
       .peripheral_irq_o (peripheral_irq_o),
       .address_overlap_o(address_overlap_o)
   );
@@ -53,7 +59,8 @@ module cpu_system_tb;
     $dumpvars(0, cpu_system_tb);
 
     rst = 1'b1;
-    gpio_pin_i = '0;
+    gpio0_pin_i = '0;
+    gpio1_pin_i = '0;
     repeat (2) @(posedge clk);
     rst = 1'b0;
 

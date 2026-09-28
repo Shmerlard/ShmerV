@@ -1,21 +1,18 @@
 # CPU system
 
-This target runs a selected program from `sw/programs/` on the complete CPU
-system. For example, `gpio_pattern` alternates the LEDs between `0xAA` and
-`0x55`.
-
-Build the program and FPGA bitstream together:
+Runs a program from `sw/programs/` on the complete FPGA system.
 
 ```sh
-just fpga-build cpu_system gpio_pattern
+just fpga-build cpu_system PROGRAM
+just fpga-flash cpu_system PROGRAM
 ```
 
-Load it temporarily into SRAM:
+- `gpio_pattern`: alternate the LEDs between `0xAA` and `0x55`.
+- `gpio_nibble_sum`: add the DIP-switch nibbles and show the result on the LEDs.
 
-```sh
-just fpga-flash cpu_system gpio_pattern
-```
+- Reset: pin 49, active-low.
+- GPIO0 / Port A: `0x10000000`, pins 25–30, 33, and 34.
+- GPIO1 / Port B: `0x10000100`, pins 70–77.
+- RAM: 16 KiB.
 
-Pin 49 is the active-low reset input. The LED outputs use the same pins as the
-GPIO bring-up target. This system uses 16 KiB of RAM so the inferred dual-port
-memory fits the Tang Nano 9K block-RAM capacity.
+Both GPIO ports are bidirectional; software controls them through `DIR`.
