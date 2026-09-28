@@ -66,7 +66,7 @@ module csr (
         mstatus[MSTATUS_MIE_BIT] <= 1'b0;
         mstatus[MSTATUS_MPP_MSB:MSTATUS_MPP_LSB] <= MSTATUS_MPP_MACHINE;
       end else if (mret_taken_i) begin
-        mstatus[MSTATUS_MIE_BIT] <= mstatus[MSTATUS_MPIE_BIT];
+        mstatus[MSTATUS_MIE_BIT]  <= mstatus[MSTATUS_MPIE_BIT];
         mstatus[MSTATUS_MPIE_BIT] <= 1'b1;
       end else begin
         if (csr_write_enable_i) begin
