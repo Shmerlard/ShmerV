@@ -2,6 +2,7 @@ timeunit 1ns / 1ps;
 
 module cpu_system #(
     parameter int MEM_WORDS = 1024,
+    parameter int unsigned UART_CYCLES_FOR_BIT = 234,
     parameter string MEMORY_INIT_FILE = "",
     parameter logic [31:0] RESET_PC = 32'h0000_0000,
     parameter logic [31:0] RAM_BASE_ADDRESS = 32'h0000_0000,
@@ -17,6 +18,10 @@ module cpu_system #(
     input  logic [7:0] gpio1_pin_i,
     output logic [7:0] gpio1_pin_o,
     output logic [7:0] gpio1_pin_oe_o,
+
+    input  logic [7:0] gpio2_pin_i,
+    output logic [7:0] gpio2_pin_o,
+    output logic [7:0] gpio2_pin_oe_o,
 
     output logic peripheral_irq_o,
     output logic address_overlap_o
@@ -78,6 +83,7 @@ module cpu_system #(
   );
 
   peripheral_manager #(
+      .UART_CYCLES_FOR_BIT(UART_CYCLES_FOR_BIT),
       .GPIO_BASE_ADDRESS(PERIPHERAL_BASE_ADDRESS)
   ) peripheral_manager (
       .clk                (clk),
@@ -94,6 +100,9 @@ module cpu_system #(
       .gpio1_pin_i        (gpio1_pin_i),
       .gpio1_pin_o        (gpio1_pin_o),
       .gpio1_pin_oe_o     (gpio1_pin_oe_o),
+      .gpio2_pin_i        (gpio2_pin_i),
+      .gpio2_pin_o        (gpio2_pin_o),
+      .gpio2_pin_oe_o     (gpio2_pin_oe_o),
       .irq_o              (peripheral_irq_o)
   );
 
@@ -105,11 +114,10 @@ module cpu_system #(
       .port_a_read_address_i     (imem_read_address),
       .port_a_read_enable_i      (imem_read_enable),
       .port_a_read_data_o        (imem_load_data),
-      .port_b_read_address_i     (dmem_address),
-      .port_b_write_address_i    (dmem_address),
+      .port_b_address_i          (dmem_address),
       .port_b_write_enable_i     (ram_dmem_write_enable),
       .port_b_write_byte_enable_i(dmem_write_byte_enable),
-      .port_b_read_enable_i      (ram_dmem_read_enable),
+      .port_b_enable_i           (ram_dmem_read_enable || ram_dmem_write_enable),
       .port_b_write_data_i       (dmem_store_data),
       .port_b_read_data_o        (ram_dmem_load_data)
   );

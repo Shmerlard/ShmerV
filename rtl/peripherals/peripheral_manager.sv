@@ -1,5 +1,6 @@
 module peripheral_manager #(
-    parameter logic [31:0] GPIO_BASE_ADDRESS = 32'h1000_0000
+    parameter logic [31:0] GPIO_BASE_ADDRESS = 32'h1000_0000,
+    parameter int unsigned UART_CYCLES_FOR_BIT = 234
 ) (
     input logic clk,
     input logic rst,
@@ -19,46 +20,74 @@ module peripheral_manager #(
     output logic [7:0] gpio1_pin_o,
     output logic [7:0] gpio1_pin_oe_o,
 
+    input  logic [7:0] gpio2_pin_i,
+    output logic [7:0] gpio2_pin_o,
+    output logic [7:0] gpio2_pin_oe_o,
+
     output logic irq_o
 );
   localparam logic [31:0] GpioAddressSpaceBytes = 32'h0000_0100;
   localparam logic [31:0] Gpio1BaseAddress = GPIO_BASE_ADDRESS + GpioAddressSpaceBytes;
+  localparam logic [31:0] Gpio2BaseAddress = GPIO_BASE_ADDRESS + 2 * GpioAddressSpaceBytes;
+  localparam logic [31:0] UartBaseAddress = GPIO_BASE_ADDRESS + 3 * GpioAddressSpaceBytes;
 
   typedef enum logic [1:0] {
     READ_GPIO_NONE,
     READ_GPIO0,
-    READ_GPIO1
+    READ_GPIO1,
+    READ_GPIO2
   } gpio_read_target_t;
 
   logic gpio0_address_hit;
   logic gpio1_address_hit;
+  logic gpio2_address_hit;
+  logic uart_address_hit;
   logic [31:0] gpio0_address_offset;
   logic [31:0] gpio1_address_offset;
+  logic [31:0] gpio2_address_offset;
+  logic [31:0] uart_address_offset;
   logic [4:0] gpio0_register_address;
   logic [4:0] gpio1_register_address;
+  logic [4:0] gpio2_register_address;
   logic gpio0_read_enable;
   logic gpio1_read_enable;
+  logic gpio2_read_enable;
   logic gpio0_write_enable;
   logic gpio1_write_enable;
+  logic gpio2_write_enable;
+  logic uart_write_enable;
   gpio_read_target_t gpio_read_target;
   logic [7:0] gpio0_read_data;
   logic [7:0] gpio1_read_data;
+  logic [7:0] gpio2_read_data;
   logic gpio0_irq;
   logic gpio1_irq;
+  logic gpio2_irq;
+  logic uart_tx;
 
   assign gpio0_address_hit = address_i >= GPIO_BASE_ADDRESS
       && address_i < GPIO_BASE_ADDRESS + GpioAddressSpaceBytes;
   assign gpio1_address_hit = address_i >= Gpio1BaseAddress
       && address_i < Gpio1BaseAddress + GpioAddressSpaceBytes;
+  assign gpio2_address_hit = address_i >= Gpio2BaseAddress
+      && address_i < Gpio2BaseAddress + GpioAddressSpaceBytes;
+  assign uart_address_hit = address_i >= UartBaseAddress
+      && address_i < UartBaseAddress + GpioAddressSpaceBytes;
   assign gpio0_address_offset = address_i - GPIO_BASE_ADDRESS;
   assign gpio1_address_offset = address_i - Gpio1BaseAddress;
+  assign gpio2_address_offset = address_i - Gpio2BaseAddress;
+  assign uart_address_offset = address_i - UartBaseAddress;
   assign gpio0_register_address = gpio0_address_offset[6:2];
   assign gpio1_register_address = gpio1_address_offset[6:2];
+  assign gpio2_register_address = gpio2_address_offset[6:2];
   assign gpio0_read_enable = read_enable_i && gpio0_address_hit;
   assign gpio1_read_enable = read_enable_i && gpio1_address_hit;
+  assign gpio2_read_enable = read_enable_i && gpio2_address_hit;
   assign gpio0_write_enable = write_enable_i && gpio0_address_hit && write_byte_enable_i[0];
   assign gpio1_write_enable = write_enable_i && gpio1_address_hit && write_byte_enable_i[0];
-  assign irq_o = gpio0_irq | gpio1_irq;
+  assign gpio2_write_enable = write_enable_i && gpio2_address_hit && write_byte_enable_i[0];
+  assign uart_write_enable = write_enable_i && uart_address_hit && write_byte_enable_i[0];
+  assign irq_o = gpio0_irq | gpio1_irq | gpio2_irq;
 
   always_ff @(posedge clk) begin
     if (rst) begin
@@ -68,6 +97,8 @@ module peripheral_manager #(
         gpio_read_target <= READ_GPIO0;
       end else if (gpio1_address_hit) begin
         gpio_read_target <= READ_GPIO1;
+      end else if (gpio2_address_hit) begin
+        gpio_read_target <= READ_GPIO2;
       end else begin
         gpio_read_target <= READ_GPIO_NONE;
       end
@@ -78,6 +109,7 @@ module peripheral_manager #(
     case (gpio_read_target)
       READ_GPIO0: read_data_o = {24'b0, gpio0_read_data};
       READ_GPIO1: read_data_o = {24'b0, gpio1_read_data};
+      READ_GPIO2: read_data_o = {24'b0, gpio2_read_data};
       default: read_data_o = 32'b0;
     endcase
   end
@@ -122,6 +154,38 @@ module peripheral_manager #(
       .mmio_write_enable_i(gpio1_write_enable),
       .mmio_read_enable_i (gpio1_read_enable),
       .irq_o              (gpio1_irq)
+  );
+
+  gpio_module #(
+      .WIDTH   (8),
+      .ALT_MASK(8'b0000_0001),
+      .IRQ_MASK(8'b0)
+  ) gpio2 (
+      .clk                (clk),
+      .rst                (rst),
+      .pin_i              (gpio2_pin_i),
+      .pin_o              (gpio2_pin_o),
+      .pin_oe_o           (gpio2_pin_oe_o),
+      .alt_in_o           (),
+      .alt_out_i          ({7'b0, uart_tx}),
+      .alt_oe_i           (8'b0000_0001),
+      .mmio_write_data_i  (write_data_i[7:0]),
+      .mmio_read_data_o   (gpio2_read_data),
+      .register_address_i (gpio2_register_address),
+      .mmio_write_enable_i(gpio2_write_enable),
+      .mmio_read_enable_i (gpio2_read_enable),
+      .irq_o              (gpio2_irq)
+  );
+
+  uart_module #(
+      .CYCLES_FOR_BIT(UART_CYCLES_FOR_BIT)
+  ) uart (
+      .clk                (clk),
+      .rst                (rst),
+      .mmio_write_data_i  (write_data_i[7:0]),
+      .register_address_i (uart_address_offset[2]),
+      .mmio_write_enable_i(uart_write_enable),
+      .tx_o               (uart_tx)
   );
 
 endmodule

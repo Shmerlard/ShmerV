@@ -26,6 +26,9 @@ module cpu_system_tb;
   logic [7:0] gpio1_pin_i;
   logic [7:0] gpio1_pin_o;
   logic [7:0] gpio1_pin_oe_o;
+  logic [7:0] gpio2_pin_i;
+  logic [7:0] gpio2_pin_o;
+  logic [7:0] gpio2_pin_oe_o;
   logic peripheral_irq_o;
   logic address_overlap_o;
 
@@ -42,6 +45,9 @@ module cpu_system_tb;
       .gpio1_pin_i      (gpio1_pin_i),
       .gpio1_pin_o      (gpio1_pin_o),
       .gpio1_pin_oe_o   (gpio1_pin_oe_o),
+      .gpio2_pin_i      (gpio2_pin_i),
+      .gpio2_pin_o      (gpio2_pin_o),
+      .gpio2_pin_oe_o   (gpio2_pin_oe_o),
       .peripheral_irq_o (peripheral_irq_o),
       .address_overlap_o(address_overlap_o)
   );
@@ -61,6 +67,7 @@ module cpu_system_tb;
     rst = 1'b1;
     gpio0_pin_i = '0;
     gpio1_pin_i = '0;
+    gpio2_pin_i = '0;
     repeat (2) @(posedge clk);
     rst = 1'b0;
 

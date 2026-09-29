@@ -3,6 +3,8 @@ timeunit 1ns / 1ps;
 module peripheral_manager_tb;
   localparam logic [31:0] GpioBaseAddress = 32'h1000_0000;
   localparam logic [31:0] Gpio1BaseAddress = GpioBaseAddress + 32'h100;
+  localparam logic [31:0] Gpio2BaseAddress = GpioBaseAddress + 32'h200;
+  localparam logic [31:0] UartBaseAddress = GpioBaseAddress + 32'h300;
 
   logic clk = 1'b0;
   logic rst;
@@ -18,9 +20,17 @@ module peripheral_manager_tb;
   logic [7:0] gpio1_pin_i;
   logic [7:0] gpio1_pin_o;
   logic [7:0] gpio1_pin_oe_o;
+  logic [7:0] gpio2_pin_i;
+  logic [7:0] gpio2_pin_o;
+  logic [7:0] gpio2_pin_oe_o;
   logic irq_o;
 
-  peripheral_manager #(.GPIO_BASE_ADDRESS(GpioBaseAddress)) dut (.*);
+  peripheral_manager #(
+      .GPIO_BASE_ADDRESS  (GpioBaseAddress),
+      .UART_CYCLES_FOR_BIT(4)
+  ) dut (
+      .*
+  );
 
   always #5ns clk = ~clk;
 
@@ -48,14 +58,16 @@ module peripheral_manager_tb;
     write_enable_i = 1'b0;
     gpio0_pin_i = '0;
     gpio1_pin_i = '0;
+    gpio2_pin_i = '0;
 
     @(posedge clk);
     #1ns;
     rst = 1'b0;
 
-    // Both banks reset to inputs; software controls both direction registers.
+    // All banks reset to inputs; software controls their direction registers.
     assert (gpio0_pin_oe_o == 8'h00);
     assert (gpio1_pin_oe_o == 8'h00);
+    assert (gpio2_pin_oe_o == 8'h00);
 
     // Configure GPIO0 as outputs and drive a visible pattern.
     write_register(GpioBaseAddress, 5'h02, 32'h0000_00FF, 4'b0001);
@@ -91,8 +103,18 @@ module peripheral_manager_tb;
     write_register(Gpio1BaseAddress, 5'h02, 32'h0000_000F, 4'b0001);
     assert (gpio1_pin_oe_o == 8'h0F);
 
-    // A read outside both GPIO slots returns zero.
-    address_i = GpioBaseAddress + 32'h200;
+    // GPIO2.0 selects the UART transmitter as an alternate output.
+    write_register(Gpio2BaseAddress, 5'h03, 32'h0000_0001, 4'b0001);
+    assert (gpio2_pin_oe_o == 8'h01);
+    assert (gpio2_pin_o[0] == 1'b1);
+    write_register(UartBaseAddress, 5'h00, 32'h0000_0053, 4'b0001);
+    write_register(UartBaseAddress, 5'h01, 32'h0000_0001, 4'b0001);
+    repeat (2) @(posedge clk);
+    #1ns;
+    assert (gpio2_pin_o[0] == 1'b0);
+
+    // A read outside all peripheral slots returns zero.
+    address_i = GpioBaseAddress + 32'h400;
     read_enable_i = 1'b1;
     @(posedge clk);
     #1ns;

@@ -35,11 +35,10 @@ module cpu_tb;
       .port_a_read_address_i     (imem_read_address),
       .port_a_read_enable_i      (imem_read_enable),
       .port_a_read_data_o        (imem_load_data),
-      .port_b_read_address_i     (dmem_address),
-      .port_b_write_address_i    (dmem_address),
+      .port_b_address_i          (dmem_address),
       .port_b_write_enable_i     (dmem_write_enable),
       .port_b_write_byte_enable_i(dmem_write_byte_enable),
-      .port_b_read_enable_i      (dmem_read_enable),
+      .port_b_enable_i           (dmem_read_enable || dmem_write_enable),
       .port_b_write_data_i       (dmem_store_data),
       .port_b_read_data_o        (dmem_load_data)
   );

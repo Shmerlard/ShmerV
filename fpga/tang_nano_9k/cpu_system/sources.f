@@ -14,6 +14,7 @@ rtl/core/register_file.sv
 rtl/core/trap_control_unit.sv
 rtl/soc/address_decoder.sv
 rtl/peripherals/gpio_module.sv
+rtl/peripherals/uart_module.sv
 rtl/peripherals/peripheral_manager.sv
 rtl/core/pipeline_registers/ex_mem_reg.sv
 rtl/core/pipeline_registers/id_ex_reg.sv
