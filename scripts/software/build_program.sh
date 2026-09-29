@@ -44,3 +44,8 @@ esac
 riscv32-none-elf-objcopy -O binary \
   "$output_directory/program.elf" "$output_directory/program.bin"
 od -An -v -w4 -tx4 "$output_directory/program.bin" > "$output_directory/program.hex"
+
+awk '{ print substr($1, 7, 2) }' "$output_directory/program.hex" > "$output_directory/program_lane0.hex"
+awk '{ print substr($1, 5, 2) }' "$output_directory/program.hex" > "$output_directory/program_lane1.hex"
+awk '{ print substr($1, 3, 2) }' "$output_directory/program.hex" > "$output_directory/program_lane2.hex"
+awk '{ print substr($1, 1, 2) }' "$output_directory/program.hex" > "$output_directory/program_lane3.hex"

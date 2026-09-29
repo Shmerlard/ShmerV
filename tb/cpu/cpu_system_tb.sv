@@ -54,6 +54,15 @@ module cpu_system_tb;
 
   always #5ns clk = ~clk;
 
+  function automatic logic [31:0] get_memory_word(input int index);
+    return {
+      dut.memory.memory_lane3[index],
+      dut.memory.memory_lane2[index],
+      dut.memory.memory_lane1[index],
+      dut.memory.memory_lane0[index]
+    };
+  endfunction
+
   initial begin
     if (!$value$plusargs("test_end_pc=%h", test_end_pc)) $fatal(1, "Missing +test_end_pc");
     if (!$value$plusargs("timeout_cycles=%d", timeout_cycles)) timeout_cycles = 1000;
@@ -98,7 +107,7 @@ module cpu_system_tb;
           "memory": begin
             scan_result = $fscanf(expected_file_handle, "%h %h", expected_address, expected_value);
             if (scan_result != 2) $fatal(1, "Invalid memory entry in %s", expected_file);
-            actual_value = dut.memory.memory_words[expected_address[MemoryAddressWidth+1:2]];
+            actual_value = get_memory_word(int'(expected_address[MemoryAddressWidth+1:2]));
             assert (actual_value == expected_value)
             else
               $fatal(

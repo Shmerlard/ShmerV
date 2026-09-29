@@ -31,6 +31,22 @@ module memory_tb;
   initial clk = 0;
   always #5 clk = ~clk;
 
+  task automatic set_memory_word(input int index, input logic [31:0] value);
+    dut.memory_lane0[index] = value[7:0];
+    dut.memory_lane1[index] = value[15:8];
+    dut.memory_lane2[index] = value[23:16];
+    dut.memory_lane3[index] = value[31:24];
+  endtask
+
+  function automatic logic [31:0] get_memory_word(input int index);
+    return {
+      dut.memory_lane3[index],
+      dut.memory_lane2[index],
+      dut.memory_lane1[index],
+      dut.memory_lane0[index]
+    };
+  endfunction
+
   initial begin
     $dumpfile("build/tests/memory/waveform.fst");
     $dumpvars(0, memory_tb);
@@ -44,9 +60,9 @@ module memory_tb;
     port_b_write_data_i = '0;
 
     // Preload memory
-    dut.memory_words[0] = 32'h1234_5678;
-    dut.memory_words[1] = 32'hDEAD_BEEF;
-    dut.memory_words[7] = 32'hCAFE_BABE;
+    set_memory_word(0, 32'h1234_5678);
+    set_memory_word(1, 32'hDEAD_BEEF);
+    set_memory_word(7, 32'hCAFE_BABE);
 
     // Read word 0
     port_a_read_address_i = 32'h0000_0000;
@@ -105,8 +121,8 @@ module memory_tb;
     port_b_write_byte_enable_i = 4'b0101;
     @(posedge clk);
     #1;
-    assert (port_b_read_data_o == 32'hAABB_CCDD)
-    else $fatal(1, "Port B output changed during a write");
+    assert (port_b_read_data_o == 32'hAA22_CC44)
+    else $fatal(1, "Expected write-first result AA22CC44, got %h", port_b_read_data_o);
     port_b_write_enable_i = 1'b0;
 
     @(posedge clk);
@@ -128,7 +144,7 @@ module memory_tb;
     port_b_write_data_i = 32'h0;
     @(posedge clk);
     #1;
-    assert (dut.memory_words[1] == 32'hDEAD_BEEF)
+    assert (get_memory_word(1) == 32'hDEAD_BEEF)
     else $fatal(1, "Disabled Port B write changed memory");
     assert (port_b_read_data_o == 32'hAA22_CC44)
     else $fatal(1, "Disabled Port B write changed output");

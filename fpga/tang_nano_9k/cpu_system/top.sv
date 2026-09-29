@@ -8,10 +8,7 @@ module cpu_system_top (
   // Divide the board's 27 MHz oscillator by 32 to 843.75 kHz.
   // Keep this net named for clock.sdc's generated-clock constraint.
   logic [4:0] clock_divider = 5'b0;
-  always @(posedge clk or negedge reset_button_n_i) begin
-    if (!reset_button_n_i) clock_divider <= 5'b0;
-    else clock_divider <= clock_divider + 1'b1;
-  end
+  always @(posedge clk) clock_divider <= clock_divider + 1'b1;
   (* syn_keep = 1 *) wire cpu_clk = clock_divider[4];
 
   logic [7:0] gpio0_pin_input;
@@ -26,8 +23,12 @@ module cpu_system_top (
 
   cpu_system #(
       .MEM_WORDS       (4096),
-      .UART_CYCLES_FOR_BIT(117),
+      .UART_CYCLES_FOR_BIT(88),
       .MEMORY_INIT_FILE("build/fpga/tang_nano_9k/cpu_system/software/program.hex"),
+      .MEMORY_INIT_FILE_LANE0("build/fpga/tang_nano_9k/cpu_system/software/program_lane0.hex"),
+      .MEMORY_INIT_FILE_LANE1("build/fpga/tang_nano_9k/cpu_system/software/program_lane1.hex"),
+      .MEMORY_INIT_FILE_LANE2("build/fpga/tang_nano_9k/cpu_system/software/program_lane2.hex"),
+      .MEMORY_INIT_FILE_LANE3("build/fpga/tang_nano_9k/cpu_system/software/program_lane3.hex"),
       .RESET_PC        (32'h8000_0000),
       .RAM_BASE_ADDRESS(32'h8000_0000)
   ) cpu_system (

@@ -45,21 +45,37 @@ module cpu_tb;
 
   always #5ns clk = ~clk;
 
+  task automatic set_memory_word(input int index, input logic [31:0] value);
+    memory.memory_lane0[index] = value[7:0];
+    memory.memory_lane1[index] = value[15:8];
+    memory.memory_lane2[index] = value[23:16];
+    memory.memory_lane3[index] = value[31:24];
+  endtask
+
+  function automatic logic [31:0] get_memory_word(input int index);
+    return {
+      memory.memory_lane3[index],
+      memory.memory_lane2[index],
+      memory.memory_lane1[index],
+      memory.memory_lane0[index]
+    };
+  endfunction
+
   initial begin
     $dumpfile("build/tests/cpu/waveform.fst");
     $dumpvars(0, cpu_tb);
 
     // NOP-fill the program area.
     for (int index = 0; index < 32; index++) begin
-      memory.memory_words[index] = 32'h0000_0013;
+      set_memory_word(index, 32'h0000_0013);
     end
 
     // Keep the smoke program spread out so each pipeline result is easy to inspect.
-    memory.memory_words[0] = 32'h1000_0513;  // addi x10, x0, 256
-    memory.memory_words[5] = 32'h0050_0093;  // addi x1, x0, 5
-    memory.memory_words[10] = 32'h0030_8113;  // addi x2, x1, 3
-    memory.memory_words[15] = 32'h0025_2023;  // sw x2, 0(x10)
-    memory.memory_words[20] = 32'h0005_2183;  // lw x3, 0(x10)
+    set_memory_word(0, 32'h1000_0513);  // addi x10, x0, 256
+    set_memory_word(5, 32'h0050_0093);  // addi x1, x0, 5
+    set_memory_word(10, 32'h0030_8113);  // addi x2, x1, 3
+    set_memory_word(15, 32'h0025_2023);  // sw x2, 0(x10)
+    set_memory_word(20, 32'h0005_2183);  // lw x3, 0(x10)
 
     rst = 1'b1;
     repeat (2) @(posedge clk);
@@ -70,7 +86,7 @@ module cpu_tb;
 
     assert (dut.id_stage.register_file.registers[1] == 32'd5);
     assert (dut.id_stage.register_file.registers[2] == 32'd8);
-    assert (memory.memory_words[64] == 32'd8);
+    assert (get_memory_word(64) == 32'd8);
     assert (dut.id_stage.register_file.registers[3] == 32'd8);
 
     $display("cpu tests passed");

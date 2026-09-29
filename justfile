@@ -54,6 +54,14 @@ place-gowin:
 fpga-list kind="all":
   @scripts/fpga/list.sh "{{kind}}"
 
+# Build CPU-system firmware without synthesizing or repacking the FPGA image.
+firmware-build program:
+  @scripts/software/build_fpga_program.sh "{{program}}"
+
+# Fix Gowin's illegal RAM mode after IDE synthesis and before place-and-route.
+gowin-fix-memory:
+  @python3 scripts/fpga/patch_gowin_memory_modes.py impl/gwsynthesis/ShmerV.vg
+
 # Build a Tang Nano 9K target, optionally with a selected program.
 fpga-build target="" program="":
   @scripts/fpga/build_target.sh "{{target}}" "{{program}}"

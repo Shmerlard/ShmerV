@@ -2,8 +2,12 @@ timeunit 1ns / 1ps;
 
 module cpu_system #(
     parameter int MEM_WORDS = 1024,
-    parameter int unsigned UART_CYCLES_FOR_BIT = 234,
+    parameter int unsigned UART_CYCLES_FOR_BIT = 88,
     parameter string MEMORY_INIT_FILE = "",
+    parameter string MEMORY_INIT_FILE_LANE0 = "",
+    parameter string MEMORY_INIT_FILE_LANE1 = "",
+    parameter string MEMORY_INIT_FILE_LANE2 = "",
+    parameter string MEMORY_INIT_FILE_LANE3 = "",
     parameter logic [31:0] RESET_PC = 32'h0000_0000,
     parameter logic [31:0] RAM_BASE_ADDRESS = 32'h0000_0000,
     parameter logic [31:0] PERIPHERAL_BASE_ADDRESS = 32'h1000_0000
@@ -107,8 +111,12 @@ module cpu_system #(
   );
 
   memory #(
-      .MEM_WORDS(MEM_WORDS),
-      .INIT_FILE(MEMORY_INIT_FILE)
+      .MEM_WORDS      (MEM_WORDS),
+      .INIT_FILE      (MEMORY_INIT_FILE),
+      .INIT_FILE_LANE0(MEMORY_INIT_FILE_LANE0),
+      .INIT_FILE_LANE1(MEMORY_INIT_FILE_LANE1),
+      .INIT_FILE_LANE2(MEMORY_INIT_FILE_LANE2),
+      .INIT_FILE_LANE3(MEMORY_INIT_FILE_LANE3)
   ) memory (
       .clk                       (clk),
       .port_a_read_address_i     (imem_read_address),
