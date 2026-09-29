@@ -58,6 +58,10 @@ fpga-list kind="all":
 fpga-build target="" program="":
   @scripts/fpga/build_target.sh "{{target}}" "{{program}}"
 
+# Rebuild CPU firmware and repack BRAM while reusing placement and routing.
+fpga-repack target="" program="":
+  @scripts/fpga/repack_program.sh "{{target}}" "{{program}}"
+
 # Load a built image into SRAM, or pass "flash" for persistent storage.
 fpga-flash target="" selection="" mode="":
   @scripts/fpga/flash_target.sh "{{target}}" "{{selection}}" "{{mode}}"

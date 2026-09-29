@@ -77,4 +77,5 @@ nextpnr-himbaechel \
 
 bitstream="$images_directory/$image_name.fs"
 gowin_pack -d GW1N-9C -o "$bitstream" "$build_directory/routed.json"
+scripts/fpga/hardware_fingerprint.sh "$target" "$build_directory/hardware.sha256"
 echo "Bitstream: $bitstream"
