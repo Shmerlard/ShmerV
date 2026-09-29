@@ -5,10 +5,6 @@
     <Version>5</Version>
     <Device name="GW1NR-9C" pn="GW1NR-LV9QN88PC6/I5">gw1nr9c-004</Device>
     <FileList>
-        <File path="fpga/tang_nano_9k/cpu_system/ip/gowin_dpb_lane0/gowin_dpb_lane0.v" type="file.verilog" enable="1"/>
-        <File path="fpga/tang_nano_9k/cpu_system/ip/gowin_dpb_lane1/gowin_dpb_lane1.v" type="file.verilog" enable="1"/>
-        <File path="fpga/tang_nano_9k/cpu_system/ip/gowin_dpb_lane2/gowin_dpb_lane2.v" type="file.verilog" enable="1"/>
-        <File path="fpga/tang_nano_9k/cpu_system/ip/gowin_dpb_lane3/gowin_dpb_lane3.v" type="file.verilog" enable="1"/>
         <File path="fpga/tang_nano_9k/cpu_system/top.sv" type="file.verilog" enable="1"/>
         <File path="rtl/core/alu.sv" type="file.verilog" enable="1"/>
         <File path="rtl/core/controller.sv" type="file.verilog" enable="1"/>
@@ -39,6 +35,7 @@
         <File path="rtl/types/csr_types.sv" type="file.verilog" enable="1"/>
         <File path="fpga/tang_nano_9k/cpu_system/pins.cst" type="file.cst" enable="1"/>
         <File path="fpga/tang_nano_9k/cpu_system/clock.sdc" type="file.sdc" enable="1"/>
-        <File path="fpga/tang_nano_9k/cpu_system/gao_config.rao" type="file.gao" enable="1"/>
+        <File path="fpga/tang_nano_9k/cpu_system/gao_config.rao" type="file.gao" enable="0"/>
+        <File path="fpga/tang_nano_9k/cpu_system/gao_post_synthesis.gao" type="file.gao" enable="1"/>
     </FileList>
 </Project>

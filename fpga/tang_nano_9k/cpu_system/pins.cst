@@ -1,8 +1,8 @@
 IO_LOC "clk" 52;
 IO_PORT "clk" IO_TYPE=LVCMOS33 PULL_MODE=UP;
 
-IO_LOC "reset_button_n_i" 49;
-IO_PORT "reset_button_n_i" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+IO_LOC "reset_button_n_i" 4;
+IO_PORT "reset_button_n_i" IO_TYPE=LVCMOS18 PULL_MODE=UP;
 
 IO_LOC "port_c_io[0]" 51;
 IO_PORT "port_c_io[0]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
@@ -22,21 +22,21 @@ IO_LOC "port_c_io[7]" 69;
 IO_PORT "port_c_io[7]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
 
 IO_LOC "port_b_io[0]" 77;
-IO_PORT "port_b_io[0]" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+IO_PORT "port_b_io[0]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
 IO_LOC "port_b_io[1]" 76;
-IO_PORT "port_b_io[1]" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+IO_PORT "port_b_io[1]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
 IO_LOC "port_b_io[2]" 75;
-IO_PORT "port_b_io[2]" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+IO_PORT "port_b_io[2]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
 IO_LOC "port_b_io[3]" 74;
-IO_PORT "port_b_io[3]" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+IO_PORT "port_b_io[3]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
 IO_LOC "port_b_io[4]" 73;
-IO_PORT "port_b_io[4]" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+IO_PORT "port_b_io[4]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
 IO_LOC "port_b_io[5]" 72;
-IO_PORT "port_b_io[5]" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+IO_PORT "port_b_io[5]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
 IO_LOC "port_b_io[6]" 71;
-IO_PORT "port_b_io[6]" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+IO_PORT "port_b_io[6]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
 IO_LOC "port_b_io[7]" 70;
-IO_PORT "port_b_io[7]" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+IO_PORT "port_b_io[7]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
 
 IO_LOC "port_a_io[0]" 25;
 IO_PORT "port_a_io[0]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;

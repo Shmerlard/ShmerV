@@ -2,7 +2,7 @@
 <GAO_CONFIG>
     <Version>3.0</Version>
     <Mode>Standard</Mode>
-    <AoCore index="0" sample_clock="clk" trig_type="0" storage_depth="1024" window_num="1" capture_amount="1024" implementation="0" trigger_pos="10" module_name="cpu_system_top" force_trigger_by_falling_edge="false" capture_init_data_enabled="false">
+    <AoCore index="0" sample_clock="cpu_clk" trig_type="0" storage_depth="1024" window_num="1" capture_amount="1024" implementation="0" trigger_pos="0" module_name="cpu_system_top" force_trigger_by_falling_edge="false" capture_init_data_enabled="false">
         <SignalList>
             <Bus capture_enable="true" name="cpu_system/imem_read_address[7:0]">
                 <Signal>cpu_system/imem_read_address[7]</Signal>
@@ -14,8 +14,27 @@
                 <Signal>cpu_system/imem_read_address[1]</Signal>
                 <Signal>cpu_system/imem_read_address[0]</Signal>
             </Bus>
-            <Signal capture_enable="true">cpu_clk</Signal>
             <Signal capture_enable="true">reset_button_n_i</Signal>
+            <Bus capture_enable="true" name="gpio0_pin_output[7:0]">
+                <Signal>gpio0_pin_output[7]</Signal>
+                <Signal>gpio0_pin_output[6]</Signal>
+                <Signal>gpio0_pin_output[5]</Signal>
+                <Signal>gpio0_pin_output[4]</Signal>
+                <Signal>gpio0_pin_output[3]</Signal>
+                <Signal>gpio0_pin_output[2]</Signal>
+                <Signal>gpio0_pin_output[1]</Signal>
+                <Signal>gpio0_pin_output[0]</Signal>
+            </Bus>
+            <Bus capture_enable="true" name="gpio0_pin_output_enable[7:0]">
+                <Signal>gpio0_pin_output_enable[7]</Signal>
+                <Signal>gpio0_pin_output_enable[6]</Signal>
+                <Signal>gpio0_pin_output_enable[5]</Signal>
+                <Signal>gpio0_pin_output_enable[4]</Signal>
+                <Signal>gpio0_pin_output_enable[3]</Signal>
+                <Signal>gpio0_pin_output_enable[2]</Signal>
+                <Signal>gpio0_pin_output_enable[1]</Signal>
+                <Signal>gpio0_pin_output_enable[0]</Signal>
+            </Bus>
         </SignalList>
         <Triggers>
             <Trigger index="0">
@@ -61,5 +80,5 @@
             <Expression>M0</Expression>
         </Expressions>
     </AoCore>
-    <GAO_ID>1001101101010001</GAO_ID>
+    <GAO_ID>0110001011010010</GAO_ID>
 </GAO_CONFIG>
