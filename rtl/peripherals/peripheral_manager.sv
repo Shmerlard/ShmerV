@@ -1,6 +1,6 @@
 module peripheral_manager #(
     parameter logic [31:0] GPIO_BASE_ADDRESS = 32'h1000_0000,
-    parameter int unsigned UART_CYCLES_FOR_BIT = 234
+    parameter int unsigned UART_CYCLES_FOR_BIT = 88
 ) (
     input logic clk,
     input logic rst,

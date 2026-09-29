@@ -1,5 +1,6 @@
 module uart_module #(
-    parameter int unsigned CYCLES_FOR_BIT = 234
+    // 843.75 kHz / 9600 baud rounds to 88 clocks per transmitted bit.
+    parameter int unsigned CYCLES_FOR_BIT = 88
 ) (
     input logic clk,
     input logic rst,
