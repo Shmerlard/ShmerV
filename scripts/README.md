@@ -35,4 +35,3 @@ just fpga-flash cpu_system gpio_pattern flash
 - `flash_target.sh` loads a built image into FPGA SRAM or persistent flash.
 - `synthesize_cpu.sh` reports generic CPU synthesis results.
 - `synthesize_cpu_gowin.sh` maps the CPU to Gowin primitives.
-- `place_cpu_gowin.sh` runs the temporary Tang Nano 9K CPU placement and timing probe.

@@ -46,10 +46,6 @@ synth:
 synth-gowin:
   @scripts/fpga/synthesize_cpu_gowin.sh
 
-# Place and route a synthesis-only CPU wrapper for the Tang Nano 9K.
-place-gowin:
-  @scripts/fpga/place_cpu_gowin.sh
-
 # List FPGA targets, programs, built images, or all three.
 fpga-list kind="all":
   @scripts/fpga/list.sh "{{kind}}"

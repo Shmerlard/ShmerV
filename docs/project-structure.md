@@ -11,7 +11,6 @@ rtl/types/                   Shared SystemVerilog packages
 fpga/tang_nano_9k/           Tang Nano 9K targets
   gpio_bringup/              Direct GPIO hardware test
   cpu_system/                Complete SoC target for selected programs
-  cpu_synthesis/             Temporary placement/timing probe
 sw/runtime/                  Shared bare-metal startup
 sw/linker/                   Simulation and FPGA memory layouts
 sw/include/                  MMIO definitions and C interrupt declarations
