@@ -52,7 +52,7 @@ build_test() {
   fi
 
   echo "[BUILD] $test_module ($build_mode)"
-  if ! verilator --binary --timing --timescale-override 1ns/1ns $trace_arguments \
+  if ! verilator --binary --assert --timing --timescale-override 1ns/1ns $trace_arguments \
     --top-module "${test_module}_tb" \
     --Mdir "$test_build_directory/obj" -o "${test_module}_test" \
     $package_sources tb/support/package_imports.sv $rtl_library_arguments "$rtl_source" "$testbench" \
@@ -84,6 +84,7 @@ run_cpu_system_program() {
   assembly_source="$program_directory/$program_name.S"
   c_source="$program_directory/$program_name.c"
   checks_file="$program_directory/$program_name.checks"
+  fixed_expected_file="$program_directory/$program_name.expected"
   program_build_directory="$build_directory/cpu_system/$program_name"
   expected_file="$program_build_directory/program.expected"
 
@@ -99,8 +100,8 @@ run_cpu_system_program() {
     exit 1
   fi
 
-  if [ ! -f "$checks_file" ]; then
-    echo "Missing $checks_file" >&2
+  if [ ! -f "$checks_file" ] && [ ! -f "$fixed_expected_file" ]; then
+    echo "Missing $checks_file or $fixed_expected_file" >&2
     exit 1
   fi
 
@@ -114,13 +115,18 @@ run_cpu_system_program() {
     return 1
   fi
 
-  echo "[SPIKE] cpu_system/$program_name"
-  if ! python3 scripts/test/generate_expected.py \
-    "$checks_file" "$program_build_directory/program.elf" "$expected_file" \
-    > "$program_build_directory/spike.log" 2>&1; then
-    echo "[FAIL]  cpu_system/$program_name Spike reference"
-    cat "$program_build_directory/spike.log"
-    return 1
+  # Custom GPIO IRQs are SoC-specific and cannot be exercised by Spike.
+  if [ -f "$fixed_expected_file" ]; then
+    cp "$fixed_expected_file" "$expected_file"
+  else
+    echo "[SPIKE] cpu_system/$program_name"
+    if ! python3 scripts/test/generate_expected.py \
+      "$checks_file" "$program_build_directory/program.elf" "$expected_file" \
+      > "$program_build_directory/spike.log" 2>&1; then
+      echo "[FAIL]  cpu_system/$program_name Spike reference"
+      cat "$program_build_directory/spike.log"
+      return 1
+    fi
   fi
 
   test_end_pc=$(riscv32-none-elf-nm "$program_build_directory/program.elf" \
