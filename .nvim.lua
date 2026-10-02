@@ -1,5 +1,20 @@
 vim.opt.autoread = true
 
+local project_root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h")
+
+-- Firmware targets RV32I, so clangd must use RISC-V interrupt semantics.
+vim.lsp.config("clangd", {
+    init_options = {
+        fallbackFlags = {
+            "--target=riscv32-unknown-elf",
+            "-march=rv32i_zicsr",
+            "-mabi=ilp32",
+            "-ffreestanding",
+            "-I" .. project_root .. "/sw/include",
+        },
+    },
+})
+
 local external_change_group = vim.api.nvim_create_augroup("ShmerVExternalChanges", { clear = true })
 
 vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHoldI" }, {
