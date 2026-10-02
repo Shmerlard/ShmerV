@@ -1,3 +1,5 @@
+import csr_types::*;
+
 module peripheral_manager #(
     parameter logic [31:0] GPIO_BASE_ADDRESS = 32'h1000_0000,
     parameter int unsigned UART_CYCLES_FOR_BIT = 88
@@ -24,7 +26,8 @@ module peripheral_manager #(
     output logic [7:0] gpio2_pin_o,
     output logic [7:0] gpio2_pin_oe_o,
 
-    output logic irq_o
+    output logic irq_o,
+    output irq_address_t irq_address_o
 );
   localparam logic [31:0] GpioAddressSpaceBytes = 32'h0000_0100;
   localparam logic [31:0] Gpio1BaseAddress = GPIO_BASE_ADDRESS + GpioAddressSpaceBytes;
@@ -87,7 +90,21 @@ module peripheral_manager #(
   assign gpio1_write_enable = write_enable_i && gpio1_address_hit && write_byte_enable_i[0];
   assign gpio2_write_enable = write_enable_i && gpio2_address_hit && write_byte_enable_i[0];
   assign uart_write_enable = write_enable_i && uart_address_hit && write_byte_enable_i[0];
-  assign irq_o = gpio0_irq | gpio1_irq | gpio2_irq;
+  always_comb begin
+    irq_o = 1'b0;
+    irq_address_o = IRQ_ADDRESS_GPIO_A;
+
+    if (gpio0_irq) begin
+      irq_o = 1'b1;
+      irq_address_o = IRQ_ADDRESS_GPIO_A;
+    end else if (gpio1_irq) begin
+      irq_o = 1'b1;
+      irq_address_o = IRQ_ADDRESS_GPIO_B;
+    end else if (gpio2_irq) begin
+      irq_o = 1'b1;
+      irq_address_o = IRQ_ADDRESS_GPIO_C;
+    end
+  end
 
   always_ff @(posedge clk) begin
     if (rst) begin
@@ -117,7 +134,7 @@ module peripheral_manager #(
   gpio_module #(
       .WIDTH   (8),
       .ALT_MASK(8'b0),
-      .IRQ_MASK(8'b0)
+      .IRQ_MASK(8'hFF)
   ) gpio0 (
       .clk                (clk),
       .rst                (rst),
@@ -138,7 +155,7 @@ module peripheral_manager #(
   gpio_module #(
       .WIDTH   (8),
       .ALT_MASK(8'b0),
-      .IRQ_MASK(8'b0)
+      .IRQ_MASK(8'hFF)
   ) gpio1 (
       .clk                (clk),
       .rst                (rst),
@@ -159,7 +176,7 @@ module peripheral_manager #(
   gpio_module #(
       .WIDTH   (8),
       .ALT_MASK(8'b0000_0001),
-      .IRQ_MASK(8'b0)
+      .IRQ_MASK(8'hFF)
   ) gpio2 (
       .clk                (clk),
       .rst                (rst),

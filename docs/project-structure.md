@@ -14,6 +14,7 @@ fpga/tang_nano_9k/           Tang Nano 9K targets
   cpu_synthesis/             Temporary placement/timing probe
 sw/runtime/                  Shared bare-metal startup
 sw/linker/                   Simulation and FPGA memory layouts
+sw/include/                  MMIO definitions and C interrupt declarations
 sw/programs/                 Programs intended to run on the FPGA system
 tb/unit/                     Module-level SystemVerilog tests
 tb/cpu/                      Complete CPU/system testbenches
@@ -54,5 +55,6 @@ a later feature.
 
 Programs under `tb/cpu/programs/` exist only to verify the CPU. Their `.checks`
 files select architectural state that Spike evaluates before Verilator compares
-the RTL result. Runnable demonstration firmware belongs under `sw/programs/`
-instead.
+the RTL result. SoC-specific tests whose GPIO/custom interrupts are unavailable
+in Spike instead provide hand-written `.expected` files. Runnable demonstration
+firmware belongs under `sw/programs/` instead.

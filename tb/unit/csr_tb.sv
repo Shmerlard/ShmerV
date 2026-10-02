@@ -12,13 +12,14 @@ module csr_tb;
   logic mret_taken_i;
   logic [31:0] trap_pc_ex_i;
   trap_type_t trap_type_i;
-  trap_cause_exception_t trap_cause_exception_i;
+  logic [4:0] trap_cause_i;
   logic [31:0] trap_instruction_ex_i;
   logic [11:0] csr_address_i;
   logic [31:0] csr_write_data_i;
   logic [31:0] csr_load_data_o;
   logic csr_access_illegal_o;
   logic [31:0] csr_pc_redirect_address_o;
+  logic interrupts_enabled_o;
 
   csr dut (.*);
 
@@ -35,7 +36,7 @@ module csr_tb;
     mret_taken_i = 1'b0;
     trap_pc_ex_i = '0;
     trap_type_i = TRAP_TYPE_EXCEPTION;
-    trap_cause_exception_i = TRAP_CAUSE_ILLEGAL_INSTRUCTION;
+    trap_cause_i = TRAP_CAUSE_ILLEGAL_INSTRUCTION;
     trap_instruction_ex_i = '0;
     csr_address_i = CSR_ADDRESS_MSTATUS;
     csr_write_data_i = '0;
@@ -55,20 +56,20 @@ module csr_tb;
     csr_write_data_i = 32'h0000_0100;
     csr_write_enable_i = 1'b1;
     #1ns;
-    assert (csr_load_data_o == 32'h0000_0000)
+    assert (csr_load_data_o == 32'h0000_0001)
     else $fatal(1, "mtvec old value was %h", csr_load_data_o);
 
     @(posedge clk);
     #1ns;
     csr_write_enable_i = 1'b0;
-    assert (csr_load_data_o == 32'h0000_0100)
+    assert (csr_load_data_o == 32'h0000_0101)
     else $fatal(1, "mtvec write produced %h", csr_load_data_o);
 
     // A disabled write must preserve the CSR value.
     csr_write_data_i = 32'h0000_0200;
     @(posedge clk);
     #1ns;
-    assert (csr_load_data_o == 32'h0000_0100)
+    assert (csr_load_data_o == 32'h0000_0101)
     else $fatal(1, "disabled write changed mtvec to %h", csr_load_data_o);
 
     // An unsupported CSR read is illegal and returns no CSR data.
@@ -95,8 +96,71 @@ module csr_tb;
     #1ns;
     assert (!csr_access_illegal_o)
     else $fatal(1, "implemented CSR read was marked illegal");
-    assert (csr_load_data_o == 32'h0000_0100)
+    assert (csr_load_data_o == 32'h0000_0101)
     else $fatal(1, "unsupported write changed mtvec to %h", csr_load_data_o);
+
+    // Enable interrupts; MPP remains Machine even when software writes zero there.
+    csr_address_i = CSR_ADDRESS_MSTATUS;
+    csr_write_data_i = 32'h8;
+    csr_write_enable_i = 1'b1;
+    @(posedge clk);
+    #1ns;
+    csr_write_enable_i = 1'b0;
+    assert (interrupts_enabled_o && csr_load_data_o == 32'h1808);
+
+    // Every custom interrupt uses BASE + 4*cause; trap entry wins over CSR writes.
+    for (int cause = 16; cause <= 19; cause++) begin
+      trap_type_i = TRAP_TYPE_INTERRUPT;
+      trap_cause_i = 5'(cause);
+      trap_pc_ex_i = 32'h8000_0040;
+      trap_instruction_ex_i = 32'hFFFF_FFFF;
+      trap_taken_i = 1'b1;
+      csr_address_i = CSR_ADDRESS_MTVAL;
+      csr_write_data_i = 32'hDEAD_BEEF;
+      csr_write_enable_i = 1'b1;
+      #1ns;
+      assert (csr_pc_redirect_address_o == 32'h100 + 4 * 32'(cause));
+      @(posedge clk);
+      #1ns;
+      trap_taken_i = 1'b0;
+      csr_write_enable_i = 1'b0;
+      assert (!interrupts_enabled_o);
+      assert (csr_load_data_o == 0)
+      else $fatal(1, "interrupt mtval must be zero");
+      csr_address_i = CSR_ADDRESS_MCAUSE;
+      #1ns;
+      assert (csr_load_data_o == (32'h8000_0000 | 32'(cause)));
+      csr_address_i = CSR_ADDRESS_MEPC;
+      #1ns;
+      assert (csr_load_data_o == 32'h8000_0040);
+      csr_address_i = CSR_ADDRESS_MSTATUS;
+      #1ns;
+      assert (csr_load_data_o == 32'h1880);
+
+      mret_taken_i = 1'b1;
+      #1ns;
+      assert (csr_pc_redirect_address_o == 32'h8000_0040);
+      @(posedge clk);
+      #1ns;
+      mret_taken_i = 1'b0;
+      assert (interrupts_enabled_o && csr_load_data_o == 32'h1888);
+    end
+
+    // Exceptions always use BASE, record their instruction, and clear MIE.
+    trap_type_i  = TRAP_TYPE_EXCEPTION;
+    trap_cause_i = TRAP_CAUSE_ILLEGAL_INSTRUCTION;
+    trap_taken_i = 1'b1;
+    #1ns;
+    assert (csr_pc_redirect_address_o == 32'h100);
+    @(posedge clk);
+    #1ns;
+    trap_taken_i  = 1'b0;
+    csr_address_i = CSR_ADDRESS_MTVAL;
+    #1ns;
+    assert (csr_load_data_o == 32'hFFFF_FFFF);
+    csr_address_i = CSR_ADDRESS_MCAUSE;
+    #1ns;
+    assert (csr_load_data_o == 2);
 
     $display("csr tests passed");
     $finish;

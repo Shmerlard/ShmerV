@@ -1,4 +1,5 @@
 timeunit 1ns / 1ps;
+import csr_types::*;
 
 module cpu_system #(
     parameter int MEM_WORDS = 1024,
@@ -27,7 +28,6 @@ module cpu_system #(
     output logic [7:0] gpio2_pin_o,
     output logic [7:0] gpio2_pin_oe_o,
 
-    output logic peripheral_irq_o,
     output logic address_overlap_o
 );
 
@@ -49,6 +49,8 @@ module cpu_system #(
   logic peripheral_read_enable;
   logic peripheral_write_enable;
   logic [31:0] peripheral_read_data;
+  logic peripheral_irq;
+  irq_address_t peripheral_irq_address;
 
   cpu #(
       .RESET_PC(RESET_PC)
@@ -63,7 +65,9 @@ module cpu_system #(
       .dmem_read_enable_o      (dmem_read_enable),
       .imem_read_enable_o      (imem_read_enable),
       .imem_read_address_o     (imem_read_address),
-      .dmem_address_o          (dmem_address)
+      .dmem_address_o          (dmem_address),
+      .ext_irq_i               (peripheral_irq),
+      .ext_irq_address_i       (peripheral_irq_address)
   );
 
   address_decoder #(
@@ -88,7 +92,7 @@ module cpu_system #(
 
   peripheral_manager #(
       .UART_CYCLES_FOR_BIT(UART_CYCLES_FOR_BIT),
-      .GPIO_BASE_ADDRESS(PERIPHERAL_BASE_ADDRESS)
+      .GPIO_BASE_ADDRESS  (PERIPHERAL_BASE_ADDRESS)
   ) peripheral_manager (
       .clk                (clk),
       .rst                (rst),
@@ -107,7 +111,8 @@ module cpu_system #(
       .gpio2_pin_i        (gpio2_pin_i),
       .gpio2_pin_o        (gpio2_pin_o),
       .gpio2_pin_oe_o     (gpio2_pin_oe_o),
-      .irq_o              (peripheral_irq_o)
+      .irq_o              (peripheral_irq),
+      .irq_address_o      (peripheral_irq_address)
   );
 
   memory #(

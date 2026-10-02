@@ -4,8 +4,10 @@
   .global _start
 
 _start:
+  # Use supported Vectored mode explicitly rather than relying on reset values.
+  csrrwi x0, mtvec, 1
   # CSRRW returns the old CSR value and writes rs1 into the CSR.
-  addi x1, x0, 64
+  addi x1, x0, 65
   csrrw x2, mtvec, x1
   csrrw x3, mtvec, x0
 
@@ -19,7 +21,8 @@ _start:
   csrrs x6, mtvec, x5
 
   # CSRRC clears masked bits and returns the old CSR value.
-  csrrc x7, mtvec, x1
+  addi x5, x0, 64
+  csrrc x7, mtvec, x5
 
   # rs1=x0 performs a read without modifying the CSR.
   csrrs x8, mtvec, x0
@@ -31,11 +34,11 @@ _start:
   csrrs x11, mtvec, x0
 
   # CSRRWI writes the immediate and returns the old CSR value.
-  csrrwi x12, mtvec, 20
-  csrrwi x13, mtvec, 4
+  csrrwi x12, mtvec, 21
+  csrrwi x13, mtvec, 5
 
   # rd=x0 still writes the immediate.
-  csrrwi x0, mtvec, 16
+  csrrwi x0, mtvec, 17
 
   # CSRRSI sets immediate-selected bits and returns the old value.
   csrrsi x14, mtvec, 8

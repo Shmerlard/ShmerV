@@ -43,7 +43,6 @@ module cpu_system_top (
       .gpio2_pin_i      (gpio2_pin_input),
       .gpio2_pin_o      (gpio2_pin_output),
       .gpio2_pin_oe_o   (gpio2_pin_output_enable),
-      .peripheral_irq_o (),
       .address_overlap_o()
   );
 

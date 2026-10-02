@@ -16,7 +16,10 @@ module cpu #(
     output logic dmem_read_enable_o,
     output logic imem_read_enable_o,
     output logic [31:0] imem_read_address_o,
-    output logic [31:0] dmem_address_o
+    output logic [31:0] dmem_address_o,
+
+    input logic ext_irq_i,
+    input irq_address_t ext_irq_address_i
 
 );
 
@@ -109,13 +112,15 @@ module cpu #(
   logic [4:0] rd_wb;
   logic [31:0] dmem_address_mem;
   logic [31:0] dmemory_load_data_out_mem;
+  logic dmem_read_enable_mem;
+  logic dmem_write_enable_mem;
 
   // CSR and trap control
   logic trap_taken;
   logic mret_taken;
   trap_type_t trap_type;
 
-  trap_cause_exception_t trap_cause_exception;
+  logic [4:0] trap_cause;
   logic [11:0] csr_address_to_csr;
   logic [31:0] csr_load_data_mem;
   logic [31:0] csr_load_data_out_mem;
@@ -123,6 +128,7 @@ module cpu #(
   logic csr_read_enable;
   logic csr_write_enable;
   logic csr_access_illegal;
+  logic interrupts_enabled;
 
   // Register-file writeback
   logic [31:0] memory_load_data_wb;
@@ -138,6 +144,8 @@ module cpu #(
   assign dmem_read_ex = memory_control_ex.read_enable
       && memory_control_ex.target == MEMORY_TARGET_DMEMORY;
   assign dmem_address_o = dmem_address_mem;
+  assign dmem_read_enable_o = dmem_read_enable_mem && !flush_mem_wb_reg_from_trap;
+  assign dmem_write_enable_o = dmem_write_enable_mem && !flush_mem_wb_reg_from_trap;
   assign imem_read_enable_o = pc_write_enable;
 
   if_stage #(
@@ -285,8 +293,8 @@ module cpu #(
 
       .memory_address_o          (dmem_address_mem),
       .memory_write_byte_enable_o(dmem_write_byte_enable_o),
-      .memory_read_enable_o      (dmem_read_enable_o),
-      .memory_write_enable_o     (dmem_write_enable_o),
+      .memory_read_enable_o      (dmem_read_enable_mem),
+      .memory_write_enable_o     (dmem_write_enable_mem),
       .memory_store_data_o       (dmem_store_data_o),
       .memory_load_data_i        (dmem_load_data_i),
       .memory_load_data_out_mem_o(dmemory_load_data_out_mem),
@@ -365,15 +373,16 @@ module cpu #(
       .csr_write_enable_i       (csr_write_enable),
       .trap_taken_i             (trap_taken),
       .mret_taken_i             (mret_taken),
-      .trap_pc_ex_i             (pc_mem),
+      .trap_pc_ex_i             (pc_mem),  // Trap decisions are resolved in MEM.
       .trap_type_i              (trap_type),
-      .trap_cause_exception_i   (trap_cause_exception),
+      .trap_cause_i             (trap_cause),
       .trap_instruction_ex_i    (instruction_mem),
       .csr_address_i            (csr_address_to_csr),
       .csr_write_data_i         (csr_store_data_mem),
       .csr_load_data_o          (csr_load_data_mem),
       .csr_access_illegal_o     (csr_access_illegal),
-      .csr_pc_redirect_address_o(pc_redirect_address_csr)
+      .csr_pc_redirect_address_o(pc_redirect_address_csr),
+      .interrupts_enabled_o     (interrupts_enabled)
   );
 
   trap_control_unit trap_control_unit (
@@ -381,12 +390,13 @@ module cpu #(
       .illegal_instruction_mem_i(illegal_instruction_mem),
       .system_operation_mem_i   (system_operation_mem),
       .csr_access_illegal_i     (csr_access_illegal),
-      .fault_pc_i               (pc_mem),
-      .fault_instruction_i      (instruction_mem),
+      .ext_irq_i                (ext_irq_i),
+      .ext_irq_address_i        (ext_irq_address_i),
+      .interrupts_enabled_i     (interrupts_enabled),
       .trap_taken_o             (trap_taken),
       .mret_taken_o             (mret_taken),
       .trap_type_o              (trap_type),
-      .trap_cause_exception_o   (trap_cause_exception),
+      .trap_cause_o             (trap_cause),
       .flush_if_id_reg_o        (flush_if_id_reg_from_trap),
       .flush_id_ex_reg_o        (flush_id_ex_reg_from_trap),
       .flush_ex_mem_reg_o       (flush_ex_mem_reg_from_trap),

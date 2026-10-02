@@ -13,6 +13,11 @@ SECTIONS
     *(.text .text.*)
   } > RAM
 
+  .vectors ALIGN(4) :
+  {
+    KEEP(*(.vectors))
+  } > RAM
+
   .rodata :
   {
     *(.rodata .rodata.*)

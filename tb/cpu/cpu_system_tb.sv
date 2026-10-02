@@ -29,7 +29,6 @@ module cpu_system_tb;
   logic [7:0] gpio2_pin_i;
   logic [7:0] gpio2_pin_o;
   logic [7:0] gpio2_pin_oe_o;
-  logic peripheral_irq_o;
   logic address_overlap_o;
 
   cpu_system #(
@@ -48,7 +47,6 @@ module cpu_system_tb;
       .gpio2_pin_i      (gpio2_pin_i),
       .gpio2_pin_o      (gpio2_pin_o),
       .gpio2_pin_oe_o   (gpio2_pin_oe_o),
-      .peripheral_irq_o (peripheral_irq_o),
       .address_overlap_o(address_overlap_o)
   );
 

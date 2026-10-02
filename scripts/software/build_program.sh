@@ -25,7 +25,7 @@ case "$program_source" in
     riscv32-none-elf-gcc -march=rv32i -mabi=ilp32 -O0 \
       -ffreestanding -fno-pic -fno-stack-protector \
       -fno-unwind-tables -fno-asynchronous-unwind-tables \
-      -msmall-data-limit=0 -c \
+      -msmall-data-limit=0 -Isw/include -c \
       -o "$output_directory/program.o" "$program_source"
     riscv32-none-elf-as -march=rv32i -mabi=ilp32 \
       -o "$output_directory/start.o" sw/runtime/start.S

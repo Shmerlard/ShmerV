@@ -17,9 +17,20 @@ package csr_types;
   } trap_cause_exception_t;
 
   typedef enum logic [4:0] {
+    TRAP_CAUSE_MACHINE_EXTERNAL_INTERRUPT = 5'h0b,
     TRAP_CAUSE_MACHINE_SOFTWARE_INTERRUPT = 5'h03,
-    TRAP_CAUSE_MACHINE_EXTERNAL_INTERRUPT = 5'h0b
+    TRAP_CAUSE_RX = 5'h10,
+    TRAP_CAUSE_GPIO_A = 5'h11,
+    TRAP_CAUSE_GPIO_B = 5'h12,
+    TRAP_CAUSE_GPIO_C = 5'h13
   } trap_cause_interrupt_t;
+
+  typedef enum logic [2:0] {
+    IRQ_ADDRESS_UART_RX,
+    IRQ_ADDRESS_GPIO_A,
+    IRQ_ADDRESS_GPIO_B,
+    IRQ_ADDRESS_GPIO_C
+  } irq_address_t;
 
   typedef enum logic [2:0] {
     CSR_INSTRUCTION_CSRRW  = 3'b001,

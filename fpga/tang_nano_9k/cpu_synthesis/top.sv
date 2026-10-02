@@ -41,7 +41,9 @@ module cpu_synthesis_top (
       .dmem_read_enable_o      (dmem_read_enable),
       .imem_read_enable_o      (imem_read_enable),
       .imem_read_address_o     (imem_read_address),
-      .dmem_address_o          (dmem_address)
+      .dmem_address_o          (dmem_address),
+      .ext_irq_i               (1'b0),
+      .ext_irq_address_i       (csr_types::IRQ_ADDRESS_GPIO_A)
   );
 
 endmodule

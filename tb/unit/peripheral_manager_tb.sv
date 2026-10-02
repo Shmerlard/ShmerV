@@ -1,4 +1,5 @@
 timeunit 1ns / 1ps;
+import csr_types::*;
 
 module peripheral_manager_tb;
   localparam logic [31:0] GpioBaseAddress = 32'h1000_0000;
@@ -24,6 +25,7 @@ module peripheral_manager_tb;
   logic [7:0] gpio2_pin_o;
   logic [7:0] gpio2_pin_oe_o;
   logic irq_o;
+  irq_address_t irq_address_o;
 
   peripheral_manager #(
       .GPIO_BASE_ADDRESS  (GpioBaseAddress),
@@ -120,6 +122,24 @@ module peripheral_manager_tb;
     #1ns;
     read_enable_i = 1'b0;
     assert (read_data_o == 32'b0);
+    assert (!irq_o);
+
+    // Set software flags while masked, then enable all banks. Priority is A > B > C.
+    write_register(GpioBaseAddress, 5'h06, 32'h1, 4'b0001);
+    write_register(Gpio1BaseAddress, 5'h06, 32'h1, 4'b0001);
+    write_register(Gpio2BaseAddress, 5'h06, 32'h2, 4'b0001);
+    assert (!irq_o);
+    write_register(Gpio2BaseAddress, 5'h04, 32'h2, 4'b0001);
+    assert (irq_o && irq_address_o == IRQ_ADDRESS_GPIO_C);
+    write_register(Gpio1BaseAddress, 5'h04, 32'h1, 4'b0001);
+    assert (irq_o && irq_address_o == IRQ_ADDRESS_GPIO_B);
+    write_register(GpioBaseAddress, 5'h04, 32'h1, 4'b0001);
+    assert (irq_o && irq_address_o == IRQ_ADDRESS_GPIO_A);
+    write_register(GpioBaseAddress, 5'h07, 32'h1, 4'b0001);
+    assert (irq_o && irq_address_o == IRQ_ADDRESS_GPIO_B);
+    write_register(Gpio1BaseAddress, 5'h07, 32'hFF, 4'b0001);
+    assert (irq_o && irq_address_o == IRQ_ADDRESS_GPIO_C);
+    write_register(Gpio2BaseAddress, 5'h07, 32'hFF, 4'b0001);
     assert (!irq_o);
 
     $display("peripheral manager tests passed");
