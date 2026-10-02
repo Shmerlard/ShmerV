@@ -1,56 +1,60 @@
 IO_LOC "clk" 52;
 IO_PORT "clk" IO_TYPE=LVCMOS33 PULL_MODE=UP;
 
+// nextpnr names the divided CPU clock after this divider bit.
+// Request the global clock network for its clock sinks.
+CLOCK_LOC "clock_divider[4]" BUFG = CLK;
+
 IO_LOC "reset_button_n_i" 4;
 IO_PORT "reset_button_n_i" IO_TYPE=LVCMOS18 PULL_MODE=UP;
 
-IO_LOC "port_c_io[0]" 51;
+IO_LOC "port_c_io[0]" 38;
 IO_PORT "port_c_io[0]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_c_io[1]" 53;
+IO_LOC "port_c_io[1]" 37;
 IO_PORT "port_c_io[1]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_c_io[2]" 54;
+IO_LOC "port_c_io[2]" 36;
 IO_PORT "port_c_io[2]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_c_io[3]" 55;
+IO_LOC "port_c_io[3]" 39;
 IO_PORT "port_c_io[3]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_c_io[4]" 56;
+IO_LOC "port_c_io[4]" 25;
 IO_PORT "port_c_io[4]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_c_io[5]" 57;
+IO_LOC "port_c_io[5]" 26;
 IO_PORT "port_c_io[5]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_c_io[6]" 68;
+IO_LOC "port_c_io[6]" 27;
 IO_PORT "port_c_io[6]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_c_io[7]" 69;
+IO_LOC "port_c_io[7]" 28;
 IO_PORT "port_c_io[7]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
 
-IO_LOC "port_b_io[0]" 77;
+IO_LOC "port_b_io[0]" 29;
 IO_PORT "port_b_io[0]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_b_io[1]" 76;
+IO_LOC "port_b_io[1]" 30;
 IO_PORT "port_b_io[1]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_b_io[2]" 75;
+IO_LOC "port_b_io[2]" 33;
 IO_PORT "port_b_io[2]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_b_io[3]" 74;
+IO_LOC "port_b_io[3]" 34;
 IO_PORT "port_b_io[3]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_b_io[4]" 73;
+IO_LOC "port_b_io[4]" 40;
 IO_PORT "port_b_io[4]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_b_io[5]" 72;
+IO_LOC "port_b_io[5]" 35;
 IO_PORT "port_b_io[5]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_b_io[6]" 71;
+IO_LOC "port_b_io[6]" 41;
 IO_PORT "port_b_io[6]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_b_io[7]" 70;
+IO_LOC "port_b_io[7]" 42;
 IO_PORT "port_b_io[7]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
 
-IO_LOC "port_a_io[0]" 25;
-IO_PORT "port_a_io[0]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_a_io[1]" 26;
+IO_LOC "port_a_io[0]" 51;
+IO_PORT "port_a_io[0]" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+IO_LOC "port_a_io[1]" 53;
 IO_PORT "port_a_io[1]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_a_io[2]" 27;
+IO_LOC "port_a_io[2]" 54;
 IO_PORT "port_a_io[2]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_a_io[3]" 28;
+IO_LOC "port_a_io[3]" 55;
 IO_PORT "port_a_io[3]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_a_io[4]" 29;
+IO_LOC "port_a_io[4]" 56;
 IO_PORT "port_a_io[4]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_a_io[5]" 30;
+IO_LOC "port_a_io[5]" 57;
 IO_PORT "port_a_io[5]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_a_io[6]" 33;
+IO_LOC "port_a_io[6]" 68;
 IO_PORT "port_a_io[6]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
-IO_LOC "port_a_io[7]" 34;
+IO_LOC "port_a_io[7]" 69;
 IO_PORT "port_a_io[7]" IO_TYPE=LVCMOS33 PULL_MODE=NONE;

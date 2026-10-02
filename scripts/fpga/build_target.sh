@@ -73,6 +73,7 @@ nextpnr-himbaechel \
   --write "$build_directory/routed.json" \
   --freq 27 \
   --report "$build_directory/report.json" \
+  --detailed-timing-report \
   --log "$build_directory/nextpnr.log"
 
 bitstream="$images_directory/$image_name.fs"

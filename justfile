@@ -62,7 +62,7 @@ firmware-build program:
 gowin-fix-memory:
   @python3 scripts/fpga/patch_gowin_memory_modes.py impl/gwsynthesis/ShmerV.vg
 
-# Build a Tang Nano 9K target, optionally with a selected program.
+# Build a Tang Nano 9K target.
 fpga-build target="" program="":
   @scripts/fpga/build_target.sh "{{target}}" "{{program}}"
 
