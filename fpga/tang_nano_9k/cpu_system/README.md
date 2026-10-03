@@ -10,9 +10,16 @@ just fpga-flash cpu_system PROGRAM
 
 - `gpio_pattern`: alternate the LEDs between `0xAA` and `0x55`.
 - `gpio_nibble_sum`: add the DIP-switch nibbles and show the result on the LEDs.
-- `interrupt_test_1`: count presses of the active-low A.0 / pin 51 button on
-  all eight Port C LEDs in binary, starting at zero and wrapping after 255.
-  Interrupts are re-enabled after approximately 20 ms of stable button release.
+- `interrupt_test_1`: active-low A.0 / pin 51 presses add 1 and A.1 / pin 53
+  presses add 2 to an eight-bit counter. C.1-C.7 display its low seven bits.
+  C.0 / pin 38 transmits one character per accepted button press over UART
+  at 9600 baud, 8N1: `A` through `Z`, then back to `A`. Reset restarts at `A`.
+  If both button flags are pending, both increments and both characters are sent.
+  Interrupts are re-enabled after 20 consecutive samples of both buttons released.
+  A.1 requires an external pull-up; only A.0 has an internal pull-up configured.
+  Debounce and UART waits use C busy loops calibrated only for the current setup;
+  their duration depends on compilation and clock frequency. UART has no readable
+  busy flag, so firmware waits conservatively between characters.
 - `uart_hello`: count from `0x00` to `0xFF` on Port A, then repeatedly transmit
   `Hello` on GPIO2.0 / pin 38 at 9600 baud.
 
