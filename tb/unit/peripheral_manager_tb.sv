@@ -29,7 +29,7 @@ module peripheral_manager_tb;
 
   peripheral_manager #(
       .GPIO_BASE_ADDRESS  (GpioBaseAddress),
-      .UART_CYCLES_FOR_BIT(4)
+      .CLOCK_HZ(38_400)
   ) dut (
       .*
   );

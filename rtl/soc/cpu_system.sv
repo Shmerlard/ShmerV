@@ -3,7 +3,8 @@ import csr_types::*;
 
 module cpu_system #(
     parameter int MEM_WORDS = 1024,
-    parameter int unsigned UART_CYCLES_FOR_BIT = 88,
+    parameter int unsigned CLOCK_HZ = 843_750,
+    parameter int unsigned UART_BAUD_RATE = 9600,
     parameter string MEMORY_INIT_FILE = "",
     parameter string MEMORY_INIT_FILE_LANE0 = "",
     parameter string MEMORY_INIT_FILE_LANE1 = "",
@@ -91,7 +92,8 @@ module cpu_system #(
   );
 
   peripheral_manager #(
-      .UART_CYCLES_FOR_BIT(UART_CYCLES_FOR_BIT),
+      .CLOCK_HZ           (CLOCK_HZ),
+      .UART_BAUD_RATE     (UART_BAUD_RATE),
       .GPIO_BASE_ADDRESS  (PERIPHERAL_BASE_ADDRESS)
   ) peripheral_manager (
       .clk                (clk),

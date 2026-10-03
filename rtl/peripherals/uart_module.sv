@@ -1,6 +1,6 @@
 module uart_module #(
-    // 843.75 kHz / 9600 baud rounds to 88 clocks per transmitted bit.
-    parameter int unsigned CYCLES_FOR_BIT = 88
+    parameter int unsigned CLOCK_HZ = 843_750,
+    parameter int unsigned BAUD_RATE = 9600
 ) (
     input logic clk,
     input logic rst,
@@ -11,8 +11,18 @@ module uart_module #(
 
     output logic tx_o
 );
-  localparam int unsigned CycleCounterWidth = $clog2(CYCLES_FOR_BIT);
-  localparam logic [CycleCounterWidth-1:0] LastCycle = CycleCounterWidth'(CYCLES_FOR_BIT - 1);
+  // Round to the nearest whole number of clock cycles per bit.
+  localparam int unsigned CyclesForBit =
+      BAUD_RATE == 0 ? 0 : int'((64'(CLOCK_HZ) + 64'(BAUD_RATE) / 2) / 64'(BAUD_RATE));
+  localparam int unsigned CycleCounterWidth = CyclesForBit > 1 ? $clog2(CyclesForBit) : 1;
+  localparam logic [CycleCounterWidth-1:0] LastCycle = CycleCounterWidth'(CyclesForBit - 1);
+
+`ifndef SYNTHESIS
+  initial begin
+    assert (BAUD_RATE > 0 && CLOCK_HZ >= BAUD_RATE)
+      else $fatal(1, "UART requires CLOCK_HZ >= BAUD_RATE > 0");
+  end
+`endif
 
 
   typedef enum logic [1:0] {

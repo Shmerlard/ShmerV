@@ -2,7 +2,8 @@ import csr_types::*;
 
 module peripheral_manager #(
     parameter logic [31:0] GPIO_BASE_ADDRESS = 32'h1000_0000,
-    parameter int unsigned UART_CYCLES_FOR_BIT = 88
+    parameter int unsigned CLOCK_HZ = 843_750,
+    parameter int unsigned UART_BAUD_RATE = 9600
 ) (
     input logic clk,
     input logic rst,
@@ -195,7 +196,8 @@ module peripheral_manager #(
   );
 
   uart_module #(
-      .CYCLES_FOR_BIT(UART_CYCLES_FOR_BIT)
+      .CLOCK_HZ (CLOCK_HZ),
+      .BAUD_RATE(UART_BAUD_RATE)
   ) uart (
       .clk                (clk),
       .rst                (rst),
