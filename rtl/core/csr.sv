@@ -50,7 +50,8 @@ module csr (
   assign write_to_read_only = csr_write_enable_i && csr_address_read_only(csr_address_i);
   logic unsupported_address;
   assign unsupported_address = !csr_address_supported(csr_address_i);
-  assign csr_write_access_illegal = csr_write_enable_i && (unsupported_address || csr_address_read_only(
+  assign csr_write_access_illegal =
+      csr_write_enable_i && (unsupported_address || csr_address_read_only(
       csr_address_i
   ));
 

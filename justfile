@@ -22,7 +22,7 @@ format-check:
 
 # Run Verible and Verilator lint checks.
 lint:
-  verible-verilog-lint {{sv_sources}}
+  verible-verilog-lint --rules='+parameter-name-style=localparam_style:CamelCase|ALL_CAPS' {{sv_sources}}
   verilator --lint-only --timing --top-module cpu_system rtl/types/csr_types.sv rtl/types/core_types.sv {{verilator_sources}}
 
 # Run tests, one CPU program, or list CPU programs with: just test cpu_system -l.

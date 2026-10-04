@@ -32,8 +32,11 @@ module address_decoder #(
   logic peripheral_address_hit;
   read_target_t read_target;
 
+  // The lower-bound check is intentional when RAM_BASE_ADDRESS defaults to zero.
+  /* verilator lint_off UNSIGNED */
   assign ram_address_hit = address_i >= RAM_BASE_ADDRESS
       && address_i < RAM_BASE_ADDRESS + RAM_SIZE_BYTES;
+  /* verilator lint_on UNSIGNED */
   assign peripheral_address_hit = address_i >= PERIPHERAL_BASE_ADDRESS
       && address_i < PERIPHERAL_BASE_ADDRESS + PERIPHERAL_SIZE_BYTES;
   assign address_overlap_o = ram_address_hit && peripheral_address_hit;

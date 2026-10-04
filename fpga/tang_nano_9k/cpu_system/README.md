@@ -47,15 +47,11 @@ and update `pins.cst`'s clock net to `clock_divider[log2(CLOCK_DIVIDE)-1]`
 These constraint files are not generated
 from RTL parameters. Software busy-loop delays also require recalibration.
 
-The board divider and UART frequency propagation simulation is
-`tb/fpga/cpu_system_top_tb.sv`. Run it without synthesizing or programming:
+The board divider and UART frequency propagation simulation is included in
+`just test`. Run it separately without synthesizing or programming:
 
 ```sh
-verilator --binary --assert --timing --timescale-override 1ns/1ns \
-  -Wno-TIMESCALEMOD --top-module cpu_system_top_tb \
-  --Mdir build/tests/board_clock/obj -o board_clock_test \
-  -f fpga/tang_nano_9k/cpu_system/sources.f tb/fpga/cpu_system_top_tb.sv
-build/tests/board_clock/obj/board_clock_test
+just test cpu_system_top
 ```
 
 Gowin uses `clock.sdc` to constrain both clocks. Check the generated-clock constraint

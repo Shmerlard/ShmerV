@@ -26,14 +26,14 @@ module memory #(
   logic [7:0] memory_lane2[MEM_WORDS];
   logic [7:0] memory_lane3[MEM_WORDS];
 
-  if (INIT_FILE_LANE0 != "") begin : generate_lane_initialization
+  if (INIT_FILE_LANE0 != "") begin : gen_lane_initialization
     initial begin
       $readmemh(INIT_FILE_LANE0, memory_lane0);
       $readmemh(INIT_FILE_LANE1, memory_lane1);
       $readmemh(INIT_FILE_LANE2, memory_lane2);
       $readmemh(INIT_FILE_LANE3, memory_lane3);
     end
-  end else begin : generate_word_initialization
+  end else begin : gen_word_initialization
     logic [31:0] initialization_words[MEM_WORDS];
     string runtime_init_file;
 

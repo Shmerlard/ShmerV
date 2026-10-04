@@ -4,7 +4,9 @@ module uart_frame_check #(
     parameter int unsigned ClockHz = 36_000,
     parameter int unsigned BaudRate = 10_000,
     parameter int unsigned CyclesForBit = 4
-) (output logic done = 1'b0);
+) (
+    output logic done = 1'b0
+);
 
   logic clk = 1'b0;
   logic rst;
@@ -13,7 +15,12 @@ module uart_frame_check #(
   logic mmio_write_enable_i;
   logic tx_o;
 
-  uart_module #(.CLOCK_HZ(ClockHz), .BAUD_RATE(BaudRate)) dut (.*);
+  uart_module #(
+      .CLOCK_HZ (ClockHz),
+      .BAUD_RATE(BaudRate)
+  ) dut (
+      .*
+  );
 
   always #5ns clk = ~clk;
 
@@ -68,10 +75,25 @@ module uart_module_tb;
   logic [3:0] done;
   // Rounding up, rounding down, board defaults, and one cycle per bit.
   uart_frame_check rounded_up (.done(done[0]));
-  uart_frame_check #(.ClockHz(34_000), .CyclesForBit(3)) rounded_down (.done(done[1]));
-  uart_frame_check #(.ClockHz(843_750), .BaudRate(9600), .CyclesForBit(88)) board_clock
-      (.done(done[2]));
-  uart_frame_check #(.ClockHz(10_000), .CyclesForBit(1)) single_cycle (.done(done[3]));
+  uart_frame_check #(
+      .ClockHz(34_000),
+      .CyclesForBit(3)
+  ) rounded_down (
+      .done(done[1])
+  );
+  uart_frame_check #(
+      .ClockHz(843_750),
+      .BaudRate(9600),
+      .CyclesForBit(88)
+  ) board_clock (
+      .done(done[2])
+  );
+  uart_frame_check #(
+      .ClockHz(10_000),
+      .CyclesForBit(1)
+  ) single_cycle (
+      .done(done[3])
+  );
 
   initial begin
     $dumpfile("build/tests/uart_module/waveform.fst");

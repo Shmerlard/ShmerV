@@ -28,7 +28,7 @@ module peripheral_manager_tb;
   irq_address_t irq_address_o;
 
   peripheral_manager #(
-      .GPIO_BASE_ADDRESS  (GpioBaseAddress),
+      .GPIO_BASE_ADDRESS(GpioBaseAddress),
       .CLOCK_HZ(38_400)
   ) dut (
       .*

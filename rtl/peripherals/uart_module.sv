@@ -1,5 +1,5 @@
 module uart_module #(
-    parameter int unsigned CLOCK_HZ = 843_750,
+    parameter int unsigned CLOCK_HZ  = 843_750,
     parameter int unsigned BAUD_RATE = 9600
 ) (
     input logic clk,
@@ -20,7 +20,7 @@ module uart_module #(
 `ifndef SYNTHESIS
   initial begin
     assert (BAUD_RATE > 0 && CLOCK_HZ >= BAUD_RATE)
-      else $fatal(1, "UART requires CLOCK_HZ >= BAUD_RATE > 0");
+    else $fatal(1, "UART requires CLOCK_HZ >= BAUD_RATE > 0");
   end
 `endif
 

@@ -109,7 +109,7 @@ module memory_tb;
 
     // Read the written word through Port B.
     port_b_address_i = 32'h0000_0008;
-    port_b_enable_i  = 1'b1;
+    port_b_enable_i = 1'b1;
     @(posedge clk);
     #1;
     assert (port_b_read_data_o == 32'hAABB_CCDD)

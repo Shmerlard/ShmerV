@@ -92,9 +92,9 @@ module cpu_system #(
   );
 
   peripheral_manager #(
-      .CLOCK_HZ           (CLOCK_HZ),
-      .UART_BAUD_RATE     (UART_BAUD_RATE),
-      .GPIO_BASE_ADDRESS  (PERIPHERAL_BASE_ADDRESS)
+      .CLOCK_HZ         (CLOCK_HZ),
+      .UART_BAUD_RATE   (UART_BAUD_RATE),
+      .GPIO_BASE_ADDRESS(PERIPHERAL_BASE_ADDRESS)
   ) peripheral_manager (
       .clk                (clk),
       .rst                (rst),

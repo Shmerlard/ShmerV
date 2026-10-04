@@ -42,9 +42,11 @@ module mem_stage (
   // DMemory Control
   always_comb begin
     memory_read_enable_o =
-        memory_control_i.read_enable && valid_i && memory_access_aligned && target == MEMORY_TARGET_DMEMORY;
+        memory_control_i.read_enable && valid_i && memory_access_aligned &&
+        target == MEMORY_TARGET_DMEMORY;
     memory_write_enable_o =
-        memory_control_i.write_enable && valid_i && memory_access_aligned && target == MEMORY_TARGET_DMEMORY;
+        memory_control_i.write_enable && valid_i && memory_access_aligned &&
+        target == MEMORY_TARGET_DMEMORY;
 
     byte_offset = alu_result_i[1:0];
     memory_store_data_o = store_data_in_mem_i << {byte_offset, 3'b000};

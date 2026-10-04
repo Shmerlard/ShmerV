@@ -136,7 +136,8 @@ module cpu #(
   logic [31:0] rf_write_data_wb;
   logic rf_write_enable_wb;
 
-  assign pc_redirect_address = pc_redirect_enable_trap ? pc_redirect_address_csr : pc_redirect_address_ex;
+  assign pc_redirect_address =
+      pc_redirect_enable_trap ? pc_redirect_address_csr : pc_redirect_address_ex;
   assign pc_redirect_enable = pc_redirect_enable_trap || pc_redirect_enable_ex;
   assign pc_write_enable = !pc_stall || pc_redirect_enable;
   assign flush_if_id_reg = pc_redirect_enable || flush_if_id_reg_from_trap;
@@ -373,7 +374,7 @@ module cpu #(
       .csr_write_enable_i       (csr_write_enable),
       .trap_taken_i             (trap_taken),
       .mret_taken_i             (mret_taken),
-      .trap_pc_ex_i             (pc_mem),  // Trap decisions are resolved in MEM.
+      .trap_pc_ex_i             (pc_mem),                   // Trap decisions are resolved in MEM.
       .trap_type_i              (trap_type),
       .trap_cause_i             (trap_cause),
       .trap_instruction_ex_i    (instruction_mem),

@@ -35,6 +35,26 @@ build_test() {
   rtl_source=$(find rtl -type f -name "$test_module.sv" -print -quit)
   testbench=$(find tb -type f -name "${test_module}_tb.sv" -print -quit)
 
+  # The board wrapper lives outside rtl/ and needs its simulation IOBUF model.
+  if [ "$test_module" = "cpu_system_top" ]; then
+    mkdir -p "$test_build_directory"
+    trace_arguments=
+    if [ "$build_mode" = "trace" ]; then
+      trace_arguments="--trace-fst --trace-max-array 1025 --trace-max-width 0"
+    fi
+    echo "[BUILD] $test_module ($build_mode)"
+    if ! verilator --binary --assert --timing --timescale-override 1ns/1ns \
+      -Wno-TIMESCALEMOD $trace_arguments --top-module cpu_system_top_tb \
+      --Mdir "$test_build_directory/obj" -o "${test_module}_test" \
+      -f fpga/tang_nano_9k/cpu_system/sources.f "$testbench" \
+      > "$test_build_directory/build.log" 2>&1; then
+      echo "[FAIL]  $test_module build"
+      cat "$test_build_directory/build.log"
+      return 1
+    fi
+    return
+  fi
+
   if [ -z "$rtl_source" ] || [ -z "$testbench" ]; then
     echo "Missing RTL or testbench for $test_module" >&2
     exit 1
