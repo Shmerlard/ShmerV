@@ -3,10 +3,14 @@
 The repository separates reusable RTL, board-specific FPGA targets, runnable
 software, verification-only programs, and workflow scripts.
 
+The IF-stage diagram under `docs/diagrams/` is an early sketch. It omits the
+current redirect and stall control and uses older signal names; use the RTL
+for the current interface.
+
 ```text
 rtl/core/                    Reusable CPU and its pipeline internals
 rtl/soc/                     Memory, address decoding, and CPU-system integration
-rtl/peripherals/             GPIO and peripheral management
+rtl/peripherals/             GPIO, UART TX, and peripheral management
 rtl/types/                   Shared SystemVerilog packages
 fpga/tang_nano_9k/           Tang Nano 9K targets
   gpio_bringup/              Direct GPIO hardware test
@@ -17,6 +21,7 @@ sw/include/                  MMIO definitions and C interrupt declarations
 sw/programs/                 Programs intended to run on the FPGA system
 tb/unit/                     Module-level SystemVerilog tests
 tb/cpu/                      Complete CPU/system testbenches
+tb/fpga/                     Board-wrapper simulation tests
 tb/cpu/programs/             Test-only software and Spike check descriptions
 tb/support/                  Shared test-build support files
 tb/waves/                    Persistent Surfer layouts
@@ -24,7 +29,6 @@ scripts/software/            Software compilation
 scripts/test/                Regression and Spike-reference generation
 scripts/simulation/          Traced simulation and viewers
 scripts/fpga/                FPGA listing, synthesis, build, and programming
-planning/                    Detailed local architecture and roadmap notes
 build/                       Generated artifacts; never committed
 ```
 
@@ -46,9 +50,9 @@ just fpga-build cpu_system gpio_pattern
 just fpga-flash cpu_system gpio_pattern
 ```
 
-Firmware is currently embedded into block-RAM initialization, so selecting a
-different program rebuilds the FPGA image. A UART firmware loader is planned as
-a later feature.
+Firmware is embedded into block-RAM initialization. `just fpga-repack` can
+replace it while reusing an existing placement and routing result, provided
+the hardware is unchanged. A UART firmware loader is not implemented yet.
 
 ## Verification Software
 
