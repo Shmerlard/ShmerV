@@ -1,0 +1,9 @@
+{
+  "index": [
+    {
+      "dirs": ["."],
+      "excludeDirs": ["build", ".git", ".direnv"]
+    }
+  ],
+  "buildPattern": "fpga/**/sources.f"
+}
