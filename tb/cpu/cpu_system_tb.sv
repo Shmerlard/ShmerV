@@ -13,6 +13,7 @@ module cpu_system_tb;
   integer scan_result;
   integer expected_register;
   string check_type;
+  string expected_csr;
   string expected_file;
   logic test_completed;
   logic [31:0] test_end_pc;
@@ -126,6 +127,24 @@ module cpu_system_tb;
             else
               $fatal(
                   1, "Expected x%0d = %h, got %h", expected_register, expected_value, actual_value
+              );
+          end
+
+          "csr": begin
+            scan_result = $fscanf(expected_file_handle, "%s %h", expected_csr, expected_value);
+            if (scan_result != 2) $fatal(1, "Invalid CSR entry in %s", expected_file);
+            case (expected_csr)
+              "mstatus": actual_value = dut.cpu.csr.mstatus;
+              "mtvec": actual_value = dut.cpu.csr.mtvec;
+              "mepc": actual_value = dut.cpu.csr.mepc;
+              "mcause": actual_value = dut.cpu.csr.mcause;
+              "mtval", "mval": actual_value = dut.cpu.csr.mtval;
+              default: $fatal(1, "Unknown CSR '%s' in %s", expected_csr, expected_file);
+            endcase
+            assert (actual_value == expected_value)
+            else
+              $fatal(
+                  1, "Expected CSR %s = %h, got %h", expected_csr, expected_value, actual_value
               );
           end
 

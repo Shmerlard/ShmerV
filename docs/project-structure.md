@@ -61,3 +61,9 @@ files select architectural state that Spike evaluates before Verilator compares
 the RTL result. SoC-specific tests whose GPIO/custom interrupts are unavailable
 in Spike instead provide hand-written `.expected` files. Runnable demonstration
 firmware belongs under `sw/programs/` instead.
+
+Hand-written `.expected` files also support final CSR checks such as
+`csr mcause 00000006` and `csr mtval 80001003`. Supported names are `mstatus`,
+`mtvec`, `mepc`, `mcause`, and `mtval`; `mval` is accepted as an alias for
+`mtval`. Values are hexadecimal. CSR entries are not supported in Spike `.checks`
+files.
