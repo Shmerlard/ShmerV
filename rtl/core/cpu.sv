@@ -128,6 +128,7 @@ module cpu #(
   logic csr_read_enable;
   logic csr_write_enable;
   logic csr_access_illegal;
+  memory_alignment_exception_t memory_alignment_exception_mem;
   logic interrupts_enabled;
 
   // Register-file writeback
@@ -300,13 +301,14 @@ module cpu #(
       .memory_load_data_i        (dmem_load_data_i),
       .memory_load_data_out_mem_o(dmemory_load_data_out_mem),
 
-      .csr_read_enable_o      (csr_read_enable),
-      .csr_write_enable_o     (csr_write_enable),
-      .csr_address_i          (csr_address_mem),
-      .csr_address_o          (csr_address_to_csr),
-      .csr_store_data_o       (csr_store_data_mem),
-      .csr_load_data_i        (csr_load_data_mem),
-      .csr_load_data_out_mem_o(csr_load_data_out_mem),
+      .csr_read_enable_o           (csr_read_enable),
+      .csr_write_enable_o          (csr_write_enable),
+      .csr_address_i               (csr_address_mem),
+      .csr_address_o               (csr_address_to_csr),
+      .csr_store_data_o            (csr_store_data_mem),
+      .csr_load_data_i             (csr_load_data_mem),
+      .csr_load_data_out_mem_o     (csr_load_data_out_mem),
+      .memory_alignment_exception_o(memory_alignment_exception_mem),
 
       .forward_data_o(forward_data_mem)
   );
@@ -368,41 +370,43 @@ module cpu #(
   );
 
   csr csr (
-      .clk                      (clk),
-      .rst                      (rst),
-      .csr_read_enable_i        (csr_read_enable),
-      .csr_write_enable_i       (csr_write_enable),
-      .trap_taken_i             (trap_taken),
-      .mret_taken_i             (mret_taken),
-      .trap_pc_ex_i             (pc_mem),                   // Trap decisions are resolved in MEM.
-      .trap_type_i              (trap_type),
-      .trap_cause_i             (trap_cause),
-      .trap_instruction_ex_i    (instruction_mem),
-      .csr_address_i            (csr_address_to_csr),
-      .csr_write_data_i         (csr_store_data_mem),
-      .csr_load_data_o          (csr_load_data_mem),
-      .csr_access_illegal_o     (csr_access_illegal),
-      .csr_pc_redirect_address_o(pc_redirect_address_csr),
-      .interrupts_enabled_o     (interrupts_enabled)
+      .clk                       (clk),
+      .rst                       (rst),
+      .csr_read_enable_i         (csr_read_enable),
+      .csr_write_enable_i        (csr_write_enable),
+      .trap_taken_i              (trap_taken),
+      .mret_taken_i              (mret_taken),
+      .trap_pc_ex_i              (pc_mem),                   // Trap decisions are resolved in MEM.
+      .trap_type_i               (trap_type),
+      .trap_cause_i              (trap_cause),
+      .trap_instruction_ex_i     (instruction_mem),
+      .csr_address_i             (csr_address_to_csr),
+      .csr_write_data_i          (csr_store_data_mem),
+      .attempted_memory_address_i(dmem_address_mem),
+      .csr_load_data_o           (csr_load_data_mem),
+      .csr_access_illegal_o      (csr_access_illegal),
+      .csr_pc_redirect_address_o (pc_redirect_address_csr),
+      .interrupts_enabled_o      (interrupts_enabled)
   );
 
   trap_control_unit trap_control_unit (
-      .valid_mem_i              (valid_mem),
-      .illegal_instruction_mem_i(illegal_instruction_mem),
-      .system_operation_mem_i   (system_operation_mem),
-      .csr_access_illegal_i     (csr_access_illegal),
-      .ext_irq_i                (ext_irq_i),
-      .ext_irq_address_i        (ext_irq_address_i),
-      .interrupts_enabled_i     (interrupts_enabled),
-      .trap_taken_o             (trap_taken),
-      .mret_taken_o             (mret_taken),
-      .trap_type_o              (trap_type),
-      .trap_cause_o             (trap_cause),
-      .flush_if_id_reg_o        (flush_if_id_reg_from_trap),
-      .flush_id_ex_reg_o        (flush_id_ex_reg_from_trap),
-      .flush_ex_mem_reg_o       (flush_ex_mem_reg_from_trap),
-      .flush_mem_wb_reg_o       (flush_mem_wb_reg_from_trap),
-      .pc_redirect_enable_trap_o(pc_redirect_enable_trap)
+      .valid_mem_i                 (valid_mem),
+      .illegal_instruction_mem_i   (illegal_instruction_mem),
+      .system_operation_mem_i      (system_operation_mem),
+      .csr_access_illegal_i        (csr_access_illegal),
+      .memory_alignment_exception_i(memory_alignment_exception_mem),
+      .ext_irq_i                   (ext_irq_i),
+      .ext_irq_address_i           (ext_irq_address_i),
+      .interrupts_enabled_i        (interrupts_enabled),
+      .trap_taken_o                (trap_taken),
+      .mret_taken_o                (mret_taken),
+      .trap_type_o                 (trap_type),
+      .trap_cause_o                (trap_cause),
+      .flush_if_id_reg_o           (flush_if_id_reg_from_trap),
+      .flush_id_ex_reg_o           (flush_id_ex_reg_from_trap),
+      .flush_ex_mem_reg_o          (flush_ex_mem_reg_from_trap),
+      .flush_mem_wb_reg_o          (flush_mem_wb_reg_from_trap),
+      .pc_redirect_enable_trap_o   (pc_redirect_enable_trap)
   );
 
 endmodule

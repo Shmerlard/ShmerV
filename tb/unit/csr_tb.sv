@@ -14,6 +14,7 @@ module csr_tb;
   trap_type_t trap_type_i;
   logic [4:0] trap_cause_i;
   logic [31:0] trap_instruction_ex_i;
+  logic [31:0] attempted_memory_address_i;
   logic [11:0] csr_address_i;
   logic [31:0] csr_write_data_i;
   logic [31:0] csr_load_data_o;
@@ -38,6 +39,7 @@ module csr_tb;
     trap_type_i = TRAP_TYPE_EXCEPTION;
     trap_cause_i = TRAP_CAUSE_ILLEGAL_INSTRUCTION;
     trap_instruction_ex_i = '0;
+    attempted_memory_address_i = '0;
     csr_address_i = CSR_ADDRESS_MSTATUS;
     csr_write_data_i = '0;
 
@@ -161,6 +163,29 @@ module csr_tb;
     csr_address_i = CSR_ADDRESS_MCAUSE;
     #1ns;
     assert (csr_load_data_o == 2);
+
+    // Alignment exceptions record the complete fault address, not instruction bits.
+    for (int store = 0; store < 2; store++) begin
+      trap_cause_i = store != 0 ? TRAP_CAUSE_STORE_ADDRESS_MISALIGNED :
+          TRAP_CAUSE_LOAD_ADDRESS_MISALIGNED;
+      attempted_memory_address_i = 32'h8000_0103 + 32'(store);
+      trap_pc_ex_i = 32'h8000_0080 + 4 * 32'(store);
+      trap_taken_i = 1'b1;
+      #1ns;
+      assert (csr_pc_redirect_address_o == 32'h100);
+      @(posedge clk);
+      #1ns;
+      trap_taken_i  = 1'b0;
+      csr_address_i = CSR_ADDRESS_MTVAL;
+      #1ns;
+      assert (csr_load_data_o == attempted_memory_address_i);
+      csr_address_i = CSR_ADDRESS_MEPC;
+      #1ns;
+      assert (csr_load_data_o == trap_pc_ex_i);
+      csr_address_i = CSR_ADDRESS_MCAUSE;
+      #1ns;
+      assert (csr_load_data_o == (store != 0 ? 32'd6 : 32'd4));
+    end
 
     $display("csr tests passed");
     $finish;

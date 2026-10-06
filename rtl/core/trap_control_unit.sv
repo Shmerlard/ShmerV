@@ -6,6 +6,7 @@ module trap_control_unit (
     input logic illegal_instruction_mem_i,
     input system_operation_t system_operation_mem_i,
     input logic csr_access_illegal_i,
+    input memory_alignment_exception_t memory_alignment_exception_i,
 
     input logic ext_irq_i,
     input irq_address_t ext_irq_address_i,
@@ -23,6 +24,8 @@ module trap_control_unit (
 );
 
   logic illegal_instruction_pending;
+  logic load_misalignment_pending;
+  logic store_misalignment_pending;
   logic ecall_pending;
   logic ebreak_pending;
   logic trap_pending;
@@ -31,15 +34,34 @@ module trap_control_unit (
   trap_cause_exception_t trap_cause_exception;
   trap_cause_interrupt_t trap_cause_interrupt;
 
-  assign illegal_instruction_pending =
-      valid_mem_i && (illegal_instruction_mem_i || csr_access_illegal_i);
+  always_comb begin
+    illegal_instruction_pending = 0;
+    load_misalignment_pending = 0;
+    store_misalignment_pending = 0;
+    ecall_pending = 0;
+    ebreak_pending = 0;
+    mret_pending = 0;
+    trap_pending = 0;
+    interrupt_pending = 0;
 
-  assign ecall_pending = valid_mem_i && system_operation_mem_i == SYSTEM_OPERATION_ECALL;
-  assign ebreak_pending = valid_mem_i && system_operation_mem_i == SYSTEM_OPERATION_EBREAK;
-  assign mret_pending = valid_mem_i && system_operation_mem_i == SYSTEM_OPERATION_MRET;
-  assign trap_pending = illegal_instruction_pending || ecall_pending || ebreak_pending;
-  assign interrupt_pending = valid_mem_i && ext_irq_i && interrupts_enabled_i;
+    if (valid_mem_i) begin
+      if (illegal_instruction_mem_i || csr_access_illegal_i) illegal_instruction_pending = 1;
 
+      if (memory_alignment_exception_i == MEMORY_ALIGNMENT_LOAD_MISALIGNED)
+        load_misalignment_pending = 1;
+      else if (memory_alignment_exception_i == MEMORY_ALIGNMENT_STORE_MISALIGNED)
+        store_misalignment_pending = 1;
+
+      if (ext_irq_i && interrupts_enabled_i) interrupt_pending = 1;
+      case (system_operation_mem_i)
+        SYSTEM_OPERATION_ECALL:  ecall_pending = 1;
+        SYSTEM_OPERATION_EBREAK: ebreak_pending = 1;
+        SYSTEM_OPERATION_MRET:   mret_pending = 1;
+        SYSTEM_OPERATION_NONE:   ;
+      endcase
+      trap_pending = store_misalignment_pending || load_misalignment_pending || illegal_instruction_pending || ecall_pending || ebreak_pending;
+    end
+  end
 
   assign pc_redirect_enable_trap_o = trap_taken_o || mret_taken_o;
 
@@ -60,7 +82,11 @@ module trap_control_unit (
       trap_type_o  = TRAP_TYPE_EXCEPTION;
       if (ecall_pending) trap_cause_exception = TRAP_CAUSE_MACHINE_ECALL;
       else if (ebreak_pending) trap_cause_exception = TRAP_CAUSE_BREAKPOINT;
-      else trap_cause_exception = TRAP_CAUSE_ILLEGAL_INSTRUCTION;
+      else if (illegal_instruction_pending) trap_cause_exception = TRAP_CAUSE_ILLEGAL_INSTRUCTION;
+      else if (load_misalignment_pending) trap_cause_exception = TRAP_CAUSE_LOAD_ADDRESS_MISALIGNED;
+      else if (store_misalignment_pending)
+        trap_cause_exception = TRAP_CAUSE_STORE_ADDRESS_MISALIGNED;
+
       trap_cause_o = trap_cause_exception;
       flush_if_id_reg_o = 1'b1;
       flush_id_ex_reg_o = 1'b1;

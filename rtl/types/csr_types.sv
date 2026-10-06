@@ -11,9 +11,11 @@ package csr_types;
   } trap_type_t;
 
   typedef enum logic [4:0] {
-    TRAP_CAUSE_ILLEGAL_INSTRUCTION = 5'h02,
-    TRAP_CAUSE_BREAKPOINT          = 5'h03,
-    TRAP_CAUSE_MACHINE_ECALL       = 5'h0b
+    TRAP_CAUSE_MACHINE_ECALL            = 5'h0b,
+    TRAP_CAUSE_ILLEGAL_INSTRUCTION      = 5'h02,
+    TRAP_CAUSE_BREAKPOINT               = 5'h03,
+    TRAP_CAUSE_LOAD_ADDRESS_MISALIGNED  = 5'h04,
+    TRAP_CAUSE_STORE_ADDRESS_MISALIGNED = 5'h06
   } trap_cause_exception_t;
 
   typedef enum logic [4:0] {

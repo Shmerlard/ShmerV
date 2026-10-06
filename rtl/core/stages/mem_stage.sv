@@ -27,6 +27,7 @@ module mem_stage (
     output logic [31:0] csr_store_data_o,
     input logic [31:0] csr_load_data_i,
     output logic [31:0] csr_load_data_out_mem_o,
+    output memory_alignment_exception_t memory_alignment_exception_o,
 
     output logic [31:0] forward_data_o
 
@@ -103,6 +104,16 @@ module mem_stage (
       WRITEBACK_SOURCE_CSR: forward_data_o = csr_load_data_i;
       default:              forward_data_o = 32'b0;
     endcase
+  end
+
+  always_comb begin
+    memory_alignment_exception_o = MEMORY_ALIGNMENT_NONE;
+    if (valid_i && target == MEMORY_TARGET_DMEMORY && !memory_access_aligned) begin
+      if (memory_control_i.read_enable)
+        memory_alignment_exception_o = MEMORY_ALIGNMENT_LOAD_MISALIGNED;
+      else if (memory_control_i.write_enable)
+        memory_alignment_exception_o = MEMORY_ALIGNMENT_STORE_MISALIGNED;
+    end
   end
 
 endmodule

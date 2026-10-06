@@ -24,6 +24,7 @@ module mem_stage_tb;
   logic [31:0] csr_load_data_i;
   logic [31:0] csr_load_data_out_mem_o;
   logic [31:0] forward_data_o;
+  memory_alignment_exception_t memory_alignment_exception_o;
 
   mem_stage dut (.*);
 
@@ -131,6 +132,43 @@ module mem_stage_tb;
     #1ns;
     assert (!csr_read_enable_o);
     assert (!csr_write_enable_o);
+
+    // Sweep all address offsets for each access width and direction.
+    memory_control_i = '0;
+    memory_control_i.target = MEMORY_TARGET_DMEMORY;
+    for (int size = 0; size < 3; size++) begin
+      memory_control_i.access_size = memory_access_size_t'(size);
+      for (int store = 0; store < 2; store++) begin
+        memory_control_i.read_enable  = store == 0;
+        memory_control_i.write_enable = 1'(store);
+        for (int offset = 0; offset < 4; offset++) begin
+          alu_result_i = 32'h100 + 32'(offset);
+          valid_i = 1'b1;
+          #1ns;
+          if ((size == 1 && offset % 2 != 0) || (size == 2 && offset != 0)) begin
+            assert (memory_alignment_exception_o ==
+                (store != 0 ? MEMORY_ALIGNMENT_STORE_MISALIGNED : MEMORY_ALIGNMENT_LOAD_MISALIGNED));
+            assert (!memory_read_enable_o && !memory_write_enable_o);
+          end else begin
+            assert (memory_alignment_exception_o == MEMORY_ALIGNMENT_NONE);
+            assert (store != 0 ? memory_write_enable_o : memory_read_enable_o);
+          end
+          valid_i = 1'b0;
+          #1ns;
+          assert (memory_alignment_exception_o == MEMORY_ALIGNMENT_NONE);
+          assert (!memory_read_enable_o && !memory_write_enable_o);
+        end
+      end
+    end
+    valid_i = 1'b1;
+    memory_control_i.target = MEMORY_TARGET_CSR;
+    #1ns;
+    assert (memory_alignment_exception_o == MEMORY_ALIGNMENT_NONE);
+    memory_control_i.target = MEMORY_TARGET_DMEMORY;
+    memory_control_i.read_enable = 1'b0;
+    memory_control_i.write_enable = 1'b0;
+    #1ns;
+    assert (memory_alignment_exception_o == MEMORY_ALIGNMENT_NONE);
 
     $display("mem_stage tests passed");
     $finish;

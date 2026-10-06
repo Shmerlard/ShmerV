@@ -41,6 +41,13 @@ package core_types;
     MEMORY_ACCESS_INVALID
   } memory_access_size_t;
 
+  typedef enum logic [1:0] {
+    MEMORY_ALIGNMENT_NONE             = 2'b00,
+    MEMORY_ALIGNMENT_LOAD_MISALIGNED  = 2'b01,
+    MEMORY_ALIGNMENT_STORE_MISALIGNED = 2'b10
+    // 2'b11 is reserved.
+  } memory_alignment_exception_t;
+
   typedef enum logic {
     MEMORY_TARGET_DMEMORY,
     MEMORY_TARGET_CSR

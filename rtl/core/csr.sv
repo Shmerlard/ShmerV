@@ -14,6 +14,7 @@ module csr (
     input logic [31:0] trap_instruction_ex_i,
     input logic [11:0] csr_address_i,
     input logic [31:0] csr_write_data_i,
+    input logic [31:0] attempted_memory_address_i,
 
     output logic [31:0] csr_load_data_o,
     output logic csr_access_illegal_o,
@@ -138,6 +139,8 @@ module csr (
       TRAP_TYPE_EXCEPTION: begin
         case (trap_cause_exception_t'(trap_cause_i))
           TRAP_CAUSE_ILLEGAL_INSTRUCTION: mtval_new = trap_instruction_ex_i;
+          TRAP_CAUSE_STORE_ADDRESS_MISALIGNED, TRAP_CAUSE_LOAD_ADDRESS_MISALIGNED:
+          mtval_new = attempted_memory_address_i;
           default: begin
             mtval_new = 32'b0;
           end
