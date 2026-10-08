@@ -143,9 +143,7 @@ module cpu_system_tb;
             endcase
             assert (actual_value == expected_value)
             else
-              $fatal(
-                  1, "Expected CSR %s = %h, got %h", expected_csr, expected_value, actual_value
-              );
+              $fatal(1, "Expected CSR %s = %h, got %h", expected_csr, expected_value, actual_value);
           end
 
           default: $fatal(1, "Unknown check type '%s' in %s", check_type, expected_file);

@@ -23,6 +23,20 @@
 #define UART_DATA_OFFSET 0x00u
 #define UART_CTRL_OFFSET 0x04u
 
+/* GPIO masks apply to OUT, DIR, SEL, IE, IES, IFG, and IFG_CLR. */
+#define GPIO_PIN0 0x01u
+#define GPIO_PIN1 0x02u
+#define GPIO_PIN2 0x04u
+#define GPIO_PIN3 0x08u
+#define GPIO_PIN4 0x10u
+#define GPIO_PIN5 0x20u
+#define GPIO_PIN6 0x40u
+#define GPIO_PIN7 0x80u
+
+#define PORTC_UART_TX_PIN GPIO_PIN0
+#define PORTC_TA_CCR1_PIN GPIO_PIN7
+#define PORTC_TA_CCR2_PIN GPIO_PIN6
+
 /* Dereferencing a volatile pointer performs an eight-bit MMIO access. */
 #define SHMERV_MMIO8(address) (*(volatile uint8_t *)(uintptr_t)(address))
 #define SHMERV_MMIO16(address) (*(volatile uint16_t *)(uintptr_t)(address))
@@ -78,31 +92,35 @@
 #define TA_COUNTER   SHMERV_MMIO16(TIMER_A_BASE + TA_COUNTER_OFFSET)
 #define TA_CTRL      SHMERV_MMIO16(TIMER_A_BASE + TA_CTRL_OFFSET)
 
-/* Pending bits clear by writing zero, preserving the other control fields. */
-#define TA_OVERFLOW_PENDING (1u << 0)
-#define TA_OVERFLOW_IE      (1u << 1)
-#define TA_INTERRUPT_ENABLE (1u << 2)
-#define TA_DIV_MASK         (7u << 3)
-#define TA_DIV_1            (0u << 3)
-#define TA_DIV_2            (1u << 3)
-#define TA_DIV_4            (2u << 3)
-#define TA_DIV_8            (3u << 3)
-#define TA_DIV_16           (4u << 3)
-#define TA_MODE_MASK        (7u << 6)
-#define TA_MODE_HALT        (0u << 6)
-#define TA_MODE_UP          (1u << 6)
-#define TA_MODE_CONTINUOUS  (3u << 6)
+/* TA_CTRL: [15:9] reserved, [8:6] mode, [5:3] divider,
+   [2] global interrupt enable, [1] overflow enable, [0] overflow pending.
+   Pending clears by writing zero, preserving the other control fields. */
+#define TA_OVERFLOW_PENDING 0x0001u
+#define TA_OVERFLOW_IE      0x0002u
+#define TA_INTERRUPT_ENABLE 0x0004u
+#define TA_DIV_MASK         0x0038u
+#define TA_DIV_1            0x0000u
+#define TA_DIV_2            0x0008u
+#define TA_DIV_4            0x0010u
+#define TA_DIV_8            0x0018u
+#define TA_DIV_16           0x0020u
+#define TA_MODE_MASK        0x01C0u
+#define TA_MODE_HALT        0x0000u
+#define TA_MODE_UP          0x0040u
+#define TA_MODE_CONTINUOUS  0x00C0u
 
-#define TA_CCR_PENDING       (1u << 0)
-#define TA_CCR_IE            (1u << 1)
-#define TA_CCR_MANUAL_OUT    (1u << 2)
-#define TA_CCR_OUTPUT_MASK   (7u << 3)
-#define TA_CCR_MANUAL        (0u << 3)
-#define TA_CCR_SET           (1u << 3)
-#define TA_CCR_TOGGLE_RESET  (2u << 3)
-#define TA_CCR_SET_RESET     (3u << 3)
-#define TA_CCR_TOGGLE        (4u << 3)
-#define TA_CCR_RESET         (5u << 3)
-#define TA_CCR_TOGGLE_SET    (6u << 3)
+/* TA_CCR1_CTRL / TA_CCR2_CTRL: [15:6] unused, [5:3] output mode,
+   [2] manual output, [1] compare interrupt enable, [0] compare pending. */
+#define TA_CCR_PENDING      0x0001u
+#define TA_CCR_IE           0x0002u
+#define TA_CCR_MANUAL_OUT   0x0004u
+#define TA_CCR_OUTPUT_MASK  0x0038u
+#define TA_CCR_MANUAL       0x0000u
+#define TA_CCR_SET          0x0008u
+#define TA_CCR_TOGGLE_RESET 0x0010u
+#define TA_CCR_SET_RESET    0x0018u
+#define TA_CCR_TOGGLE       0x0020u
+#define TA_CCR_RESET        0x0028u
+#define TA_CCR_TOGGLE_SET   0x0030u
 
 #endif

@@ -4,8 +4,8 @@
 #define TIMER_OVERFLOW_PERIOD 26367u
 #endif
 
-#define LED_MASK (1u << 2)
-#define PWM_MASK ((1u << 7) | (1u << 6))
+#define LED_MASK GPIO_PIN2
+#define PWM_MASK (PORTC_TA_CCR1_PIN | PORTC_TA_CCR2_PIN)
 static volatile uint32_t overflow_count;
 
 SHMERV_INTERRUPT("TIMER_A_OVERFLOW", timer_overflow_handler)
@@ -25,7 +25,7 @@ int main(void)
     TA_CTRL = 0u;
     PORTC_SEL = PWM_MASK;
     PORTC_OUT = 0u;
-    PORTC_DIR = 0xA | LED_MASK;
+    PORTC_DIR = GPIO_PIN1 | GPIO_PIN3 | LED_MASK;
     TA_COUNTER = 0u;
     TA_PERIOD = TIMER_OVERFLOW_PERIOD;
     /* CCR1: 75% duty; CCR2: 25% duty. */
