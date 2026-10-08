@@ -13,6 +13,19 @@ just fpga-flash cpu_system gpio_pattern
 just fpga-flash cpu_system gpio_pattern flash
 ```
 
+## `completion/`
+
+- `just.zsh` completes recipes, test modules, CPU programs, FPGA targets,
+  firmware programs, and programming modes without running FPGA commands.
+
+`nix develop` opens a project zsh shell with completion enabled automatically.
+Direnv alone loads environment variables, not completion functions. To load
+completion manually in an existing shell:
+
+```zsh
+source /home/elad/Projects/ShmerV/scripts/completion/just.zsh
+```
+
 ## `software/`
 
 - `build_program.sh` compiles or assembles one bare-metal program and produces ELF, binary, and hexadecimal memory images.
