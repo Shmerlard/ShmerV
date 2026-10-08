@@ -1,5 +1,6 @@
 rtl/types/csr_types.sv
 rtl/types/core_types.sv
+rtl/types/timer_a_types.sv
 rtl/core/alu.sv
 rtl/core/controller.sv
 rtl/core/cpu.sv
@@ -15,6 +16,8 @@ rtl/core/trap_control_unit.sv
 rtl/soc/address_decoder.sv
 rtl/peripherals/gpio_module.sv
 rtl/peripherals/uart_module.sv
+rtl/peripherals/timer_a_compare_module.sv
+rtl/peripherals/timer_a_module.sv
 rtl/peripherals/peripheral_manager.sv
 rtl/core/pipeline_registers/ex_mem_reg.sv
 rtl/core/pipeline_registers/id_ex_reg.sv

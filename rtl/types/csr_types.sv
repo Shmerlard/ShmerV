@@ -24,14 +24,18 @@ package csr_types;
     TRAP_CAUSE_RX = 5'h10,
     TRAP_CAUSE_GPIO_A = 5'h11,
     TRAP_CAUSE_GPIO_B = 5'h12,
-    TRAP_CAUSE_GPIO_C = 5'h13
+    TRAP_CAUSE_GPIO_C = 5'h13,
+    TRAP_CAUSE_TIMER_A_OVERFLOW = 5'h14,
+    TRAP_CAUSE_TIMER_A_COMPARE = 5'h15
   } trap_cause_interrupt_t;
 
   typedef enum logic [2:0] {
     IRQ_ADDRESS_UART_RX,
     IRQ_ADDRESS_GPIO_A,
     IRQ_ADDRESS_GPIO_B,
-    IRQ_ADDRESS_GPIO_C
+    IRQ_ADDRESS_GPIO_C,
+    IRQ_ADDRESS_TIMER_A_OVERFLOW,
+    IRQ_ADDRESS_TIMER_A_COMPARE
   } irq_address_t;
 
   typedef enum logic [2:0] {

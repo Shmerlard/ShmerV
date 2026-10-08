@@ -100,9 +100,11 @@ module trap_control_unit (
     end else if (interrupt_pending) begin
       case (ext_irq_address_i)
         IRQ_ADDRESS_UART_RX: trap_cause_interrupt = TRAP_CAUSE_RX;
-        IRQ_ADDRESS_GPIO_A:  trap_cause_interrupt = TRAP_CAUSE_GPIO_A;
-        IRQ_ADDRESS_GPIO_B:  trap_cause_interrupt = TRAP_CAUSE_GPIO_B;
-        IRQ_ADDRESS_GPIO_C:  trap_cause_interrupt = TRAP_CAUSE_GPIO_C;
+        IRQ_ADDRESS_GPIO_A: trap_cause_interrupt = TRAP_CAUSE_GPIO_A;
+        IRQ_ADDRESS_GPIO_B: trap_cause_interrupt = TRAP_CAUSE_GPIO_B;
+        IRQ_ADDRESS_GPIO_C: trap_cause_interrupt = TRAP_CAUSE_GPIO_C;
+        IRQ_ADDRESS_TIMER_A_OVERFLOW: trap_cause_interrupt = TRAP_CAUSE_TIMER_A_OVERFLOW;
+        IRQ_ADDRESS_TIMER_A_COMPARE: trap_cause_interrupt = TRAP_CAUSE_TIMER_A_COMPARE;
         default: begin
         end
       endcase
