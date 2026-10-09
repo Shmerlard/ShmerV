@@ -61,7 +61,8 @@ build_test() {
   fi
 
   mkdir -p "$test_build_directory"
-  package_sources="rtl/types/csr_types.sv rtl/types/core_types.sv rtl/types/timer_a_types.sv"
+  # core_types imports csr_types, so compile that package first.
+  package_sources="rtl/types/csr_types.sv $(find rtl/types -type f -name '*.sv' ! -path 'rtl/types/csr_types.sv' | sort)"
   rtl_library_arguments="+libext+.sv"
   for rtl_directory in $(find rtl -type d | sort); do
     rtl_library_arguments="$rtl_library_arguments -y $rtl_directory"

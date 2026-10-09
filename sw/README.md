@@ -5,6 +5,10 @@ This directory contains bare-metal programs and their shared support files.
 programs. Linker scripts describe the available memory, while runnable FPGA
 programs live under `programs/`. Test-only programs live under `tb/cpu/programs/`.
 
+Use `ShmerV.h` for shared MMIO definitions rather than duplicating addresses in
+programs. Peripheral bases match `rtl/types/soc_address_map.sv`; local register
+indices remain in the peripheral packages.
+
 From the repository root, build either source type into an ELF, binary, and
 hex memory image:
 

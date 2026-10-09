@@ -8,7 +8,7 @@ static uint8_t next_character;
 static void uart_send_next_character(void)
 {
     UART_DATA = next_character;
-    UART_CTRL = 0x01u;
+    UART_CTRL = UART_START_TX;
     /* UART has no readable busy flag. Conservative wait at the current
        843.75 kHz clock and 9600 baud; recalibrate if either changes. */
     for (volatile uint32_t remaining = 256u; remaining > 0u; --remaining) {

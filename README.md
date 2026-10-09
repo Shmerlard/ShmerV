@@ -32,8 +32,8 @@ computer architecture.
 
 The CPU core is separate from the SoC peripherals and board-specific wrapper.
 Exception and CSR verification is still incomplete; this is not yet a fully
-verified RV32I implementation. UART currently has no receiver or readable
-TX busy flag, so firmware uses a delay between transmitted characters.
+verified RV32I implementation. UART has readable TX busy status but no receiver.
+The current example firmware still uses a delay between transmitted characters.
 
 ## Verification
 

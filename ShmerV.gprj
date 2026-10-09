@@ -33,6 +33,8 @@
         <File path="rtl/soc/memory.sv" type="file.verilog" enable="1"/>
         <File path="rtl/types/core_types.sv" type="file.verilog" enable="1"/>
         <File path="rtl/types/csr_types.sv" type="file.verilog" enable="1"/>
+        <File path="rtl/types/uart_types.sv" type="file.verilog" enable="1"/>
+        <File path="rtl/types/soc_address_map.sv" type="file.verilog" enable="1"/>
         <File path="fpga/tang_nano_9k/cpu_system/pins.cst" type="file.cst" enable="1"/>
         <File path="fpga/tang_nano_9k/cpu_system/clock.sdc" type="file.sdc" enable="1"/>
         <File path="fpga/tang_nano_9k/cpu_system/gao_config.rao" type="file.gao" enable="0"/>

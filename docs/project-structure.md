@@ -34,6 +34,10 @@ build/                       Generated artifacts; never committed
 
 ## FPGA Targets and Programs
 
+The fixed SoC peripheral map is defined in `rtl/types/soc_address_map.sv`.
+Peripheral type packages define local register indices; byte offsets are those
+indices multiplied by four. Firmware uses `sw/include/shmerv_memory_map.h`.
+
 An FPGA target describes hardware; a software program describes code executed
 by that hardware. They are selected independently. The complete Tang Nano 9K
 target can therefore run `gpio_pattern` now and later run other programs without

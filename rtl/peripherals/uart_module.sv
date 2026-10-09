@@ -1,3 +1,5 @@
+import uart_types::*;
+
 module uart_module #(
     parameter int unsigned CLOCK_HZ  = 843_750,
     parameter int unsigned BAUD_RATE = 9600
@@ -5,9 +7,11 @@ module uart_module #(
     input logic clk,
     input logic rst,
 
-    input logic [7:0] mmio_write_data_i,
-    input logic       register_address_i,
-    input logic       mmio_write_enable_i,
+    input  logic                    [7:0] mmio_write_data_i,
+    input  uart_registers_address_t       register_address_i,
+    input  logic                          mmio_write_enable_i,
+    input  logic                          mmio_read_enable_i,
+    output logic                    [7:0] mmio_read_data_o,
 
     output logic tx_o
 );
@@ -25,26 +29,23 @@ module uart_module #(
 `endif
 
 
-  typedef enum logic [1:0] {
-    IDLE,
-    INITIALIZE,
-    WORK,
-    FINISH
-  } state_t;
-
   state_t state;
   state_t next_state;
 
   logic [7:0] tx_data_reg;
-  logic [7:0] tx_ctrl_reg;
+  uart_control_t tx_ctrl_reg;
 
   logic start_tx_request;
+  logic busy_tx;
   logic tx_done;
   logic [9:0] tx_out_reg;
   logic [CycleCounterWidth-1:0] cycle_counter;  // counts CPU cycles to match baud rate
   logic [3:0] bit_counter;  // inidicates which of the 10bits we send
 
-  assign start_tx_request = tx_ctrl_reg[0];
+  assign start_tx_request = tx_ctrl_reg.start_tx;
+  assign tx_ctrl_reg.busy_tx = busy_tx;
+  assign tx_ctrl_reg.reserved = '0;
+
 
   // ---------- FSM ------------
   always_ff @(posedge clk) begin
@@ -113,10 +114,22 @@ module uart_module #(
 
   always_comb begin
     case (state)
-      IDLE, FINISH: tx_o = 1'b1;
-      INITIALIZE:   tx_o = 1'b1;
-      WORK:         tx_o = tx_out_reg[bit_counter];
-      default:      tx_o = 1'b1;
+      IDLE, FINISH: begin
+        tx_o = 1'b1;
+        busy_tx = 1'b0;
+      end
+      INITIALIZE: begin
+        tx_o = 1'b1;
+        busy_tx = 1'b1;
+      end
+      WORK: begin
+        tx_o = tx_out_reg[bit_counter];
+        busy_tx = 1'b1;
+      end
+      default: begin
+        tx_o = 1'b1;
+        busy_tx = 1'b0;
+      end
     endcase
   end
   // ---------------------------
@@ -125,18 +138,29 @@ module uart_module #(
   always_ff @(posedge clk) begin
     if (rst) begin
       tx_data_reg <= 8'b0;
-      tx_ctrl_reg[0] <= 1'b0;
+      tx_ctrl_reg.start_tx <= 1'b0;
+      mmio_read_data_o <= 8'b0;
     end else begin
       if (state == FINISH) begin
-        tx_ctrl_reg[0] <= 1'b0;
+        tx_ctrl_reg.start_tx <= 1'b0;
       end else if (mmio_write_enable_i) begin
         case (register_address_i)
-          1'b0: tx_data_reg <= mmio_write_data_i;
-          1'b1: tx_ctrl_reg <= mmio_write_data_i;
+          UART_CTRL_REG_ADDRESS: tx_ctrl_reg.start_tx <= mmio_write_data_i[0];
+          UART_TX_ADDRESS: tx_data_reg <= mmio_write_data_i;
           default: begin
           end
         endcase
       end
+
+      if (mmio_read_enable_i) begin
+        case (register_address_i)
+          UART_TX_ADDRESS: mmio_read_data_o <= tx_data_reg;
+          UART_CTRL_REG_ADDRESS: mmio_read_data_o <= tx_ctrl_reg;
+          default: begin
+          end
+        endcase
+      end
+
     end
 
   end

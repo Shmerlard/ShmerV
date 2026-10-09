@@ -27,12 +27,7 @@ module peripheral_manager_tb;
   logic irq_o;
   irq_address_t irq_address_o;
 
-  peripheral_manager #(
-      .GPIO_BASE_ADDRESS(GpioBaseAddress),
-      .CLOCK_HZ(38_400)
-  ) dut (
-      .*
-  );
+  peripheral_manager #(.CLOCK_HZ(38_400)) dut (.*);
 
   always #5ns clk = ~clk;
 
@@ -46,6 +41,16 @@ module peripheral_manager_tb;
     @(posedge clk);
     #1ns;
     write_enable_i = 1'b0;
+  endtask
+
+  task automatic check_read(input logic [31:0] address, input logic [31:0] expected);
+    address_i = address;
+    read_enable_i = 1'b1;
+    @(posedge clk);
+    #1ns;
+    read_enable_i = 1'b0;
+    assert (read_data_o == expected)
+    else $fatal(1, "MMIO %h: expected %h, got %h", address, expected, read_data_o);
   endtask
 
   initial begin
@@ -109,14 +114,37 @@ module peripheral_manager_tb;
     write_register(Gpio2BaseAddress, 5'h03, 32'h0000_0001, 4'b0001);
     assert (gpio2_pin_oe_o == 8'h01);
     assert (gpio2_pin_o[0] == 1'b1);
+    check_read(UartBaseAddress + 32'h4, 32'h0);
+    write_register(UartBaseAddress, 5'h01, 32'hFE, 4'b0001);
+    check_read(UartBaseAddress + 32'h4, 32'h0);
     write_register(UartBaseAddress, 5'h00, 32'h0000_0053, 4'b0001);
+    // Upper byte lanes must not overwrite the UART transmit byte.
+    write_register(UartBaseAddress, 5'h00, 32'h0, 4'b0010);
+    check_read(UartBaseAddress, 32'h53);
     write_register(UartBaseAddress, 5'h01, 32'h0000_0001, 4'b0001);
     repeat (2) @(posedge clk);
     #1ns;
     assert (gpio2_pin_o[0] == 1'b0);
 
+    check_read(UartBaseAddress + 32'h4, 32'h3);
+    // Consecutive reads must follow the previous request's destination.
+    check_read(GpioBaseAddress + 32'h4, 32'hA5);
+    check_read(UartBaseAddress, 32'h53);
+    check_read(Gpio1BaseAddress, 32'h3C);
+    check_read(UartBaseAddress + 32'h4, 32'h3);
+    address_i = GpioBaseAddress;
+    @(posedge clk);
+    #1ns;
+    assert (read_data_o == 32'h3);
+    // Upper-lane control writes cannot cancel START; BUSY remains hardware-owned.
+    write_register(UartBaseAddress, 5'h01, 32'h0, 4'b0010);
+    check_read(UartBaseAddress + 32'h4, 32'h3);
+    repeat (50) @(posedge clk);
+    #1ns;
+    check_read(UartBaseAddress + 32'h4, 32'h0);
+
     // A read outside all peripheral slots returns zero.
-    address_i = GpioBaseAddress + 32'h400;
+    address_i = GpioBaseAddress + 32'h500;
     read_enable_i = 1'b1;
     @(posedge clk);
     #1ns;

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-/* Fixed peripheral addresses in the current SoC. */
+/* Match rtl/types/soc_address_map.sv. */
 #define PORTA_BASE 0x10000000u
 #define PORTB_BASE 0x10000100u
 #define PORTC_BASE 0x10000200u
@@ -71,7 +71,10 @@
 #define PORTC_IFG     SHMERV_MMIO8(PORTC_BASE + GPIO_IFG_OFFSET)
 #define PORTC_IFG_CLR SHMERV_MMIO8(PORTC_BASE + GPIO_IFG_CLR_OFFSET)
 
-/* The current UART exposes only write-only DATA and CTRL registers. */
+/* UART_CTRL: [7:2] read as zero, [1] read-only busy, [0] start request.
+   DATA and CTRL are readable. Hardware clears START after transmission. */
+#define UART_START_TX 0x01u
+#define UART_BUSY_TX  0x02u
 #define UART_DATA SHMERV_MMIO8(UART_BASE + UART_DATA_OFFSET)
 #define UART_CTRL SHMERV_MMIO8(UART_BASE + UART_CTRL_OFFSET)
 

@@ -11,8 +11,7 @@ module cpu_system #(
     parameter string MEMORY_INIT_FILE_LANE2 = "",
     parameter string MEMORY_INIT_FILE_LANE3 = "",
     parameter logic [31:0] RESET_PC = 32'h0000_0000,
-    parameter logic [31:0] RAM_BASE_ADDRESS = 32'h0000_0000,
-    parameter logic [31:0] PERIPHERAL_BASE_ADDRESS = 32'h1000_0000
+    parameter logic [31:0] RAM_BASE_ADDRESS = 32'h0000_0000
 ) (
     input logic clk,
     input logic rst,
@@ -74,7 +73,8 @@ module cpu_system #(
   address_decoder #(
       .RAM_BASE_ADDRESS       (RAM_BASE_ADDRESS),
       .RAM_SIZE_BYTES         (MEM_WORDS * 4),
-      .PERIPHERAL_BASE_ADDRESS(PERIPHERAL_BASE_ADDRESS)
+      .PERIPHERAL_BASE_ADDRESS(soc_address_map::PERIPHERAL_BASE_ADDRESS),
+      .PERIPHERAL_SIZE_BYTES  (soc_address_map::PERIPHERAL_SIZE_BYTES)
   ) address_decoder (
       .clk                      (clk),
       .rst                      (rst),
@@ -92,9 +92,8 @@ module cpu_system #(
   );
 
   peripheral_manager #(
-      .CLOCK_HZ         (CLOCK_HZ),
-      .UART_BAUD_RATE   (UART_BAUD_RATE),
-      .GPIO_BASE_ADDRESS(PERIPHERAL_BASE_ADDRESS)
+      .CLOCK_HZ      (CLOCK_HZ),
+      .UART_BAUD_RATE(UART_BAUD_RATE)
   ) peripheral_manager (
       .clk                (clk),
       .rst                (rst),

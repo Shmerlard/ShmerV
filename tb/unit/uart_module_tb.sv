@@ -1,4 +1,5 @@
 timeunit 1ns / 1ps;
+import uart_types::*;
 
 module uart_frame_check #(
     parameter int unsigned ClockHz = 36_000,
@@ -11,8 +12,10 @@ module uart_frame_check #(
   logic clk = 1'b0;
   logic rst;
   logic [7:0] mmio_write_data_i;
-  logic register_address_i;
+  uart_registers_address_t register_address_i;
   logic mmio_write_enable_i;
+  logic mmio_read_enable_i;
+  logic [7:0] mmio_read_data_o;
   logic tx_o;
 
   uart_module #(
@@ -24,7 +27,7 @@ module uart_frame_check #(
 
   always #5ns clk = ~clk;
 
-  task automatic write_register(input logic address, input logic [7:0] data);
+  task automatic write_register(input uart_registers_address_t address, input logic [7:0] data);
     register_address_i  = address;
     mmio_write_data_i   = data;
     mmio_write_enable_i = 1'b1;
@@ -33,22 +36,49 @@ module uart_frame_check #(
     mmio_write_enable_i = 1'b0;
   endtask
 
+  task automatic check_read(input uart_registers_address_t address, input logic [7:0] expected);
+    register_address_i = address;
+    mmio_read_enable_i = 1'b1;
+    @(posedge clk);
+    #1ns;
+    mmio_read_enable_i = 1'b0;
+    assert (mmio_read_data_o == expected)
+    else $fatal(1, "UART register %0d: expected %h, got %h", address, expected, mmio_read_data_o);
+  endtask
+
   initial begin
     logic [9:0] expected_frame;
 
     rst = 1'b1;
     mmio_write_data_i = '0;
-    register_address_i = 1'b0;
+    register_address_i = UART_TX_ADDRESS;
     mmio_write_enable_i = 1'b0;
+    mmio_read_enable_i = 1'b0;
 
     @(posedge clk);
     #1ns;
     rst = 1'b0;
     assert (tx_o == 1'b1);
+    assert (mmio_read_data_o == 8'h00);
+    check_read(UART_TX_ADDRESS, 8'h00);
+    check_read(UART_CTRL_REG_ADDRESS, 8'h00);
+
+    // Software cannot set BUSY or reserved bits while idle.
+    write_register(UART_CTRL_REG_ADDRESS, 8'hFE);
+    check_read(UART_CTRL_REG_ADDRESS, 8'h00);
 
     expected_frame = {1'b1, 8'h53, 1'b0};
-    write_register(1'b0, 8'h53);
-    write_register(1'b1, 8'h01);
+    write_register(UART_TX_ADDRESS, 8'h53);
+    check_read(UART_TX_ADDRESS, 8'h53);
+    register_address_i = UART_CTRL_REG_ADDRESS;
+    repeat (2) begin
+      @(posedge clk);
+      #1ns;
+      assert (mmio_read_data_o == 8'h53);
+    end
+    write_register(UART_CTRL_REG_ADDRESS, 8'h01);
+    // Poll throughout transmission, including the FINISH cycle.
+    mmio_read_enable_i = 1'b1;
 
     @(negedge tx_o);
     // Check every clock of every bit, including the one-cycle counter case.
@@ -60,12 +90,40 @@ module uart_frame_check #(
       end
     end
 
+    #1ns;
+    assert (mmio_read_data_o == 8'h03);
+    @(posedge clk);
+    #1ns;
+    assert (mmio_read_data_o == 8'h03);
+    @(posedge clk);
+    #1ns;
+    // FINISH is idle on TX, but START clears at this edge.
+    assert (mmio_read_data_o == 8'h01)
+    else $fatal(1, "Read during FINISH returned stale busy status");
+    check_read(UART_CTRL_REG_ADDRESS, 8'h00);
+
     // START self-clears after one frame, so the transmitter remains idle.
     repeat (8) begin
       @(posedge clk);
       #1ns;
       assert (tx_o == 1'b1);
     end
+
+    // Software cannot clear BUSY during a second transmission.
+    write_register(UART_CTRL_REG_ADDRESS, 8'h01);
+    repeat (2) @(posedge clk);
+    #1ns;
+    write_register(UART_CTRL_REG_ADDRESS, 8'h00);
+    check_read(UART_CTRL_REG_ADDRESS, 8'h02);
+
+    // Reset interrupts transmission and clears the registered read response.
+    rst = 1'b1;
+    @(posedge clk);
+    #1ns;
+    assert (tx_o == 1'b1 && mmio_read_data_o == 8'h00);
+    rst = 1'b0;
+    check_read(UART_CTRL_REG_ADDRESS, 8'h00);
+    check_read(UART_TX_ADDRESS, 8'h00);
 
     done = 1'b1;
   end

@@ -18,8 +18,8 @@ just fpga-flash cpu_system PROGRAM
   Interrupts are re-enabled after 20 consecutive samples of both buttons released.
   A.1 requires an external pull-up; only A.0 has an internal pull-up configured.
   Debounce and UART waits use C busy loops calibrated only for the current setup;
-  their duration depends on compilation and clock frequency. UART has no readable
-  busy flag, so firmware waits conservatively between characters.
+  their duration depends on compilation and clock frequency. UART now has readable
+  busy status, but this firmware still waits conservatively between characters.
 - `uart_hello`: count from `0x00` to `0xFF` on Port A, then repeatedly transmit
   `Hello` on GPIO2.0 / pin 38 at 9600 baud.
 

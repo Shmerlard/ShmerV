@@ -1,8 +1,4 @@
-#include <stdint.h>
-
-#define GPIO_BASE_ADDRESS 0x10000000u
-#define GPIO_OUT_OFFSET 0x04u
-#define GPIO_DIR_OFFSET 0x08u
+#include "ShmerV.h"
 
 static void delay(void)
 {
@@ -13,9 +9,9 @@ static void delay(void)
 int main(void)
 {
     volatile uint8_t *const gpio_out =
-        (volatile uint8_t *)(GPIO_BASE_ADDRESS + GPIO_OUT_OFFSET);
+        (volatile uint8_t *)(PORTA_BASE + GPIO_OUT_OFFSET);
     volatile uint8_t *const gpio_dir =
-        (volatile uint8_t *)(GPIO_BASE_ADDRESS + GPIO_DIR_OFFSET);
+        (volatile uint8_t *)(PORTA_BASE + GPIO_DIR_OFFSET);
 
     *gpio_dir = 255u;
 
