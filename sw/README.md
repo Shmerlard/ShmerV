@@ -36,8 +36,8 @@ Its cause-20 interrupt handler toggles GPIO2.2 and clears overflow pending.
 At the default 843750 Hz CPU clock, it toggles roughly twice per second.
 CCR1/CCR2 generate 75%/25% PWM on GPIO2.7/GPIO2.6; compare interrupts are disabled.
 Causes 20/21 have weak runtime entries;
-programs can override them with `SHMERV_INTERRUPT("TIMER_A_OVERFLOW", handler)`
-or `SHMERV_INTERRUPT("TIMER_A_COMPARE", handler)`. Unused entries retain the
+programs can override them with `SHMERV_INTERRUPT(SHMERV_IRQ_TIMER_A_OVERFLOW, handler)`
+or `SHMERV_INTERRUPT(SHMERV_IRQ_TIMER_A_COMPARE, handler)`. Unused entries retain the
 default unhandled-interrupt loop.
 
 Run the bounded CPU simulation of the same demo:

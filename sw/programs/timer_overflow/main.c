@@ -8,7 +8,7 @@
 #define PWM_MASK (PORTC_TA_CCR1_PIN | PORTC_TA_CCR2_PIN)
 static volatile uint32_t overflow_count;
 
-SHMERV_INTERRUPT("TIMER_A_OVERFLOW", timer_overflow_handler)
+SHMERV_INTERRUPT(SHMERV_IRQ_TIMER_A_OVERFLOW, timer_overflow_handler)
 void timer_overflow_handler(void)
 {
     PORTC_OUT ^= LED_MASK;

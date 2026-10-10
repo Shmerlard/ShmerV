@@ -6,7 +6,7 @@
 static volatile uint32_t interrupt_count;
 static volatile uintptr_t handler_addresses[6];
 
-SHMERV_INTERRUPT("GPIO_A", arbitrary_gpio_handler)
+SHMERV_INTERRUPT(SHMERV_IRQ_GPIO_A, arbitrary_gpio_handler)
 void arbitrary_gpio_handler(void)
 {
     ++interrupt_count;

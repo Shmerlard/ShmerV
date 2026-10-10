@@ -73,6 +73,7 @@ module peripheral_manager #(
   logic timer_read_enable, timer_write_enable;
   logic [15:0] timer_read_data;
   logic timer_pwm1, timer_pwm2;
+  logic [7:0] gpio2_alt_out;
   ta_irq_t timer_irq;
 
   // GPIO address decoding and byte-wide register access.
@@ -209,9 +210,16 @@ module peripheral_manager #(
       .irq_o              (gpio1_bus.irq)
   );
 
+  always_comb begin
+    gpio2_alt_out = '0;
+    gpio2_alt_out[GPIO_C_UART_TX_PIN] = uart_tx;
+    gpio2_alt_out[GPIO_C_TIMER_A_COMPARE1_PIN] = timer_pwm1;
+    gpio2_alt_out[GPIO_C_TIMER_A_COMPARE2_PIN] = timer_pwm2;
+  end
+
   gpio_module #(
       .WIDTH   (8),
-      .ALT_MASK(8'b1100_0001),
+      .ALT_MASK(GPIO_C_ALT_MASK),
       .IRQ_MASK(8'hFF)
   ) gpio2 (
       .clk                (clk),
@@ -220,8 +228,8 @@ module peripheral_manager #(
       .pin_o              (gpio2_pin_o),
       .pin_oe_o           (gpio2_pin_oe_o),
       .alt_in_o           (),
-      .alt_out_i          ({timer_pwm1, timer_pwm2, 5'b0, uart_tx}),
-      .alt_oe_i           (8'b1100_0001),
+      .alt_out_i          (gpio2_alt_out),
+      .alt_oe_i           (GPIO_C_ALT_MASK),
       .mmio_write_data_i  (write_data_i[7:0]),
       .mmio_read_data_o   (gpio2_bus.read_data),
       .register_address_i (gpio2_bus.register_address),
