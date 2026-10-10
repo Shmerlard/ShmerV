@@ -2,6 +2,7 @@ import csr_types::*;
 import timer_a_types::*;
 import uart_types::*;
 import soc_address_map::*;
+import gpio_types::*;
 
 module peripheral_manager #(
     parameter int unsigned CLOCK_HZ = 843_750,
@@ -45,7 +46,7 @@ module peripheral_manager #(
   typedef struct packed {
     logic address_hit;
     logic [31:0] address_offset;
-    logic [4:0] register_address;
+    gpio_register_address_t register_address;
     logic read_enable;
     logic write_enable;
     logic [7:0] read_data;
@@ -75,19 +76,26 @@ module peripheral_manager #(
   ta_irq_t timer_irq;
 
   // GPIO address decoding and byte-wide register access.
+  // Reject offsets outside the eight registers before narrowing to three bits.
   assign gpio0_bus.address_hit = address_i >= GPIO_A_BASE
-    && address_i < GPIO_A_BASE + GPIO_SIZE_BYTES;
+      && address_i < GPIO_A_BASE + GPIO_SIZE_BYTES
+      && gpio0_bus.address_offset <= (32'(GPIO_IFG_CLR_ADDRESS) << 2)
+      && gpio0_bus.address_offset[1:0] == 2'b00;
   assign gpio1_bus.address_hit = address_i >= GPIO_B_BASE
-    && address_i < GPIO_B_BASE + GPIO_SIZE_BYTES;
+      && address_i < GPIO_B_BASE + GPIO_SIZE_BYTES
+      && gpio1_bus.address_offset <= (32'(GPIO_IFG_CLR_ADDRESS) << 2)
+      && gpio1_bus.address_offset[1:0] == 2'b00;
   assign gpio2_bus.address_hit = address_i >= GPIO_C_BASE
-    && address_i < GPIO_C_BASE + GPIO_SIZE_BYTES;
+      && address_i < GPIO_C_BASE + GPIO_SIZE_BYTES
+      && gpio2_bus.address_offset <= (32'(GPIO_IFG_CLR_ADDRESS) << 2)
+      && gpio2_bus.address_offset[1:0] == 2'b00;
 
   assign gpio0_bus.address_offset = address_i - GPIO_A_BASE;
   assign gpio1_bus.address_offset = address_i - GPIO_B_BASE;
   assign gpio2_bus.address_offset = address_i - GPIO_C_BASE;
-  assign gpio0_bus.register_address = gpio0_bus.address_offset[6:2];
-  assign gpio1_bus.register_address = gpio1_bus.address_offset[6:2];
-  assign gpio2_bus.register_address = gpio2_bus.address_offset[6:2];
+  assign gpio0_bus.register_address = gpio_register_address_t'(gpio0_bus.address_offset[4:2]);
+  assign gpio1_bus.register_address = gpio_register_address_t'(gpio1_bus.address_offset[4:2]);
+  assign gpio2_bus.register_address = gpio_register_address_t'(gpio2_bus.address_offset[4:2]);
   assign gpio0_bus.read_enable = read_enable_i && gpio0_bus.address_hit;
   assign gpio1_bus.read_enable = read_enable_i && gpio1_bus.address_hit;
   assign gpio2_bus.read_enable = read_enable_i && gpio2_bus.address_hit;
@@ -106,7 +114,8 @@ module peripheral_manager #(
   assign timer_address_offset = address_i - TIMER_A_BASE;
   assign timer_address_hit = address_i >= TIMER_A_BASE
     && timer_address_offset < TIMER_A_SIZE_BYTES
-    && timer_address_offset <= 32'h18 && timer_address_offset[1:0] == 2'b00;
+    && timer_address_offset <= (32'(TA_CTRL_ADDRESS) << 2)
+    && timer_address_offset[1:0] == 2'b00;
   assign timer_register_address = ta_register_address_t'(timer_address_offset[5:2]);
   assign timer_read_enable = read_enable_i && timer_address_hit;
   assign timer_write_enable = write_enable_i && timer_address_hit && (&write_byte_enable_i[1:0]);

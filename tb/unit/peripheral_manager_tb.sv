@@ -87,6 +87,11 @@ module peripheral_manager_tb;
     write_register(GpioBaseAddress, 5'h01, 32'h0000_0000, 4'b0010);
     assert (gpio0_pin_o == 8'hA5);
 
+    // Out-of-range indices must not alias registers after narrowing to three bits.
+    write_register(GpioBaseAddress, 5'h09, 32'h0, 4'b0001);
+    assert (gpio0_pin_o == 8'hA5);
+    check_read(GpioBaseAddress + 32'h24, 32'h0);
+
     // GPIO reads are returned in the low byte of the MMIO response.
     address_i = GpioBaseAddress + 32'h4;
     read_enable_i = 1'b1;

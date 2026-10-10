@@ -3,6 +3,7 @@ rtl/types/core_types.sv
 rtl/types/timer_a_types.sv
 rtl/types/uart_types.sv
 rtl/types/soc_address_map.sv
+rtl/types/gpio_types.sv
 rtl/core/alu.sv
 rtl/core/controller.sv
 rtl/core/cpu.sv

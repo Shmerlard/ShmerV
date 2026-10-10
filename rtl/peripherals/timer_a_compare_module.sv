@@ -29,7 +29,7 @@ module timer_a_compare_module #(
     end else begin
       if (comp_reg_write_enable_i) begin
         if (comp_reg_ctrl_sel_i) begin
-          compare_reg_ctrl <= comp_reg_write_data_i[$bits(ta_compare_control_t)-1:0];
+          compare_reg_ctrl <= ta_compare_control_t'(comp_reg_write_data_i);
         end else begin
           compare_reg <= comp_reg_write_data_i;
         end

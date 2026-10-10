@@ -54,8 +54,7 @@ module timer_a_module #(
       TIMER_A_CLK_DIV_16: divider_limit = 4'd15;
       default:            divider_limit = 4'd0;
     endcase
-    tick_enable = !rst && timer_running
-                  && (divider_counter >= divider_limit);
+    tick_enable = !rst && timer_running && (divider_counter >= divider_limit);
   end
 
   always_ff @(posedge clk) begin
@@ -91,8 +90,7 @@ module timer_a_module #(
         end
         TA_MODE_CONTINUOUS: begin
           counter_next = main_counter + 1'b1;
-          if (counter_next == '0)
-            overflow_next = 1'b1;
+          if (counter_next == '0) overflow_next = 1'b1;
         end
         default: ;
       endcase

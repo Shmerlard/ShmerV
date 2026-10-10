@@ -1,3 +1,5 @@
+import gpio_types::*;
+
 module gpio_bringup_top (
     input  logic [7:0] dip_n_i,
     input  logic       clock_button_n_i,
@@ -22,7 +24,7 @@ module gpio_bringup_top (
       .alt_oe_i           ('0),
       .mmio_write_data_i  (~dip_n_i),
       .mmio_read_data_o   (),
-      .register_address_i (5'h01),
+      .register_address_i (GPIO_OUT_ADDRESS),
       .mmio_write_enable_i(~write_button_n_i),
       .mmio_read_enable_i (1'b0),
       .irq_o              ()

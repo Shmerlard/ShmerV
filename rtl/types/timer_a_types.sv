@@ -1,12 +1,12 @@
 package timer_a_types;
   typedef enum logic [3:0] {
-    TA_PERIOD_ADDRESS,
-    TA_COMP1_ADDRESS,
-    TA_COMP1_CTRL_ADDRESS,
-    TA_COMP2_ADDRESS,
-    TA_COMP2_CTRL_ADDRESS,
-    TA_ADDRESS,
-    TA_CTRL_ADDRESS
+    TA_PERIOD_ADDRESS     = 4'd0,
+    TA_COMP1_ADDRESS      = 4'd1,
+    TA_COMP1_CTRL_ADDRESS = 4'd2,
+    TA_COMP2_ADDRESS      = 4'd3,
+    TA_COMP2_CTRL_ADDRESS = 4'd4,
+    TA_ADDRESS            = 4'd5,
+    TA_CTRL_ADDRESS       = 4'd6
     // TA_CTRL_ADDRESS_SET,
     // TA_CTRL_ADDRESS_RESET
   } ta_register_address_t;
@@ -21,11 +21,11 @@ package timer_a_types;
   } ta_operation_mode_t;
 
   typedef enum logic [2:0] {
-    TIMER_A_CLK_DIV_1,
-    TIMER_A_CLK_DIV_2,
-    TIMER_A_CLK_DIV_4,
-    TIMER_A_CLK_DIV_8,
-    TIMER_A_CLK_DIV_16
+    TIMER_A_CLK_DIV_1  = 3'd0,
+    TIMER_A_CLK_DIV_2  = 3'd1,
+    TIMER_A_CLK_DIV_4  = 3'd2,
+    TIMER_A_CLK_DIV_8  = 3'd3,
+    TIMER_A_CLK_DIV_16 = 3'd4
   } ta_clock_div_t;
 
   typedef struct packed {
@@ -39,13 +39,13 @@ package timer_a_types;
 
   //--------- TImer A Compare module control -----------
   typedef enum logic [2:0] {
-    TIMER_A_OUTPUT_MODE_MANUAL,
-    TIMER_A_OUTPUT_MODE_SET,
-    TIMER_A_OUTPUT_MODE_TOGGLE_RESET,
-    TIMER_A_OUTPUT_MODE_SET_RESET,
-    TIMER_A_OUTPUT_MODE_TOGGLE,
-    TIMER_A_OUTPUT_MODE_RESET,
-    TIMER_A_OUTPUT_MODE_TOGGLE_SET
+    TIMER_A_OUTPUT_MODE_MANUAL       = 3'd0,
+    TIMER_A_OUTPUT_MODE_SET          = 3'd1,
+    TIMER_A_OUTPUT_MODE_TOGGLE_RESET = 3'd2,
+    TIMER_A_OUTPUT_MODE_SET_RESET    = 3'd3,
+    TIMER_A_OUTPUT_MODE_TOGGLE       = 3'd4,
+    TIMER_A_OUTPUT_MODE_RESET        = 3'd5,
+    TIMER_A_OUTPUT_MODE_TOGGLE_SET   = 3'd6
   } ta_out_mode_t;
 
   typedef struct packed {

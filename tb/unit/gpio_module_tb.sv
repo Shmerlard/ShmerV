@@ -1,4 +1,5 @@
 timeunit 1ns / 1ps;
+import gpio_types::*;
 
 module gpio_module_tb;
   localparam int WIDTH = 8;
@@ -18,7 +19,7 @@ module gpio_module_tb;
 
   logic [7:0] mmio_write_data_i;
   logic [7:0] mmio_read_data_o;
-  logic [4:0] register_address_i;
+  gpio_register_address_t register_address_i;
   logic mmio_write_enable_i;
   logic mmio_read_enable_i;
   logic irq_o;
@@ -33,7 +34,7 @@ module gpio_module_tb;
 
   always #5ns clk = ~clk;
 
-  task automatic write_register(input logic [4:0] address, input logic [7:0] data);
+  task automatic write_register(input gpio_register_address_t address, input logic [7:0] data);
     register_address_i  = address;
     mmio_write_data_i   = data;
     mmio_write_enable_i = 1'b1;
@@ -42,7 +43,7 @@ module gpio_module_tb;
     mmio_write_enable_i = 1'b0;
   endtask
 
-  task automatic read_register(input logic [4:0] address, output logic [7:0] data);
+  task automatic read_register(input gpio_register_address_t address, output logic [7:0] data);
     register_address_i = address;
     mmio_read_enable_i = 1'b1;
     @(posedge clk);
@@ -62,7 +63,7 @@ module gpio_module_tb;
     alt_out_i = '0;
     alt_oe_i = '0;
     mmio_write_data_i = '0;
-    register_address_i = '0;
+    register_address_i = GPIO_IN_ADDRESS;
     mmio_write_enable_i = 1'b0;
     mmio_read_enable_i = 1'b0;
 
@@ -76,8 +77,8 @@ module gpio_module_tb;
     else $fatal(1, "reset output enable was %b", pin_oe_o);
 
     // In GPIO mode, OUT supplies the pin value and DIR supplies output-enable.
-    write_register(5'h01, 8'b1010_1010);
-    write_register(5'h02, 8'b1100_1100);
+    write_register(GPIO_OUT_ADDRESS, 8'b1010_1010);
+    write_register(GPIO_DIR_ADDRESS, 8'b1100_1100);
     assert (pin_o == 8'b1010_1010)
     else $fatal(1, "GPIO output was %b", pin_o);
     assert (pin_oe_o == 8'b1100_1100)
@@ -86,7 +87,7 @@ module gpio_module_tb;
     // Only ALT_MASK pins 1:0 may select the alternate peripheral.
     alt_out_i = 8'b0101_0101;
     alt_oe_i  = 8'b0000_0011;
-    write_register(5'h03, 8'hFF);
+    write_register(GPIO_SEL_ADDRESS, 8'hFF);
     assert (pin_o == 8'b1010_1001)
     else $fatal(1, "selected alternate output was %b", pin_o);
     assert (pin_oe_o == 8'b1100_1111)
@@ -99,16 +100,16 @@ module gpio_module_tb;
     assert (alt_in_o == 8'b0110_1001)
     else $fatal(1, "synchronized alternate input was %b", alt_in_o);
 
-    read_register(5'h00, read_data);
+    read_register(GPIO_IN_ADDRESS, read_data);
     assert (read_data == 8'b0110_1001)
     else $fatal(1, "IN register read returned %b", read_data);
 
     // Interrupt configuration stores only pins supported by IRQ_MASK.
-    write_register(5'h02, 8'h00);
-    write_register(5'h03, 8'h00);
-    write_register(5'h04, 8'hFF);
-    write_register(5'h05, 8'h00);
-    read_register(5'h04, read_data);
+    write_register(GPIO_DIR_ADDRESS, 8'h00);
+    write_register(GPIO_SEL_ADDRESS, 8'h00);
+    write_register(GPIO_IE_ADDRESS, 8'hFF);
+    write_register(GPIO_IES_ADDRESS, 8'h00);
+    read_register(GPIO_IE_ADDRESS, read_data);
     assert (read_data == IrqMask)
     else $fatal(1, "IE did not apply IRQ_MASK: %b", read_data);
 
@@ -116,60 +117,60 @@ module gpio_module_tb;
     pin_i = '0;
     repeat (3) @(posedge clk);
     #1ns;
-    write_register(5'h07, 8'hFF);
+    write_register(GPIO_IFG_CLR_ADDRESS, 8'hFF);
 
     // IES=0 selects a rising edge. The event sets IFG and asserts IRQ.
     pin_i[0] = 1'b1;
     repeat (3) @(posedge clk);
     #1ns;
-    read_register(5'h06, read_data);
+    read_register(GPIO_IFG_ADDRESS, read_data);
     assert (read_data == 8'h01)
     else $fatal(1, "rising edge produced IFG=%b", read_data);
     assert (irq_o)
     else $fatal(1, "enabled rising edge did not assert IRQ");
 
     // IFG_CLR clears the selected pending flag.
-    write_register(5'h07, 8'h01);
-    read_register(5'h06, read_data);
+    write_register(GPIO_IFG_CLR_ADDRESS, 8'h01);
+    read_register(GPIO_IFG_ADDRESS, read_data);
     assert (read_data == 8'h00)
     else $fatal(1, "IFG clear produced %b", read_data);
     assert (!irq_o)
     else $fatal(1, "IRQ remained asserted after clearing IFG");
 
     // IES=1 selects a falling edge.
-    write_register(5'h05, 8'h01);
+    write_register(GPIO_IES_ADDRESS, 8'h01);
     pin_i[0] = 1'b0;
     repeat (3) @(posedge clk);
     #1ns;
-    read_register(5'h06, read_data);
+    read_register(GPIO_IFG_ADDRESS, read_data);
     assert (read_data == 8'h01)
     else $fatal(1, "falling edge produced IFG=%b", read_data);
 
     // Software may set supported IFG bits; IRQ_MASK rejects unsupported bits.
-    write_register(5'h07, 8'hFF);
-    write_register(5'h06, 8'hFF);
-    read_register(5'h06, read_data);
+    write_register(GPIO_IFG_CLR_ADDRESS, 8'hFF);
+    write_register(GPIO_IFG_ADDRESS, 8'hFF);
+    read_register(GPIO_IFG_ADDRESS, read_data);
     assert (read_data == IrqMask)
     else $fatal(1, "software IFG set did not apply IRQ_MASK: %b", read_data);
 
     // Output pins do not generate GPIO interrupt flags.
-    write_register(5'h07, 8'hFF);
-    write_register(5'h05, 8'h00);
-    write_register(5'h02, 8'h04);
+    write_register(GPIO_IFG_CLR_ADDRESS, 8'hFF);
+    write_register(GPIO_IES_ADDRESS, 8'h00);
+    write_register(GPIO_DIR_ADDRESS, 8'h04);
     pin_i[2] = 1'b1;
     repeat (3) @(posedge clk);
     #1ns;
-    read_register(5'h06, read_data);
+    read_register(GPIO_IFG_ADDRESS, read_data);
     assert (read_data == 8'h00)
     else $fatal(1, "output pin generated IFG=%b", read_data);
 
     // Pins selected for an alternate function do not generate GPIO flags.
-    write_register(5'h02, 8'h00);
-    write_register(5'h03, 8'h01);
+    write_register(GPIO_DIR_ADDRESS, 8'h00);
+    write_register(GPIO_SEL_ADDRESS, 8'h01);
     pin_i[0] = 1'b1;
     repeat (3) @(posedge clk);
     #1ns;
-    read_register(5'h06, read_data);
+    read_register(GPIO_IFG_ADDRESS, read_data);
     assert (read_data == 8'h00)
     else $fatal(1, "alternate-function pin generated IFG=%b", read_data);
 

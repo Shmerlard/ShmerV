@@ -1,3 +1,5 @@
+import gpio_types::*;
+
 module gpio_module #(
     parameter int WIDTH = 8,
     parameter logic [WIDTH-1:0] ALT_MASK = '0,
@@ -14,11 +16,11 @@ module gpio_module #(
     input  logic [WIDTH-1:0] alt_out_i,
     input  logic [WIDTH-1:0] alt_oe_i,
 
-    input  logic [WIDTH-1:0] mmio_write_data_i,
-    output logic [WIDTH-1:0] mmio_read_data_o,
-    input  logic [      4:0] register_address_i,
-    input  logic             mmio_write_enable_i,
-    input  logic             mmio_read_enable_i,
+    input  logic                   [WIDTH-1:0] mmio_write_data_i,
+    output logic                   [WIDTH-1:0] mmio_read_data_o,
+    input  gpio_register_address_t             register_address_i,
+    input  logic                               mmio_write_enable_i,
+    input  logic                               mmio_read_enable_i,
 
     output logic irq_o
 );
@@ -70,9 +72,9 @@ module gpio_module #(
   always_ff @(posedge clk) begin
     if (rst) begin
       ifg_reg <= '0;
-    end else if (mmio_write_enable_i && register_address_i == 5'h6) begin
+    end else if (mmio_write_enable_i && register_address_i == GPIO_IFG_ADDRESS) begin
       ifg_reg <= ifg_reg | (mmio_write_data_i & IRQ_MASK) | selected_edge;
-    end else if (mmio_write_enable_i && register_address_i == 5'h7) begin
+    end else if (mmio_write_enable_i && register_address_i == GPIO_IFG_CLR_ADDRESS) begin
       ifg_reg <= (ifg_reg & ~mmio_write_data_i) | selected_edge;
     end else begin
       ifg_reg <= ifg_reg | selected_edge;
@@ -96,11 +98,11 @@ module gpio_module #(
     end else begin
       if (mmio_write_enable_i) begin
         case (register_address_i)
-          5'h1: out_reg <= mmio_write_data_i;
-          5'h2: dir_reg <= mmio_write_data_i;
-          5'h3: sel_reg <= mmio_write_data_i & ALT_MASK;
-          5'h4: ie_reg <= mmio_write_data_i & IRQ_MASK;
-          5'h5: ies_reg <= mmio_write_data_i & IRQ_MASK;
+          GPIO_OUT_ADDRESS: out_reg <= mmio_write_data_i;
+          GPIO_DIR_ADDRESS: dir_reg <= mmio_write_data_i;
+          GPIO_SEL_ADDRESS: sel_reg <= mmio_write_data_i & ALT_MASK;
+          GPIO_IE_ADDRESS:  ie_reg <= mmio_write_data_i & IRQ_MASK;
+          GPIO_IES_ADDRESS: ies_reg <= mmio_write_data_i & IRQ_MASK;
           default: begin
           end
         endcase
@@ -108,13 +110,13 @@ module gpio_module #(
 
       if (mmio_read_enable_i) begin
         case (register_address_i)
-          5'h0: mmio_read_data_o <= in_reg;
-          5'h1: mmio_read_data_o <= out_reg;
-          5'h2: mmio_read_data_o <= dir_reg;
-          5'h3: mmio_read_data_o <= sel_reg & ALT_MASK;
-          5'h4: mmio_read_data_o <= ie_reg;
-          5'h5: mmio_read_data_o <= ies_reg;
-          5'h6: mmio_read_data_o <= ifg_reg;
+          GPIO_IN_ADDRESS:  mmio_read_data_o <= in_reg;
+          GPIO_OUT_ADDRESS: mmio_read_data_o <= out_reg;
+          GPIO_DIR_ADDRESS: mmio_read_data_o <= dir_reg;
+          GPIO_SEL_ADDRESS: mmio_read_data_o <= sel_reg & ALT_MASK;
+          GPIO_IE_ADDRESS:  mmio_read_data_o <= ie_reg;
+          GPIO_IES_ADDRESS: mmio_read_data_o <= ies_reg;
+          GPIO_IFG_ADDRESS: mmio_read_data_o <= ifg_reg;
           default: begin
             mmio_read_data_o <= '0;
           end

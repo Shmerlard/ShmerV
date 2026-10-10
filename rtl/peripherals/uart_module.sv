@@ -34,6 +34,7 @@ module uart_module #(
 
   logic [7:0] tx_data_reg;
   uart_control_t tx_ctrl_reg;
+  uart_control_t control_write_data;
 
   logic start_tx_request;
   logic busy_tx;
@@ -45,6 +46,7 @@ module uart_module #(
   assign start_tx_request = tx_ctrl_reg.start_tx;
   assign tx_ctrl_reg.busy_tx = busy_tx;
   assign tx_ctrl_reg.reserved = '0;
+  assign control_write_data = uart_control_t'(mmio_write_data_i);
 
 
   // ---------- FSM ------------
@@ -145,7 +147,7 @@ module uart_module #(
         tx_ctrl_reg.start_tx <= 1'b0;
       end else if (mmio_write_enable_i) begin
         case (register_address_i)
-          UART_CTRL_REG_ADDRESS: tx_ctrl_reg.start_tx <= mmio_write_data_i[0];
+          UART_CTRL_REG_ADDRESS: tx_ctrl_reg.start_tx <= control_write_data.start_tx;
           UART_TX_ADDRESS: tx_data_reg <= mmio_write_data_i;
           default: begin
           end
