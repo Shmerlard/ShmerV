@@ -63,10 +63,7 @@ build_test() {
   mkdir -p "$test_build_directory"
   # core_types imports csr_types, so compile that package first.
   package_sources="rtl/types/csr_types.sv $(find rtl/types -type f -name '*.sv' ! -path 'rtl/types/csr_types.sv' | sort)"
-  rtl_library_arguments="+libext+.sv"
-  for rtl_directory in $(find rtl -type d | sort); do
-    rtl_library_arguments="$rtl_library_arguments -y $rtl_directory"
-  done
+  rtl_sources=$(find rtl -type f -name '*.sv' ! -path 'rtl/types/*' | sort)
   trace_arguments=
   if [ "$build_mode" = "trace" ]; then
     trace_arguments="--trace-fst --trace-max-array 1025 --trace-max-width 0"
@@ -76,7 +73,7 @@ build_test() {
   if ! verilator --binary --assert --timing --timescale-override 1ns/1ns $trace_arguments \
     --top-module "${test_module}_tb" \
     --Mdir "$test_build_directory/obj" -o "${test_module}_test" \
-    $package_sources tb/support/package_imports.sv $rtl_library_arguments "$rtl_source" "$testbench" \
+    $package_sources $rtl_sources "$testbench" \
     > "$test_build_directory/build.log" 2>&1; then
     echo "[FAIL]  $test_module build"
     cat "$test_build_directory/build.log"
