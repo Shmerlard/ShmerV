@@ -77,6 +77,9 @@ module uart_frame_check #(
       assert (mmio_read_data_o == 8'h53);
     end
     write_register(UART_CTRL_REG_ADDRESS, 8'h01);
+    // A pending START protects DATA even before BUSY asserts.
+    write_register(UART_TX_ADDRESS, 8'hAC);
+    register_address_i = UART_CTRL_REG_ADDRESS;
     // Poll throughout transmission, including the FINISH cycle.
     mmio_read_enable_i = 1'b1;
 
@@ -86,11 +89,17 @@ module uart_frame_check #(
       for (int cycle_index = 0; cycle_index < CyclesForBit; cycle_index++) begin
         #1ns;
         assert (tx_o == expected_frame[bit_index]);
+        // Attempt to cancel START and replace DATA during the frame.
+        mmio_write_enable_i = (cycle_index == 0 && bit_index < 2);
+        register_address_i  = bit_index == 1 ? UART_TX_ADDRESS : UART_CTRL_REG_ADDRESS;
+        mmio_write_data_i   = bit_index == 1 ? 8'hAC : 8'h00;
         @(posedge clk);
       end
     end
 
     #1ns;
+    mmio_write_enable_i = 1'b0;
+    register_address_i  = UART_CTRL_REG_ADDRESS;
     assert (mmio_read_data_o == 8'h03);
     @(posedge clk);
     #1ns;
@@ -101,6 +110,7 @@ module uart_frame_check #(
     assert (mmio_read_data_o == 8'h01)
     else $fatal(1, "Read during FINISH returned stale busy status");
     check_read(UART_CTRL_REG_ADDRESS, 8'h00);
+    check_read(UART_TX_ADDRESS, 8'h53);
 
     // START self-clears after one frame, so the transmitter remains idle.
     repeat (8) begin
@@ -109,12 +119,13 @@ module uart_frame_check #(
       assert (tx_o == 1'b1);
     end
 
-    // Software cannot clear BUSY during a second transmission.
+    // START cannot be canceled while pending or while transmitting.
     write_register(UART_CTRL_REG_ADDRESS, 8'h01);
+    write_register(UART_CTRL_REG_ADDRESS, 8'h00);
     repeat (2) @(posedge clk);
     #1ns;
     write_register(UART_CTRL_REG_ADDRESS, 8'h00);
-    check_read(UART_CTRL_REG_ADDRESS, 8'h02);
+    check_read(UART_CTRL_REG_ADDRESS, 8'h03);
 
     // Reset interrupts transmission and clears the registered read response.
     rst = 1'b1;

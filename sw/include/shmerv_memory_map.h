@@ -20,8 +20,9 @@
 #define GPIO_IFG_OFFSET     0x18u
 #define GPIO_IFG_CLR_OFFSET 0x1Cu
 
-#define UART_DATA_OFFSET 0x00u
-#define UART_CTRL_OFFSET 0x04u
+#define UART_CTRL_OFFSET 0x00u
+#define UART_TX_DATA_OFFSET 0x04u
+#define UART_RX_DATA_OFFSET 0x08u
 
 /* GPIO masks apply to OUT, DIR, SEL, IE, IES, IFG, and IFG_CLR. */
 #define GPIO_PIN0 0x01u
@@ -75,8 +76,9 @@
    DATA and CTRL are readable. Hardware clears START after transmission. */
 #define UART_START_TX 0x01u
 #define UART_BUSY_TX  0x02u
-#define UART_DATA SHMERV_MMIO8(UART_BASE + UART_DATA_OFFSET)
 #define UART_CTRL SHMERV_MMIO8(UART_BASE + UART_CTRL_OFFSET)
+#define UART_TX_DATA SHMERV_MMIO8(UART_BASE + UART_TX_DATA_OFFSET)
+#define UART_RX_DATA SHMERV_MMIO8(UART_BASE + UART_RX_DATA_OFFSET)
 
 /* Timer A registers are 16 bits wide, at four-byte-spaced addresses. */
 #define TA_PERIOD_OFFSET    0x00u

@@ -9,11 +9,12 @@ static uint8_t next_character;
 
 static void uart_send_next_character(void)
 {
+    /* START also covers the request and completion cycles when BUSY is zero. */
+    while (UART_CTRL & (UART_START_TX | UART_BUSY_TX)) {
+    }
     UART_DATA = next_character;
     UART_CTRL = UART_START_TX;
-    /* Conservative wait at the current
-       843.75 kHz clock and 9600 baud; recalibrate if either changes. */
-    for (volatile uint32_t remaining = 256u; remaining > 0u; --remaining) {
+    while (UART_CTRL & (UART_START_TX | UART_BUSY_TX)) {
     }
     next_character = next_character == 'Z' ? 'A' : next_character + 1u;
 }

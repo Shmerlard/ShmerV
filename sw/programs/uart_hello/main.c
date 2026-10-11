@@ -9,16 +9,13 @@ static void delay(volatile uint32_t iterations)
 
 static void uart_send(uint8_t value)
 {
-    volatile uint8_t *const uart_data =
-        (volatile uint8_t *)(UART_BASE + UART_DATA_OFFSET);
-    volatile uint8_t *const uart_ctrl =
-        (volatile uint8_t *)(UART_BASE + UART_CTRL_OFFSET);
-
-    *uart_data = value;
-    *uart_ctrl = UART_START_TX;
-
-    // One 9600-baud frame takes 880 CPU clocks.
-    delay(256u);
+    /* START also covers the request and completion cycles when BUSY is zero. */
+    while (UART_CTRL & (UART_START_TX | UART_BUSY_TX)) {
+    }
+    UART_DATA = value;
+    UART_CTRL = UART_START_TX;
+    while (UART_CTRL & (UART_START_TX | UART_BUSY_TX)) {
+    }
 }
 
 int main(void)
@@ -39,7 +36,7 @@ int main(void)
     }
 
     delay(100000u);
-    *port_c_sel = 0x01u;
+    *port_c_sel = PORTC_UART_TX_PIN;
 
     while (1) {
         for (uint32_t index = 0u; index < sizeof(message) - 1u; ++index) {
