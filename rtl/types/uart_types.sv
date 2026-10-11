@@ -30,13 +30,14 @@ package uart_types;
   typedef struct packed {
     uart_speed_t uart_speed;
     logic        parity_bit_enable;
-    // logic        parity_bit_error;
-    // logic        framing_error;
-    // logic        enable_auto_tx_start;
+    logic        parity_bit_error;   // RO
+    logic        framing_error;      // RO
     logic        lsb_first;
-    logic        busy_tx;
-    logic        start_tx;           // Bit 0: software sets; hardware clears when TX finishes.
-    logic        rx_ifg;
+    logic        auto_tx_start;
+    logic        busy_tx;            // RO
+    logic        start_tx;
+    logic        rx_ifg;             // RO
     logic        rx_ie;
+    logic        uart_enable;
   } uart_control_t;
 endpackage
