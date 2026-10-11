@@ -34,6 +34,8 @@ source /home/elad/Projects/ShmerV/scripts/completion/just.zsh
 
 - `run_tests.sh` builds and runs unit tests and CPU-system program tests.
 - `generate_expected.py` runs Spike and creates expected register or memory values from a test's `.checks` file.
+- UART stream simulation and hardware testing live together in
+  [`tb/integration/uart_stream/`](../tb/integration/uart_stream/README.md).
 
 ## `simulation/`
 

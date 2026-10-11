@@ -35,6 +35,29 @@ build_test() {
   rtl_source=$(find rtl -type f -name "$test_module.sv" -print -quit)
   testbench=$(find tb -type f -name "${test_module}_tb.sv" -print -quit)
 
+  # Firmware-driven UART stream regression, with the hardware script's payload.
+  if [ "$test_module" = "uart_stream" ]; then
+    mkdir -p "$test_build_directory" build/tests/uart_stream/firmware
+    scripts/software/build_program.sh sw/programs/uart_echo_interrupt/main.c \
+      build/tests/uart_stream/firmware sw/linker/tang_nano_9k_16k.ld \
+      > "$test_build_directory/firmware.log" 2>&1
+    python3 tb/integration/uart_stream/uart_stream.py --vectors build/tests/uart_stream/input.hex
+    trace_arguments=
+    if [ "$build_mode" = "trace" ]; then
+      trace_arguments="--trace-fst"
+    fi
+    echo "[BUILD] $test_module ($build_mode)"
+    if ! verilator --binary --assert --timing --timescale-override 1ns/1ps \
+      -Wno-TIMESCALEMOD $trace_arguments --top-module uart_stream_tb \
+      --Mdir "$test_build_directory/obj" -o uart_stream_test \
+      -f fpga/tang_nano_9k/cpu_system/sources.f "$testbench" \
+      > "$test_build_directory/build.log" 2>&1; then
+      cat "$test_build_directory/build.log"
+      return 1
+    fi
+    return
+  fi
+
   # The board wrapper lives outside rtl/ and needs its simulation IOBUF model.
   if [ "$test_module" = "cpu_system_top" ]; then
     mkdir -p "$test_build_directory"

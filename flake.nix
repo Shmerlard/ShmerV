@@ -40,7 +40,7 @@
               # Development tools
               gnumake
               just
-              python3
+              (python3.withPackages (ps: [ ps.pyserial ]))
               xdg-terminal-exec
               zsh
 
