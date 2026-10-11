@@ -2,7 +2,7 @@
 
 ShmerV is a five-stage RISC-V CPU and small SoC written in SystemVerilog.
 It runs bare-metal C firmware on a Tang Nano 9K FPGA, with GPIO, interrupts,
-and a UART transmitter.
+and bidirectional UART.
 
 ## Why I built it
 
@@ -26,14 +26,23 @@ computer architecture.
 - Initial Machine-mode trap handling, CSR access, and `MRET`.
 - 16 KiB of block RAM on the Tang Nano 9K. The current board configuration
   divides the 27 MHz oscillator by 32, giving an 843.75 kHz CPU clock.
-- Three eight-bit GPIO ports, GPIO interrupts, and UART TX at 9600 baud.
+- Three eight-bit GPIO ports, GPIO interrupts, and UART TX/RX with selectable
+  9600, 19200, 57600, and 115200 baud rates.
 - Bare-metal startup code, linker scripts, and C programs for LED patterns,
-  DIP-switch input, button interrupts, and UART output.
+  DIP-switch input, button interrupts, UART output, and polling/interrupt-driven echo.
 
 The CPU core is separate from the SoC peripherals and board-specific wrapper.
 Exception and CSR verification is still incomplete; this is not yet a fully
-verified RV32I implementation. UART has readable TX busy status but no receiver.
-The UART example firmware polls START/BUSY status between transmitted characters.
+verified RV32I implementation. UART currently sends and receives eight-bit,
+LSB-first frames without parity. Both polling and RX interrupt-driven echo
+have been tested on the FPGA at 9600 baud.
+
+### UART echo on hardware
+
+The capture below shows the letter `a` arriving on RX (lower trace) and being
+echoed back on TX (upper trace). UART uses C.0 for TX and C.1 for RX.
+
+![UART receive and transmit waveforms echoing the letter a](docs/images/first_uart_echo.png)
 
 ## Verification
 
