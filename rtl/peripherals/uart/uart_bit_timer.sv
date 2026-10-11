@@ -1,7 +1,8 @@
 import uart_types::*;
 
 module uart_bit_timer #(
-    parameter int unsigned CLOCK_HZ = 843_750
+    parameter int unsigned CLOCK_HZ = 843_750,
+    parameter bit INITIAL_HALF_BIT = 1'b1
 ) (
     input logic clk,
     input logic rst,
@@ -47,7 +48,7 @@ module uart_bit_timer #(
         IDLE: begin
           cycle_count <= '0;
           bit_index_o <= '0;
-          state <= COUNT_HALF_BIT;
+          state <= INITIAL_HALF_BIT ? COUNT_HALF_BIT : COUNT_FULL_BIT;
         end
 
         COUNT_HALF_BIT: begin

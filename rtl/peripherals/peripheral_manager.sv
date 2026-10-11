@@ -63,7 +63,7 @@ module peripheral_manager #(
   logic [31:0] uart_address_offset;
   uart_registers_address_t uart_register_address;
   logic uart_read_enable, uart_write_enable;
-  logic [7:0] uart_read_data;
+  logic [15:0] uart_read_data;
   logic uart_tx;
 
   // Timer A register bus, PWM outputs, and interrupt sources.
@@ -104,11 +104,15 @@ module peripheral_manager #(
   assign gpio1_bus.write_enable = write_enable_i && gpio1_bus.address_hit && write_byte_enable_i[0];
   assign gpio2_bus.write_enable = write_enable_i && gpio2_bus.address_hit && write_byte_enable_i[0];
 
-  // UART address decoding and byte-wide register access.
-  assign uart_address_hit = address_i >= UART_BASE && address_i < UART_BASE + UART_SIZE_BYTES;
+  // UART control uses full 16-bit writes; data registers remain byte-wide.
+  assign uart_address_hit = address_i >= UART_BASE && address_i < UART_BASE + UART_SIZE_BYTES
+      && uart_address_offset <= (32'(UART_RX_ADDRESS) << 2)
+      && uart_address_offset[1:0] == 2'b00;
   assign uart_address_offset = address_i - UART_BASE;
-  assign uart_register_address = uart_registers_address_t'(uart_address_offset[2]);
-  assign uart_write_enable = write_enable_i && uart_address_hit && write_byte_enable_i[0];
+  assign uart_register_address = uart_registers_address_t'(uart_address_offset[4:2]);
+  assign uart_write_enable = write_enable_i && uart_address_hit
+      && (uart_register_address == UART_CTRL_REG_ADDRESS
+          ? (&write_byte_enable_i[1:0]) : write_byte_enable_i[0]);
   assign uart_read_enable = read_enable_i && uart_address_hit;
 
   // Timer A accepts seven aligned registers and full 16-bit writes.
@@ -163,7 +167,7 @@ module peripheral_manager #(
       READ_GPIO1: read_data_o = {24'b0, gpio1_bus.read_data};
       READ_GPIO2: read_data_o = {24'b0, gpio2_bus.read_data};
       READ_TIMER: read_data_o = {16'b0, timer_read_data};
-      READ_UART: read_data_o = {24'b0, uart_read_data};
+      READ_UART: read_data_o = {16'b0, uart_read_data};
       default: read_data_o = 32'b0;
     endcase
   end
@@ -244,12 +248,14 @@ module peripheral_manager #(
   ) uart (
       .clk                (clk),
       .rst                (rst),
-      .mmio_write_data_i  (write_data_i[7:0]),
+      .mmio_write_data_i  (write_data_i[15:0]),
       .register_address_i (uart_register_address),
       .mmio_write_enable_i(uart_write_enable),
       .mmio_read_enable_i (uart_read_enable),
       .mmio_read_data_o   (uart_read_data),
-      .tx_o               (uart_tx)
+      .tx_o               (uart_tx),
+      .rx_i               (1'b1),
+      .rx_irq_o           ()
   );
 
   timer_a_module #(

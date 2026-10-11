@@ -18,6 +18,11 @@ module uart_module #(
 
     output logic rx_irq_o
 );
+  localparam uart_speed_t DefaultSpeed =
+      BAUD_RATE == 19_200 ? UART_SPEED_19200 :
+      BAUD_RATE == 57_600 ? UART_SPEED_57600 :
+      BAUD_RATE == 115_200 ? UART_SPEED_115200 : UART_SPEED_9600;
+
   // -------------- CTRL ------------------
   uart_control_t uart_ctrl_reg;
   uart_control_t control_write_data;
@@ -45,12 +50,12 @@ module uart_module #(
   assign read_from_rx_addr = mmio_read_enable_i && register_address_i == UART_RX_ADDRESS;
 
   uart_tx #(
-      .CLOCK_HZ (CLOCK_HZ),
-      .BAUD_RATE(BAUD_RATE)
+      .CLOCK_HZ(CLOCK_HZ)
   ) tx (
       .clk(clk),
       .rst(rst),
       .start_i(start_tx_request),
+      .uart_speed_i(uart_ctrl_reg.uart_speed),
       .data_i(tx_data_reg),
       .tx_o(tx_o),
       .busy_o(tx_busy),
@@ -75,8 +80,9 @@ module uart_module #(
   always_ff @(posedge clk) begin
     if (rst) begin
       tx_data_reg                     <= 8'b0;
+      uart_ctrl_reg.reserved          <= '0;
       uart_ctrl_reg.start_tx          <= 1'b0;
-      uart_ctrl_reg.uart_speed        <= UART_SPEED_9600;
+      uart_ctrl_reg.uart_speed        <= DefaultSpeed;
       uart_ctrl_reg.parity_bit_enable <= 1'b0;
       uart_ctrl_reg.parity_bit_error  <= 1'b0;
       uart_ctrl_reg.framing_error     <= 1'b0;
@@ -84,7 +90,7 @@ module uart_module #(
       uart_ctrl_reg.lsb_first         <= 1'b1;
       uart_ctrl_reg.rx_ie             <= 1'b0;
       uart_ctrl_reg.uart_enable       <= 1'b0;
-      mmio_read_data_o                <= 8'b0;
+      mmio_read_data_o                <= '0;
     end else begin
       if (tx_finish) begin
         uart_ctrl_reg.start_tx <= 1'b0;
@@ -101,7 +107,7 @@ module uart_module #(
             uart_ctrl_reg.rx_ie <= control_write_data.rx_ie;
             uart_ctrl_reg.uart_enable <= control_write_data.uart_enable;
           end
-          UART_TX_ADDRESS: tx_data_reg <= mmio_write_data_i;
+          UART_TX_ADDRESS: tx_data_reg <= mmio_write_data_i[7:0];
           UART_RX_ADDRESS: ;
           default: ;
         endcase
@@ -110,9 +116,9 @@ module uart_module #(
       if (mmio_read_enable_i) begin
         case (register_address_i)
           UART_CTRL_REG_ADDRESS: mmio_read_data_o <= uart_ctrl_reg;
-          UART_TX_ADDRESS: mmio_read_data_o <= tx_data_reg;
+          UART_TX_ADDRESS: mmio_read_data_o <= {8'b0, tx_data_reg};
           UART_RX_ADDRESS: begin
-            mmio_read_data_o <= rx_data_reg;
+            mmio_read_data_o <= {8'b0, rx_data_reg};
 
           end
           default: ;

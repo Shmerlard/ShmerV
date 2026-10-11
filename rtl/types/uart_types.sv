@@ -28,6 +28,7 @@ package uart_types;
 
 
   typedef struct packed {
+    logic [3:0]  reserved;
     uart_speed_t uart_speed;
     logic        parity_bit_enable;
     logic        parity_bit_error;   // RO
