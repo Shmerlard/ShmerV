@@ -12,8 +12,8 @@ static void uart_send_next_character(void)
     /* START also covers the request and completion cycles when BUSY is zero. */
     while (UART_CTRL & (UART_START_TX | UART_BUSY_TX)) {
     }
-    UART_DATA = next_character;
-    UART_CTRL = UART_START_TX;
+    UART_TX_DATA = next_character;
+    UART_CTRL |= UART_START_TX;
     while (UART_CTRL & (UART_START_TX | UART_BUSY_TX)) {
     }
     next_character = next_character == 'Z' ? 'A' : next_character + 1u;
@@ -48,6 +48,8 @@ int main(void)
     PORTC_SEL = PORTC_UART_TX_PIN;
     PORTC_OUT = 0x00u;
     PORTC_DIR = 0xFFu;
+    UART_CTRL = 0u;
+    UART_CTRL = UART_SPEED_9600 | UART_LSB_FIRST | UART_ENABLE;
 
     PORTA_IE = 0x00u;
     PORTA_SEL = 0x00u;

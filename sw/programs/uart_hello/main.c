@@ -12,8 +12,8 @@ static void uart_send(uint8_t value)
     /* START also covers the request and completion cycles when BUSY is zero. */
     while (UART_CTRL & (UART_START_TX | UART_BUSY_TX)) {
     }
-    UART_DATA = value;
-    UART_CTRL = UART_START_TX;
+    UART_TX_DATA = value;
+    UART_CTRL |= UART_START_TX;
     while (UART_CTRL & (UART_START_TX | UART_BUSY_TX)) {
     }
 }
@@ -37,6 +37,8 @@ int main(void)
 
     delay(100000u);
     *port_c_sel = PORTC_UART_TX_PIN;
+    UART_CTRL = 0u;
+    UART_CTRL = UART_SPEED_9600 | UART_LSB_FIRST | UART_ENABLE;
 
     while (1) {
         for (uint32_t index = 0u; index < sizeof(message) - 1u; ++index) {

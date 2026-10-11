@@ -38,7 +38,7 @@
 #define PORTC_TA_CCR1_PIN GPIO_PIN7
 #define PORTC_TA_CCR2_PIN GPIO_PIN6
 
-/* Dereferencing a volatile pointer performs an eight-bit MMIO access. */
+/* Dereferencing these volatile pointers performs byte or halfword MMIO access. */
 #define SHMERV_MMIO8(address) (*(volatile uint8_t *)(uintptr_t)(address))
 #define SHMERV_MMIO16(address) (*(volatile uint16_t *)(uintptr_t)(address))
 
@@ -72,11 +72,28 @@
 #define PORTC_IFG     SHMERV_MMIO8(PORTC_BASE + GPIO_IFG_OFFSET)
 #define PORTC_IFG_CLR SHMERV_MMIO8(PORTC_BASE + GPIO_IFG_CLR_OFFSET)
 
-/* UART_CTRL: [7:2] read as zero, [1] read-only busy, [0] start request.
-   DATA and CTRL are readable. Hardware clears START after transmission. */
-#define UART_START_TX 0x01u
-#define UART_BUSY_TX  0x02u
-#define UART_CTRL SHMERV_MMIO8(UART_BASE + UART_CTRL_OFFSET)
+/* UART_CTRL matches uart_control_t: [15:12] reserved, [11:10] speed,
+   [9] parity enable, [8] parity error, [7] framing error, [6] LSB first,
+   [5] auto start, [4] busy, [3] start, [2] RX pending, [1] RX IE, [0] enable.
+   Error, busy, and pending bits are read-only. Reading RX_DATA clears pending.
+   Configure speed/parity/bit order while disabled; preserve settings on START.
+   Parity, error reporting, bit order selection, and auto start are unfinished. */
+#define UART_ENABLE           0x0001u
+#define UART_RX_IE            0x0002u
+#define UART_RX_PENDING       0x0004u
+#define UART_START_TX         0x0008u
+#define UART_BUSY_TX          0x0010u
+#define UART_AUTO_TX_START    0x0020u
+#define UART_LSB_FIRST        0x0040u
+#define UART_FRAMING_ERROR    0x0080u
+#define UART_PARITY_ERROR     0x0100u
+#define UART_PARITY_ENABLE    0x0200u
+#define UART_SPEED_MASK       0x0C00u
+#define UART_SPEED_9600       0x0000u
+#define UART_SPEED_19200      0x0400u
+#define UART_SPEED_57600      0x0800u
+#define UART_SPEED_115200     0x0C00u
+#define UART_CTRL SHMERV_MMIO16(UART_BASE + UART_CTRL_OFFSET)
 #define UART_TX_DATA SHMERV_MMIO8(UART_BASE + UART_TX_DATA_OFFSET)
 #define UART_RX_DATA SHMERV_MMIO8(UART_BASE + UART_RX_DATA_OFFSET)
 
