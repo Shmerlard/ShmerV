@@ -31,18 +31,18 @@ just fpga-flash cpu_system PROGRAM
 
 All three GPIO ports are bidirectional; software controls them through `DIR`.
 
-The board wrapper has `INPUT_CLOCK_HZ = 27_000_000` and `CLOCK_DIVIDE = 32`
+The board wrapper has `INPUT_CLOCK_HZ = 27_000_000` and `CLOCK_DIVIDE = 16`
 parameters. The divider supports powers of two >= 2, with 50% duty cycle.
 The reported frequency is truncated to whole Hz if necessary.
 `INPUT_CLOCK_HZ` describes the physical oscillator; it does not change it.
 The resulting `CLOCK_HZ` is passed through the SoC and peripheral manager to
 UART. UART rounds `CLOCK_HZ / BAUD_RATE` to the nearest whole cycle; the defaults
-give 843.75 kHz and 88 cycles per bit at 9600 baud. `UART_BAUD_RATE` can be set
+give 1.6875 MHz and 176 cycles per bit at 9600 baud. `UART_BAUD_RATE` can be set
 on `cpu_system`; the UART requires at least one clock cycle per bit.
 
 When changing either clock parameter, update `clock.sdc`'s primary period and
 generated-clock divide ratio. For nextpnr, keep frequency constraints consistent
-and update `pins.cst`'s clock net to `clock_divider[log2(CLOCK_DIVIDE)-1]`
+and update `clock_nextpnr.cst`'s clock net to `clock_divider[log2(CLOCK_DIVIDE)-1]`
 (for example `[3]` for divide-by-16). Check its BUFG routing in the user-run build.
 These constraint files are not generated
 from RTL parameters. Software busy-loop delays also require recalibration.
@@ -54,12 +54,17 @@ The board divider and UART frequency propagation simulation is included in
 just test cpu_system_top
 ```
 
+Both flows use the shared physical pin assignments in `pins.cst`. The Gowin
+project also loads `clock_gowin.cst`, which constrains `cpu_clk` to global clock
+routing. The open-source build combines `pins.cst` and `clock_nextpnr.cst` into
+`build/fpga/tang_nano_9k/cpu_system/constraints.cst` for nextpnr.
+
 Gowin uses `clock.sdc` to constrain both clocks. Check the generated-clock constraint
 resolves and setup/hold timing passes after rebuilding; the RTL change requires
 synthesis, not only P&R.
 
-For the open-source flow, `pins.cst` requests global clock routing for
-`clock_divider[4]` with `CLOCK_LOC ... BUFG = CLK`. This is nextpnr's net name
+For the open-source flow, `clock_nextpnr.cst` requests global clock routing for
+`clock_divider[3]` with `CLOCK_LOC ... BUFG = CLK`. This is nextpnr's net name
 for the divided CPU clock. The build also enables `--detailed-timing-report`
 in `report.json`. After a full build, check `nextpnr.log` for the buffered
 clock routing result, missing-net or routing errors, and `Hold/min time`

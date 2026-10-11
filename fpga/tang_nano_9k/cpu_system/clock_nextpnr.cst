@@ -1,0 +1,2 @@
+// nextpnr names the divided CPU clock after the selected divider bit.
+CLOCK_LOC "clock_divider[3]" BUFG = CLK;

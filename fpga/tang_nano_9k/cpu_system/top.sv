@@ -1,6 +1,6 @@
 module cpu_system_top #(
     parameter int unsigned INPUT_CLOCK_HZ = 27_000_000,
-    parameter int unsigned CLOCK_DIVIDE = 32
+    parameter int unsigned CLOCK_DIVIDE = 16
 ) (
     input wire clk,
     input wire reset_button_n_i,

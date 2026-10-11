@@ -59,6 +59,13 @@ esac
 sources=$(tr '\n' ' ' < "$sources_file")
 mkdir -p "$build_directory" "$images_directory"
 
+# nextpnr reads one CST; combine shared pins with its clock naming constraint.
+if [ -f "$target_directory/clock_nextpnr.cst" ]; then
+  cat "$constraints_file" "$target_directory/clock_nextpnr.cst" \
+    > "$build_directory/constraints.cst"
+  constraints_file="$build_directory/constraints.cst"
+fi
+
 yosys -Q -l "$build_directory/synthesis.log" -p "
   read_verilog -lib +/gowin/cells_sim.v
   read_slang --top $top $sources

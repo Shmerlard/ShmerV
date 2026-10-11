@@ -25,7 +25,7 @@ computer architecture.
 - Forwarding, load-use stalls, and pipeline flushing.
 - Initial Machine-mode trap handling, CSR access, and `MRET`.
 - 16 KiB of block RAM on the Tang Nano 9K. The current board configuration
-  divides the 27 MHz oscillator by 32, giving an 843.75 kHz CPU clock.
+  divides the 27 MHz oscillator by 16, giving a 1.6875 MHz CPU clock.
 - Three eight-bit GPIO ports, GPIO interrupts, and UART TX/RX with selectable
   9600, 19200, 57600, and 115200 baud rates.
 - Bare-metal startup code, linker scripts, and C programs for LED patterns,

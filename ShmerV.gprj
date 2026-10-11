@@ -27,16 +27,23 @@
         <File path="rtl/core/trap_control_unit.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/gpio_module.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/peripheral_manager.sv" type="file.verilog" enable="1"/>
+        <File path="rtl/peripherals/timer_a_compare_module.sv" type="file.verilog" enable="1"/>
+        <File path="rtl/peripherals/timer_a_module.sv" type="file.verilog" enable="1"/>
+        <File path="rtl/peripherals/uart/uart_bit_timer.sv" type="file.verilog" enable="1"/>
+        <File path="rtl/peripherals/uart/uart_rx.sv" type="file.verilog" enable="1"/>
+        <File path="rtl/peripherals/uart/uart_tx.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/uart_module.sv" type="file.verilog" enable="1"/>
         <File path="rtl/soc/address_decoder.sv" type="file.verilog" enable="1"/>
         <File path="rtl/soc/cpu_system.sv" type="file.verilog" enable="1"/>
         <File path="rtl/soc/memory.sv" type="file.verilog" enable="1"/>
         <File path="rtl/types/core_types.sv" type="file.verilog" enable="1"/>
         <File path="rtl/types/csr_types.sv" type="file.verilog" enable="1"/>
-        <File path="rtl/types/uart_types.sv" type="file.verilog" enable="1"/>
-        <File path="rtl/types/soc_address_map.sv" type="file.verilog" enable="1"/>
         <File path="rtl/types/gpio_types.sv" type="file.verilog" enable="1"/>
+        <File path="rtl/types/soc_address_map.sv" type="file.verilog" enable="1"/>
+        <File path="rtl/types/timer_a_types.sv" type="file.verilog" enable="1"/>
+        <File path="rtl/types/uart_types.sv" type="file.verilog" enable="1"/>
         <File path="fpga/tang_nano_9k/cpu_system/pins.cst" type="file.cst" enable="1"/>
+        <File path="fpga/tang_nano_9k/cpu_system/clock_gowin.cst" type="file.cst" enable="1"/>
         <File path="fpga/tang_nano_9k/cpu_system/clock.sdc" type="file.sdc" enable="1"/>
         <File path="fpga/tang_nano_9k/cpu_system/gao_config.rao" type="file.gao" enable="0"/>
         <File path="fpga/tang_nano_9k/cpu_system/gao_post_synthesis.gao" type="file.gao" enable="1"/>

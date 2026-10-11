@@ -1,0 +1,2 @@
+// Gowin preserves the divided CPU clock as cpu_clk.
+CLOCK_LOC "cpu_clk" BUFG = CLK;

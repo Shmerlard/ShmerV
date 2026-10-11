@@ -1,10 +1,6 @@
 IO_LOC "clk" 52;
 IO_PORT "clk" IO_TYPE=LVCMOS33 PULL_MODE=UP;
 
-// nextpnr names the divided CPU clock after this divider bit.
-// Request the global clock network for its clock sinks.
-CLOCK_LOC "clock_divider[4]" BUFG = CLK;
-
 IO_LOC "reset_button_n_i" 4;
 IO_PORT "reset_button_n_i" IO_TYPE=LVCMOS18 PULL_MODE=UP;
 

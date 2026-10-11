@@ -29,6 +29,9 @@ done < "$sources_file"
 fingerprint=$(
   {
     sha256sum "$sources_file" "$constraints_file"
+    if [ -f "$target_directory/clock_nextpnr.cst" ]; then
+      sha256sum "$target_directory/clock_nextpnr.cst"
+    fi
     while IFS= read -r source_file; do
       if [ -n "$source_file" ]; then
         sha256sum "$source_file"
