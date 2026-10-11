@@ -34,7 +34,11 @@ module board_clock_check #(
   always #5ns clk = ~clk;
 
   initial begin
-    assert (dut.cpu_system.peripheral_manager.uart.CyclesForBit ==
+    assert (dut.cpu_system.peripheral_manager.uart.tx.tx_bit_timer.BitCycles[
+        uart_types::UART_SPEED_9600] ==
+        (27_000_000 / Divide + 4800) / 9600);
+    assert (dut.cpu_system.peripheral_manager.uart.rx.rx_bit_timer.BitCycles[
+        uart_types::UART_SPEED_9600] ==
         (27_000_000 / Divide + 4800) / 9600);
     for (int cycle_index = 1; cycle_index <= 256; cycle_index++) begin
       @(posedge clk);

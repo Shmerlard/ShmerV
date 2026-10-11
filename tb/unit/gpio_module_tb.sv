@@ -14,6 +14,7 @@ module gpio_module_tb;
   logic [WIDTH-1:0] pin_oe_o;
 
   logic [WIDTH-1:0] alt_in_o;
+  logic [WIDTH-1:0] alt_sel_o;
   logic [WIDTH-1:0] alt_out_i;
   logic [WIDTH-1:0] alt_oe_i;
 
