@@ -19,6 +19,9 @@ rtl/core/trap_control_unit.sv
 rtl/soc/address_decoder.sv
 rtl/peripherals/gpio_module.sv
 rtl/peripherals/uart_module.sv
+rtl/peripherals/uart/uart_bit_timer.sv
+rtl/peripherals/uart/uart_rx.sv
+rtl/peripherals/uart/uart_tx.sv
 rtl/peripherals/timer_a_compare_module.sv
 rtl/peripherals/timer_a_module.sv
 rtl/peripherals/peripheral_manager.sv

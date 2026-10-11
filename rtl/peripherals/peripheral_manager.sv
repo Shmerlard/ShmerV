@@ -65,6 +65,10 @@ module peripheral_manager #(
   logic uart_read_enable, uart_write_enable;
   logic [15:0] uart_read_data;
   logic uart_tx;
+  logic uart_rx_irq;
+  logic uart_rx;
+  logic [7:0] gpio2_alt_sel;
+  logic [7:0] gpio2_alt_in;
 
   // Timer A register bus, PWM outputs, and interrupt sources.
   logic timer_address_hit;
@@ -129,7 +133,7 @@ module peripheral_manager #(
     irq_o = 1'b0;
     irq_address_o = IRQ_ADDRESS_GPIO_A;
 
-    // Fixed priority: GPIO A > B > C > timer overflow > timer compare.
+    // Fixed priority: GPIO A > B > C > timer overflow > timer compare > UART RX.
     if (gpio0_bus.irq) begin
       irq_o = 1'b1;
       irq_address_o = IRQ_ADDRESS_GPIO_A;
@@ -145,6 +149,9 @@ module peripheral_manager #(
     end else if (timer_irq.ta_irq_compare_1 || timer_irq.ta_irq_compare_2) begin
       irq_o = 1'b1;
       irq_address_o = IRQ_ADDRESS_TIMER_A_COMPARE;
+    end else if (uart_rx_irq) begin
+      irq_o = 1'b1;
+      irq_address_o = IRQ_ADDRESS_UART_RX;
     end
   end
 
@@ -183,6 +190,7 @@ module peripheral_manager #(
       .pin_o              (gpio0_pin_o),
       .pin_oe_o           (gpio0_pin_oe_o),
       .alt_in_o           (),
+      .alt_sel_o          (),
       .alt_out_i          (8'b0),
       .alt_oe_i           (8'b0),
       .mmio_write_data_i  (write_data_i[7:0]),
@@ -204,6 +212,7 @@ module peripheral_manager #(
       .pin_o              (gpio1_pin_o),
       .pin_oe_o           (gpio1_pin_oe_o),
       .alt_in_o           (),
+      .alt_sel_o          (),
       .alt_out_i          (8'b0),
       .alt_oe_i           (8'b0),
       .mmio_write_data_i  (write_data_i[7:0]),
@@ -219,6 +228,9 @@ module peripheral_manager #(
     gpio2_alt_out[GPIO_C_UART_TX_PIN] = uart_tx;
     gpio2_alt_out[GPIO_C_TIMER_A_COMPARE1_PIN] = timer_pwm1;
     gpio2_alt_out[GPIO_C_TIMER_A_COMPARE2_PIN] = timer_pwm2;
+
+    uart_rx = gpio2_alt_sel[GPIO_C_UART_RX_PIN]
+        ? gpio2_alt_in[GPIO_C_UART_RX_PIN] : 1'b1;
   end
 
   gpio_module #(
@@ -231,9 +243,10 @@ module peripheral_manager #(
       .pin_i              (gpio2_pin_i),
       .pin_o              (gpio2_pin_o),
       .pin_oe_o           (gpio2_pin_oe_o),
-      .alt_in_o           (),
+      .alt_in_o           (gpio2_alt_in),
+      .alt_sel_o          (gpio2_alt_sel),
       .alt_out_i          (gpio2_alt_out),
-      .alt_oe_i           (GPIO_C_ALT_MASK),
+      .alt_oe_i           (GPIO_C_ALT_OUTPUT_MASK),
       .mmio_write_data_i  (write_data_i[7:0]),
       .mmio_read_data_o   (gpio2_bus.read_data),
       .register_address_i (gpio2_bus.register_address),
@@ -254,8 +267,8 @@ module peripheral_manager #(
       .mmio_read_enable_i (uart_read_enable),
       .mmio_read_data_o   (uart_read_data),
       .tx_o               (uart_tx),
-      .rx_i               (1'b1),
-      .rx_irq_o           ()
+      .rx_i               (uart_rx),
+      .rx_irq_o           (uart_rx_irq)
   );
 
   timer_a_module #(

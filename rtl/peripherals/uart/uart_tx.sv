@@ -5,6 +5,7 @@ module uart_tx #(
 ) (
     input logic clk,
     input logic rst,
+    input logic enable_i,
     input logic start_i,
     input uart_speed_t uart_speed_i,
     input logic [7:0] data_i,
@@ -23,15 +24,15 @@ module uart_tx #(
   assign idle_o = tx_state == TX_IDLE;
   assign finish_o = tx_state == TX_FINISH;
   assign busy_o = tx_state == TX_INITIALIZE || tx_state == TX_WORK;
-  assign tx_timer_enable = busy_o;
+  assign tx_timer_enable = enable_i && busy_o;
 
   // The timer starts in INITIALIZE, alongside loading the start bit.
   // Its index changes at each full-bit boundary without another register delay.
-  assign tx_o = tx_state == TX_WORK && tx_bit_index < 4'd10
+  assign tx_o = enable_i && tx_state == TX_WORK && tx_bit_index < 4'd10
       ? tx_out_reg[tx_bit_index] : 1'b1;
 
   always_ff @(posedge clk) begin
-    if (rst) begin
+    if (rst || !enable_i) begin
       tx_state <= TX_IDLE;
       tx_out_reg <= '1;
     end else begin

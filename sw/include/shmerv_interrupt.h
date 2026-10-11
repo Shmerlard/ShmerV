@@ -8,7 +8,8 @@
 #define SHMERV_IRQ_TIMER_A_OVERFLOW "TIMER_A_OVERFLOW" /* Cause 20. */
 #define SHMERV_IRQ_TIMER_A_COMPARE  "TIMER_A_COMPARE"  /* Cause 21; shared by CCR1/CCR2. */
 
-/* Cause 16 has a runtime vector, but UART RX is not implemented or routed. */
+/* Cause 16: UART RX pending. Reading UART_RX_DATA acknowledges it.
+   Select PORTC_UART_RX_PIN in PORTC_SEL, and set UART_ENABLE and UART_RX_IE. */
 #define SHMERV_IRQ_UART_RX "UART_RX"
 
 #define SHMERV_INTERRUPT(source, handler) \

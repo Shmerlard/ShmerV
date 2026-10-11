@@ -13,6 +13,7 @@ module gpio_module #(
     output logic [WIDTH-1:0] pin_oe_o,
 
     output logic [WIDTH-1:0] alt_in_o,
+    output logic [WIDTH-1:0] alt_sel_o,
     input  logic [WIDTH-1:0] alt_out_i,
     input  logic [WIDTH-1:0] alt_oe_i,
 
@@ -44,6 +45,7 @@ module gpio_module #(
   logic [WIDTH-1:0] selected_edge;
 
   assign effective_sel = ALT_MASK & sel_reg;
+  assign alt_sel_o = effective_sel;
   assign in_reg = sync_ff2;
   assign alt_in_o = sync_ff2;
   assign irq_o = |(ifg_reg & ie_reg & IRQ_MASK);

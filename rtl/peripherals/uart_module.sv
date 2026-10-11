@@ -14,7 +14,7 @@ module uart_module #(
     output logic                    [15:0] mmio_read_data_o,
 
     output logic tx_o,
-    input  logic rx_i,
+    input  logic rx_i, // Already synchronized to clk by the GPIO module.
 
     output logic rx_irq_o
 );
@@ -45,8 +45,8 @@ module uart_module #(
   assign control_write_data = uart_control_t'(mmio_write_data_i);
   assign uart_ctrl_reg.busy_tx = tx_busy;
   assign valid_write = mmio_write_enable_i && tx_idle && !uart_ctrl_reg.start_tx;
-  assign start_tx_request = uart_ctrl_reg.start_tx;
-  assign rx_irq_o = uart_ctrl_reg.rx_ifg && uart_ctrl_reg.rx_ie;
+  assign start_tx_request = uart_ctrl_reg.start_tx && uart_ctrl_reg.uart_enable;
+  assign rx_irq_o = uart_ctrl_reg.uart_enable && uart_ctrl_reg.rx_ifg && uart_ctrl_reg.rx_ie;
   assign read_from_rx_addr = mmio_read_enable_i && register_address_i == UART_RX_ADDRESS;
 
   uart_tx #(
@@ -54,6 +54,7 @@ module uart_module #(
   ) tx (
       .clk(clk),
       .rst(rst),
+      .enable_i(uart_ctrl_reg.uart_enable),
       .start_i(start_tx_request),
       .uart_speed_i(uart_ctrl_reg.uart_speed),
       .data_i(tx_data_reg),
@@ -92,26 +93,27 @@ module uart_module #(
       uart_ctrl_reg.uart_enable       <= 1'b0;
       mmio_read_data_o                <= '0;
     end else begin
-      if (tx_finish) begin
+      if (tx_finish || !uart_ctrl_reg.uart_enable) begin
         uart_ctrl_reg.start_tx <= 1'b0;
-      end else if (valid_write) begin
-        case (register_address_i)
-          UART_CTRL_REG_ADDRESS: begin
-            if (!uart_ctrl_reg.uart_enable) begin
-              uart_ctrl_reg.uart_speed <= control_write_data.uart_speed;
-              uart_ctrl_reg.parity_bit_enable <= control_write_data.parity_bit_enable; // TODO: implement
-              uart_ctrl_reg.lsb_first <= control_write_data.lsb_first;  // TODO: implement
-            end
-            uart_ctrl_reg.start_tx <= control_write_data.start_tx;
-            // uart_ctrl_reg.rx_ifg <= control_write_data.rx_ifg;
-            uart_ctrl_reg.rx_ie <= control_write_data.rx_ie;
-            uart_ctrl_reg.uart_enable <= control_write_data.uart_enable;
-          end
-          UART_TX_ADDRESS: tx_data_reg <= mmio_write_data_i[7:0];
-          UART_RX_ADDRESS: ;
-          default: ;
-        endcase
       end
+
+      // Enable and interrupt control remain writable during transmission.
+      if (mmio_write_enable_i && register_address_i == UART_CTRL_REG_ADDRESS) begin
+        if (!uart_ctrl_reg.uart_enable) begin
+          uart_ctrl_reg.uart_speed <= control_write_data.uart_speed;
+          uart_ctrl_reg.parity_bit_enable <= control_write_data.parity_bit_enable; // TODO: implement
+          uart_ctrl_reg.lsb_first <= control_write_data.lsb_first; // TODO: implement
+        end
+        uart_ctrl_reg.rx_ie <= control_write_data.rx_ie;
+        uart_ctrl_reg.uart_enable <= control_write_data.uart_enable;
+        if (!control_write_data.uart_enable)
+          uart_ctrl_reg.start_tx <= 1'b0;
+        else if (valid_write && !tx_finish)
+          uart_ctrl_reg.start_tx <= control_write_data.start_tx;
+      end
+
+      if (valid_write && register_address_i == UART_TX_ADDRESS)
+        tx_data_reg <= mmio_write_data_i[7:0];
 
       if (mmio_read_enable_i) begin
         case (register_address_i)

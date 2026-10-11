@@ -5,7 +5,7 @@ module uart_rx #(
 ) (
     input logic clk,
     input logic rst,
-    input logic rx_i,
+    input logic rx_i, // Already synchronized to clk by the GPIO module.
     input uart_speed_t uart_speed_i,
     input logic enable_i,
     input logic clear_ifg_i,
@@ -20,23 +20,10 @@ module uart_rx #(
   logic rx_timer_enable;
   logic rx_timer_tick;
   logic [3:0] rx_bit_index;
-  logic rx_i_sync_1;
-  logic rx_i_sync_2;
 
   always_ff @(posedge clk) begin
     if (rst || !enable_i) rx_state <= RX_IDLE;
     else rx_state <= rx_next_state;
-  end
-
-  // Synchronization
-  always_ff @(posedge clk) begin
-    if (rst) begin
-      rx_i_sync_1 <= 1'b1;
-      rx_i_sync_2 <= 1'b1;
-    end else begin
-      rx_i_sync_1 <= rx_i;
-      rx_i_sync_2 <= rx_i_sync_1;
-    end
   end
 
   // --------- RX FSM ---------
@@ -46,7 +33,7 @@ module uart_rx #(
     rx_timer_enable = 0;
     case (rx_state)
       RX_IDLE: begin
-        if (rx_i_sync_2 == 1'b0) rx_next_state = RX_INITIALIZE;
+        if (rx_i == 1'b0) rx_next_state = RX_INITIALIZE;
       end
       RX_INITIALIZE: begin
         rx_next_state   = RX_WORK;
@@ -85,7 +72,7 @@ module uart_rx #(
 
           RX_WORK: begin
             if (rx_timer_tick) begin
-              rx_in_reg[rx_bit_index] <= rx_i_sync_2;
+              rx_in_reg[rx_bit_index] <= rx_i;
               if (rx_bit_index == 9) rx_done <= 1;
             end
           end
