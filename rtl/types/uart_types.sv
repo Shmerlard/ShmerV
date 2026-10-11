@@ -20,8 +20,10 @@ package uart_types;
   } uart_rx_state_t;
 
   typedef enum logic [1:0] {
-    UART_SPEED_9600,
-    UART_SPEED_115200
+    UART_SPEED_9600   = 2'd0,
+    UART_SPEED_19200  = 2'd1,
+    UART_SPEED_57600  = 2'd2,
+    UART_SPEED_115200 = 2'd3
   } uart_speed_t;
 
 

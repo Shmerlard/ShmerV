@@ -55,13 +55,16 @@ module uart_module #(
   uart_rx_state_t rx_state;
   uart_rx_state_t rx_next_state;
   logic rx_done;
-  logic [CycleCounterWidth-1:0] rx_cycle_counter;  // counts CPU cycles to match baud rate
-  logic [3:0] rx_bit_counter;  // inidicates which of the 10bits we send
-  logic rx_cycle_counter_rst;
-  logic rx_cycle_counter_enable;
-  logic rx_cycle_counter_enable_prev;
-  logic rx_cycle_counter_advanded;  // a pulse for indicating we are in the next bit
-  logic rx_cycle_counter_enabled_rise;
+  // logic [CycleCounterWidth-1:0] rx_cycle_counter;  // counts CPU cycles to match baud rate
+  // logic [3:0] rx_bit_counter;  // inidicates which of the 10bits we send
+  // logic rx_cycle_counter_rst;
+  // logic rx_cycle_counter_enable;
+  // logic rx_cycle_counter_enable_prev;
+  // logic rx_cycle_counter_advanded;  // a pulse for indicating we are in the next bit
+  // logic rx_cycle_counter_enabled_rise;
+  logic rx_timer_enable;
+  logic rx_timer_tick;
+  logic [3:0] rx_bit_index;
   logic rx_i_sync_1;
   logic rx_i_sync_2;
 
@@ -73,8 +76,9 @@ module uart_module #(
   assign uart_ctrl_reg.busy_tx = tx_busy;
   assign valid_write = mmio_write_enable_i && tx_state == TX_IDLE && !uart_ctrl_reg.start_tx;
   assign start_tx_request = uart_ctrl_reg.start_tx;
+  assign rx_irq_o = uart_ctrl_reg.rx_ifg && uart_ctrl_reg.rx_ie;
 
-  assign rx_cycle_counter_enabled_rise = rx_cycle_counter_enable && !rx_cycle_counter_enable_prev;
+  // assign rx_cycle_counter_enabled_rise = rx_cycle_counter_enable && !rx_cycle_counter_enable_prev;
 
   always_ff @(posedge clk) begin
     if (rst) begin
@@ -182,13 +186,24 @@ module uart_module #(
     if (rst) begin
       tx_data_reg <= 8'b0;
       uart_ctrl_reg.start_tx <= 1'b0;
+      uart_ctrl_reg.uart_speed <= UART_SPEED_9600;
+      uart_ctrl_reg.parity_bit_enable <= 1'b0;
+      uart_ctrl_reg.lsb_first <= 1'b1;
+      uart_ctrl_reg.rx_ie <= 1'b0;
       mmio_read_data_o <= 8'b0;
     end else begin
       if (tx_state == TX_FINISH) begin
         uart_ctrl_reg.start_tx <= 1'b0;
       end else if (valid_write) begin
         case (register_address_i)
-          UART_CTRL_REG_ADDRESS: uart_ctrl_reg.start_tx <= control_write_data.start_tx;
+          UART_CTRL_REG_ADDRESS: begin
+            uart_ctrl_reg.uart_speed <= control_write_data.uart_speed;
+            uart_ctrl_reg.parity_bit_enable <= control_write_data.parity_bit_enable; // TODO: implement
+            uart_ctrl_reg.lsb_first <= control_write_data.lsb_first;  // TODO: implement
+            uart_ctrl_reg.start_tx <= control_write_data.start_tx;
+            // uart_ctrl_reg.rx_ifg <= control_write_data.rx_ifg;
+            uart_ctrl_reg.rx_ie <= control_write_data.rx_ie;
+          end
           UART_TX_ADDRESS: tx_data_reg <= mmio_write_data_i;
           UART_RX_ADDRESS: ;
           default: ;
@@ -206,30 +221,25 @@ module uart_module #(
     end
   end
 
-
-
   // --------- RX FSM ---------
   // assign next state rx and the control bits
   always_comb begin
-    rx_next_state = rx_state;
-    rx_cycle_counter_rst = 0;
-    rx_cycle_counter_enable = 0;
+    rx_next_state   = rx_state;
+    rx_timer_enable = 0;
     case (rx_state)
       RX_IDLE: begin
         if (rx_i_sync_2 == 1'b0) rx_next_state = RX_INITIALIZE;
       end
       RX_INITIALIZE: begin
         rx_next_state = RX_WORK;
-        rx_cycle_counter_rst = 1;
+        rx_timer_enable = 1'b1;
       end
       RX_WORK: begin
+        rx_timer_enable = 1'b1;
         if (rx_done) rx_next_state = RX_FINISH;
-        rx_cycle_counter_rst = 0;
-        rx_cycle_counter_enable = 1;
       end
       RX_FINISH: begin
         rx_next_state = RX_IDLE;
-        rx_cycle_counter_enable = 0;
       end
       default: rx_next_state = rx_state;
 
@@ -238,9 +248,10 @@ module uart_module #(
 
   always_ff @(posedge clk) begin
     if (rst) begin
-      rx_done     <= 0;
-      rx_data_reg <= 0;
-      rx_in_reg   <= 0;
+      rx_done              <= 0;
+      rx_data_reg          <= 0;
+      rx_in_reg            <= 0;
+      uart_ctrl_reg.rx_ifg <= 1'b0;
     end else begin
       case (rx_state)
         RX_IDLE: ;
@@ -249,47 +260,31 @@ module uart_module #(
         end
 
         RX_WORK: begin
-          if (rx_cycle_counter_advanded || rx_cycle_counter_enabled_rise) begin
-            rx_in_reg[rx_bit_counter] <= rx_i_sync_2;
+          if (rx_timer_tick) begin
+            rx_in_reg[rx_bit_index] <= rx_i_sync_2;
+            if (rx_bit_index == 9) rx_done <= 1;
           end
-          if (rx_bit_counter == 9) rx_done <= 1;
         end
         RX_FINISH: begin
           // TODO: implement here the parity check
-          // TODO: implement the ifg here
           rx_data_reg <= rx_in_reg[8:1];
+          uart_ctrl_reg.rx_ifg <= 1'b1;
         end
         default: ;
       endcase
     end
   end
 
-  always_ff @(posedge clk) begin
-    if (rst || |rx_cycle_counter_rst) begin
-      rx_cycle_counter <= 0;
-      rx_bit_counter <= 0;
-      rx_cycle_counter_advanded <= 0;
-    end else begin
-      rx_cycle_counter_advanded <= 0;
-      if (rx_cycle_counter_enable) begin
-        if (rx_cycle_counter != LastCycle) begin
-          rx_cycle_counter <= rx_cycle_counter + 1;
-        end else begin
-          rx_cycle_counter <= 0;
-          rx_bit_counter <= rx_bit_counter + 1;
-          rx_cycle_counter_advanded <= 1;
-        end
-      end
-    end
-  end
-
-  always_ff @(posedge clk) begin
-    if (rst) begin
-      rx_cycle_counter_enable_prev <= 0;
-    end else begin
-      rx_cycle_counter_enable_prev <= rx_cycle_counter_enable;
-    end
-  end
+  uart_bit_timer #(
+      .CLOCK_HZ(CLOCK_HZ)
+  ) rx_bit_timer (
+      .clk        (clk),
+      .rst        (rst),
+      .uart_speed (uart_ctrl_reg.uart_speed),
+      .enable_i   (rx_timer_enable),
+      .bit_tick_o (rx_timer_tick),
+      .bit_index_o(rx_bit_index)
+  );
   // ---------------------------
 
 endmodule
