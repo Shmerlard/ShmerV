@@ -27,12 +27,12 @@
         <File path="rtl/core/trap_control_unit.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/gpio_module.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/peripheral_manager.sv" type="file.verilog" enable="1"/>
-        <File path="rtl/peripherals/timer_a_compare_module.sv" type="file.verilog" enable="1"/>
-        <File path="rtl/peripherals/timer_a_module.sv" type="file.verilog" enable="1"/>
+        <File path="rtl/peripherals/timer_a/timer_a_compare_module.sv" type="file.verilog" enable="1"/>
+        <File path="rtl/peripherals/timer_a/timer_a_module.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/uart/uart_bit_timer.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/uart/uart_rx.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/uart/uart_tx.sv" type="file.verilog" enable="1"/>
-        <File path="rtl/peripherals/uart_module.sv" type="file.verilog" enable="1"/>
+        <File path="rtl/peripherals/uart/uart_module.sv" type="file.verilog" enable="1"/>
         <File path="rtl/soc/address_decoder.sv" type="file.verilog" enable="1"/>
         <File path="rtl/soc/cpu_system.sv" type="file.verilog" enable="1"/>
         <File path="rtl/soc/memory.sv" type="file.verilog" enable="1"/>
