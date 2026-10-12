@@ -1,0 +1,3 @@
+# Local Gowin IDE settings and generated implementation files.
+*.gprj.user
+/impl/

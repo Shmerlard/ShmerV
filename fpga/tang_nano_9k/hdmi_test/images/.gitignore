@@ -1,0 +1,4 @@
+# Generated ROM files; reproduce from the indexed PNG using the conversion script.
+*_pixels.hex
+*_palette.hex
+*_hue_*.hex

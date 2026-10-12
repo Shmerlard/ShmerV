@@ -1,0 +1,21 @@
+// HDMI pair assignments/drive settings follow Sipeed's Tang Nano 9K example.
+// https://github.com/sipeed/TangNano-9K-example/blob/main/hdmi/src/hdmi.cst
+IO_LOC "clk" 52;
+IO_PORT "clk" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+
+IO_LOC "reset_button_n_i" 4;
+IO_PORT "reset_button_n_i" IO_TYPE=LVCMOS18 PULL_MODE=UP;
+
+// Onboard S2: hold to display the original palette.
+IO_LOC "animation_button_n_i" 3;
+IO_PORT "animation_button_n_i" IO_TYPE=LVCMOS18 PULL_MODE=UP;
+
+// Each differential buffer's positive output names the P,N pin pair.
+IO_LOC "tmds_clk_p" 69,68;
+IO_PORT "tmds_clk_p" PULL_MODE=NONE DRIVE=8;
+IO_LOC "tmds_d_p[0]" 71,70;
+IO_PORT "tmds_d_p[0]" PULL_MODE=NONE DRIVE=8;
+IO_LOC "tmds_d_p[1]" 73,72;
+IO_PORT "tmds_d_p[1]" PULL_MODE=NONE DRIVE=8;
+IO_LOC "tmds_d_p[2]" 75,74;
+IO_PORT "tmds_d_p[2]" PULL_MODE=NONE DRIVE=8;
