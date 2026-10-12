@@ -12,7 +12,7 @@ module uart_stream_tb;
   logic [7:0] gpio2_pin_i = 8'h02;
   wire [7:0] gpio2_pin_o, gpio2_pin_oe_o;
   logic [7:0] input_bytes[1272];
-  logic [7:0] echo_bytes[1272];
+  logic [7:0] echo_bytes [1272];
   int burst_index = 0, input_offset = 0;
   int sent_count = 0, echo_count = 0, rx_count = 0, rx_read_count = 0;
   int overwrite_count = 0;
@@ -22,49 +22,58 @@ module uart_stream_tb;
   logic tx_line;
   logic [7:0] sending_byte = 0, echoed_byte = 0;
   logic mismatch = 0;
-  int first_mismatch = -1;
+  int   first_mismatch = -1;
 
   always #(ClockPeriod / 2) clk = ~clk;
   assign tx_line = gpio2_pin_o[0];
   assign rx_complete = dut.peripheral_manager.uart.rx.rx_state == RX_FINISH;
   assign rx_read = dut.peripheral_manager.uart.read_from_rx_addr;
-  assign rx_overwrite = rx_complete &&
-      dut.peripheral_manager.uart.uart_ctrl_reg.rx_ifg && !rx_read;
+  assign rx_overwrite = rx_complete && dut.peripheral_manager.uart.uart_ctrl_reg.rx_ifg && !rx_read;
 
   cpu_system #(
-      .MEM_WORDS(4096), .CLOCK_HZ(ClockHz),
-      .RESET_PC(32'h80000000), .RAM_BASE_ADDRESS(32'h80000000),
+      .MEM_WORDS(4096),
+      .CLOCK_HZ(ClockHz),
+      .RESET_PC(32'h80000000),
+      .RAM_BASE_ADDRESS(32'h80000000),
       .MEMORY_INIT_FILE("build/tests/uart_stream/firmware/program.hex"),
       .MEMORY_INIT_FILE_LANE0("build/tests/uart_stream/firmware/program_lane0.hex"),
       .MEMORY_INIT_FILE_LANE1("build/tests/uart_stream/firmware/program_lane1.hex"),
       .MEMORY_INIT_FILE_LANE2("build/tests/uart_stream/firmware/program_lane2.hex"),
       .MEMORY_INIT_FILE_LANE3("build/tests/uart_stream/firmware/program_lane3.hex")
   ) dut (
-      .clk(clk), .rst(rst),
-      .gpio0_pin_i(8'b0), .gpio0_pin_o(), .gpio0_pin_oe_o(),
-      .gpio1_pin_i(8'b0), .gpio1_pin_o(), .gpio1_pin_oe_o(),
-      .gpio2_pin_i(gpio2_pin_i), .gpio2_pin_o(gpio2_pin_o),
-      .gpio2_pin_oe_o(gpio2_pin_oe_o), .address_overlap_o()
+      .clk(clk),
+      .rst(rst),
+      .gpio0_pin_i(8'b0),
+      .gpio0_pin_o(),
+      .gpio0_pin_oe_o(),
+      .gpio1_pin_i(8'b0),
+      .gpio1_pin_o(),
+      .gpio1_pin_oe_o(),
+      .gpio2_pin_i(gpio2_pin_i),
+      .gpio2_pin_o(gpio2_pin_o),
+      .gpio2_pin_oe_o(gpio2_pin_oe_o),
+      .address_overlap_o()
   );
 
-  always @(posedge clk) if (!rst) begin
-    cycle_count++;
-    if (rx_read) begin
-      rx_read_count++;
-      last_rx_read_latency_cycles = cycle_count - last_rx_cycle;
-      if (last_rx_read_latency_cycles > max_rx_read_latency_cycles)
-        max_rx_read_latency_cycles = last_rx_read_latency_cycles;
+  always @(posedge clk)
+    if (!rst) begin
+      cycle_count++;
+      if (rx_read) begin
+        rx_read_count++;
+        last_rx_read_latency_cycles = cycle_count - last_rx_cycle;
+        if (last_rx_read_latency_cycles > max_rx_read_latency_cycles)
+          max_rx_read_latency_cycles = last_rx_read_latency_cycles;
+      end
+      if (rx_complete) begin
+        rx_count++;
+        last_rx_cycle = cycle_count;
+      end
+      if (rx_overwrite) begin
+        overwrite_count++;
+        $display("RX overwrite: burst %0d, RX frame %0d at %.3f ms", burst_index, rx_count - 1,
+                 $realtime / 1.0e6);
+      end
     end
-    if (rx_complete) begin
-      rx_count++;
-      last_rx_cycle = cycle_count;
-    end
-    if (rx_overwrite) begin
-      overwrite_count++;
-      $display("RX overwrite: burst %0d, RX frame %0d at %.3f ms",
-               burst_index, rx_count - 1, $realtime / 1.0e6);
-    end
-  end
 
   // Decode actual TX pin transitions rather than inspecting the TX data register.
   initial begin
@@ -73,14 +82,17 @@ module uart_stream_tb;
     forever begin
       @(negedge tx_line);
       #(BitPeriod / 2);
-      assert (!tx_line) else $fatal(1, "Invalid echoed start bit");
+      assert (!tx_line)
+      else $fatal(1, "Invalid echoed start bit");
       for (int bit_index = 0; bit_index < 8; bit_index++) begin
         #(BitPeriod);
         echoed_byte[bit_index] = tx_line;
       end
       #(BitPeriod);
-      assert (tx_line) else $fatal(1, "Invalid echoed stop bit");
-      assert (echo_count < 1272) else $fatal(1, "Too many echo bytes");
+      assert (tx_line)
+      else $fatal(1, "Invalid echoed stop bit");
+      assert (echo_count < 1272)
+      else $fatal(1, "Too many echo bytes");
       echo_bytes[echo_count] = echoed_byte;
       if (echo_count >= BurstSizes[burst_index] ||
           echoed_byte != input_bytes[input_offset + echo_count]) begin
@@ -109,7 +121,7 @@ module uart_stream_tb;
       mismatch = 0;
       first_mismatch = -1;
       for (sent_count = 0; sent_count < BurstSizes[burst_index]; sent_count++) begin
-        sending_byte = input_bytes[input_offset + sent_count];
+        sending_byte   = input_bytes[input_offset+sent_count];
         gpio2_pin_i[1] = 0;
         #(BitPeriod);
         for (int bit_index = 0; bit_index < 8; bit_index++) begin
@@ -122,14 +134,18 @@ module uart_stream_tb;
       // No further input: allow pending RX, ISR and TX work to drain.
       // Shorter than the script's timeout to keep the waveform focused.
       #20ms;
-      $display("Burst %0d: sent=%0d echoed=%0d RX=%0d reads=%0d overwrites=%0d max read delay=%0d cycles",
-               burst_index, sent_count, echo_count, rx_count, rx_read_count,
-               overwrite_count, max_rx_read_latency_cycles);
+      $display(
+          "Burst %0d: sent=%0d echoed=%0d RX=%0d reads=%0d overwrites=%0d max read delay=%0d cycles",
+          burst_index, sent_count, echo_count, rx_count, rx_read_count, overwrite_count,
+          max_rx_read_latency_cycles);
       if (mismatch || echo_count != BurstSizes[burst_index]) begin
         if (first_mismatch >= 0)
-          $display("First mismatch at byte %0d: expected %02x, received %02x",
-                   first_mismatch, input_bytes[input_offset + first_mismatch],
-                   echo_bytes[first_mismatch]);
+          $display(
+              "First mismatch at byte %0d: expected %02x, received %02x",
+              first_mismatch,
+              input_bytes[input_offset+first_mismatch],
+              echo_bytes[first_mismatch]
+          );
         $fatal(1, "Continuous UART echo failed; inspect waveform at rx_overwrite");
       end
       $display("PASS: %0d bytes echoed exactly", sent_count);

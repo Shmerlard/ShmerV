@@ -33,12 +33,11 @@ module uart_tx #(
 
   always_ff @(posedge clk) begin
     if (rst || !enable_i) begin
-      tx_state <= TX_IDLE;
+      tx_state   <= TX_IDLE;
       tx_out_reg <= '1;
     end else begin
       tx_state <= tx_next_state;
-      if (tx_state == TX_INITIALIZE)
-        tx_out_reg <= {1'b1, data_i, 1'b0};
+      if (tx_state == TX_INITIALIZE) tx_out_reg <= {1'b1, data_i, 1'b0};
     end
   end
 

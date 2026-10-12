@@ -229,8 +229,7 @@ module peripheral_manager #(
     gpio2_alt_out[GPIO_C_TIMER_A_COMPARE1_PIN] = timer_pwm1;
     gpio2_alt_out[GPIO_C_TIMER_A_COMPARE2_PIN] = timer_pwm2;
 
-    uart_rx = gpio2_alt_sel[GPIO_C_UART_RX_PIN]
-        ? gpio2_alt_in[GPIO_C_UART_RX_PIN] : 1'b1;
+    uart_rx = gpio2_alt_sel[GPIO_C_UART_RX_PIN] ? gpio2_alt_in[GPIO_C_UART_RX_PIN] : 1'b1;
   end
 
   gpio_module #(
