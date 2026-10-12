@@ -33,8 +33,7 @@ module uart_rx_check #(
     @(posedge clk);
     #1ns;
   endtask
-  task automatic send_frame(input logic [7:0] payload, input int period,
-                            input logic stop_bit = 1);
+  task automatic send_frame(input logic [7:0] payload, input int period, input logic stop_bit = 1);
     rx_line = 0;
     repeat (period) #10ns;
     for (int bit_index = 0; bit_index < 8; bit_index++) begin
@@ -85,10 +84,18 @@ module uart_rx_check #(
         send_frame(Payloads[i], Periods[speed]);
         await_received(Payloads[i]);
         assert (!framing_error_o && !overrun_o)
-        else $fatal(1,
-            "Valid frame error: Hz=%0d speed=%0d cycles/bit=%0d payload=%h framing=%b overrun=%b sampled_frame=%b",
-            ClockHz, speed, Periods[speed], Payloads[i], framing_error_o,
-            overrun_o, dut.rx_in_reg);
+        else
+          $fatal(
+              1,
+              "Valid frame error: Hz=%0d speed=%0d cycles/bit=%0d payload=%h framing=%b overrun=%b sampled_frame=%b",
+              ClockHz,
+              speed,
+              Periods[speed],
+              Payloads[i],
+              framing_error_o,
+              overrun_o,
+              dut.rx_in_reg
+          );
         acknowledge();
       end
 
