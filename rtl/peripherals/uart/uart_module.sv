@@ -14,7 +14,7 @@ module uart_module #(
     output logic                    [15:0] mmio_read_data_o,
 
     output logic tx_o,
-    input  logic rx_i, // Already synchronized to clk by the GPIO module.
+    input  logic rx_i,  // Already synchronized to clk by the GPIO module.
 
     output logic rx_irq_o
 );
@@ -74,7 +74,9 @@ module uart_module #(
       .enable_i(uart_ctrl_reg.uart_enable),
       .clear_ifg_i(read_from_rx_addr),
       .rx_data_o(rx_data_reg),
-      .rx_ifg_o(uart_ctrl_reg.rx_ifg)
+      .rx_ifg_o(uart_ctrl_reg.rx_ifg),
+      .framing_error_o(uart_ctrl_reg.framing_error),
+      .overrun_o(uart_ctrl_reg.overrun)
   );
 
   // --------- loading ---------
@@ -86,7 +88,7 @@ module uart_module #(
       uart_ctrl_reg.uart_speed        <= DefaultSpeed;
       uart_ctrl_reg.parity_bit_enable <= 1'b0;
       uart_ctrl_reg.parity_bit_error  <= 1'b0;
-      uart_ctrl_reg.framing_error     <= 1'b0;
+      // uart_ctrl_reg.framing_error     <= 1'b0;
       uart_ctrl_reg.auto_tx_start     <= 1'b0;
       uart_ctrl_reg.lsb_first         <= 1'b1;
       uart_ctrl_reg.rx_ie             <= 1'b0;
@@ -102,14 +104,12 @@ module uart_module #(
         if (!uart_ctrl_reg.uart_enable) begin
           uart_ctrl_reg.uart_speed <= control_write_data.uart_speed;
           uart_ctrl_reg.parity_bit_enable <= control_write_data.parity_bit_enable; // TODO: implement
-          uart_ctrl_reg.lsb_first <= control_write_data.lsb_first; // TODO: implement
+          uart_ctrl_reg.lsb_first <= control_write_data.lsb_first;  // TODO: implement
         end
         uart_ctrl_reg.rx_ie <= control_write_data.rx_ie;
         uart_ctrl_reg.uart_enable <= control_write_data.uart_enable;
-        if (!control_write_data.uart_enable)
-          uart_ctrl_reg.start_tx <= 1'b0;
-        else if (valid_write && !tx_finish)
-          uart_ctrl_reg.start_tx <= control_write_data.start_tx;
+        if (!control_write_data.uart_enable) uart_ctrl_reg.start_tx <= 1'b0;
+        else if (valid_write && !tx_finish) uart_ctrl_reg.start_tx <= control_write_data.start_tx;
       end
 
       if (valid_write && register_address_i == UART_TX_ADDRESS)

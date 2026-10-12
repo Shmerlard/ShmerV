@@ -73,12 +73,15 @@
 #define PORTC_IFG     SHMERV_MMIO8(PORTC_BASE + GPIO_IFG_OFFSET)
 #define PORTC_IFG_CLR SHMERV_MMIO8(PORTC_BASE + GPIO_IFG_CLR_OFFSET)
 
-/* UART_CTRL matches uart_control_t: [15:12] reserved, [11:10] speed,
+/* UART_CTRL matches uart_control_t: [15:13] reserved, [12] RX overrun, [11:10] speed,
    [9] parity enable, [8] parity error, [7] framing error, [6] LSB first,
    [5] auto start, [4] busy, [3] start, [2] RX pending, [1] RX IE, [0] enable.
    Error, busy, and pending bits are read-only. Reading RX_DATA clears pending.
+   Framing error describes the last completed byte's stop bit.
+   Overrun means an unread byte was replaced; reading RX_DATA clears overrun.
+   Read CTRL before RX_DATA to inspect status before acknowledging the byte.
    Configure speed/parity/bit order while disabled; preserve settings on START.
-   Parity, error reporting, bit order selection, and auto start are unfinished. */
+   Parity, bit order selection, and auto start are unfinished. */
 #define UART_ENABLE           0x0001u
 #define UART_RX_IE            0x0002u
 #define UART_RX_PENDING       0x0004u
@@ -94,6 +97,7 @@
 #define UART_SPEED_19200      0x0400u
 #define UART_SPEED_57600      0x0800u
 #define UART_SPEED_115200     0x0C00u
+#define UART_RX_OVERRUN       0x1000u
 #define UART_CTRL SHMERV_MMIO16(UART_BASE + UART_CTRL_OFFSET)
 #define UART_TX_DATA SHMERV_MMIO8(UART_BASE + UART_TX_DATA_OFFSET)
 #define UART_RX_DATA SHMERV_MMIO8(UART_BASE + UART_RX_DATA_OFFSET)

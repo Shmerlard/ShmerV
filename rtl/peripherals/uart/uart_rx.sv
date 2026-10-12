@@ -5,12 +5,14 @@ module uart_rx #(
 ) (
     input logic clk,
     input logic rst,
-    input logic rx_i, // Already synchronized to clk by the GPIO module.
+    input logic rx_i,  // Already synchronized to clk by the GPIO module.
     input uart_speed_t uart_speed_i,
     input logic enable_i,
     input logic clear_ifg_i,
     output logic [7:0] rx_data_o,
-    output logic rx_ifg_o
+    output logic rx_ifg_o,
+    output logic framing_error_o,
+    output logic overrun_o
 );
 
   logic [9:0] rx_in_reg;
@@ -53,12 +55,17 @@ module uart_rx #(
 
   always_ff @(posedge clk) begin
     if (rst) begin
-      rx_done   <= 0;
+      rx_done <= 0;
       rx_data_o <= 0;
       rx_in_reg <= 0;
-      rx_ifg_o  <= 1'b0;
+      rx_ifg_o <= 1'b0;
+      framing_error_o <= 1'b0;
+      overrun_o <= 1'b0;
     end else begin
-      if (clear_ifg_i) rx_ifg_o <= 1'b0;
+      if (clear_ifg_i) begin
+        rx_ifg_o  <= 1'b0;
+        overrun_o <= 1'b0;
+      end
 
       if (!enable_i) begin
         rx_done   <= 1'b0;
@@ -67,7 +74,7 @@ module uart_rx #(
         case (rx_state)
           RX_IDLE: ;
           RX_INITIALIZE: begin
-            rx_done <= 0;
+            rx_done <= 1'b0;
           end
 
           RX_WORK: begin
@@ -79,7 +86,10 @@ module uart_rx #(
           RX_FINISH: begin
             // TODO: implement here the parity check
             rx_data_o <= rx_in_reg[8:1];
-            rx_ifg_o  <= 1'b1;
+            rx_ifg_o <= 1'b1;
+            framing_error_o <= !rx_in_reg[9];
+            if (rx_ifg_o && !clear_ifg_i) overrun_o <= 1'b1;
+
           end
           default: ;
         endcase
