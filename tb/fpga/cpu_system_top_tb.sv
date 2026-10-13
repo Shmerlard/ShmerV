@@ -12,7 +12,7 @@ module IOBUF (
 endmodule
 
 module board_clock_check #(
-    parameter int unsigned Divide = 32
+    parameter int unsigned Divide = 4
 ) (
     output logic done = 1'b0
 );
@@ -43,18 +43,19 @@ module board_clock_check #(
     for (int cycle_index = 1; cycle_index <= 256; cycle_index++) begin
       @(posedge clk);
       #1ns;
-      assert (dut.cpu_clk == (cycle_index % Divide >= Divide - Divide / 2));
+      assert (dut.cpu_clk == ((cycle_index - 1) % Divide >= Divide - Divide / 2));
     end
     done = 1'b1;
   end
 endmodule
 
 module cpu_system_top_tb;
-  logic [3:0] done;
+  logic [4:0] done;
   board_clock_check #(.Divide(2)) divide_2 (.done(done[0]));
-  board_clock_check #(.Divide(16)) divide_16 (.done(done[1]));
-  board_clock_check divide_32 (.done(done[2]));
-  board_clock_check #(.Divide(64)) divide_64 (.done(done[3]));
+  board_clock_check divide_4 (.done(done[1]));
+  board_clock_check #(.Divide(16)) divide_16 (.done(done[2]));
+  board_clock_check #(.Divide(32)) divide_32 (.done(done[3]));
+  board_clock_check #(.Divide(64)) divide_64 (.done(done[4]));
   initial begin
     wait (&done);
     $display("Board clock division and UART frequency propagation tests passed");

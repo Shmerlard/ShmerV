@@ -31,19 +31,22 @@ just fpga-flash cpu_system PROGRAM
 
 All three GPIO ports are bidirectional; software controls them through `DIR`.
 
-The board wrapper has `INPUT_CLOCK_HZ = 27_000_000` and `CLOCK_DIVIDE = 16`
+The board wrapper has `INPUT_CLOCK_HZ = 27_000_000` and `CLOCK_DIVIDE = 4`
 parameters. The divider supports powers of two >= 2, with 50% duty cycle.
+An output register samples the selected counter bit, adding one input-clock
+cycle of phase delay without changing frequency or duty cycle. Its `cpu_clk`
+output only drives clock inputs; counter feedback stays on `clock_divider`.
 The reported frequency is truncated to whole Hz if necessary.
 `INPUT_CLOCK_HZ` describes the physical oscillator; it does not change it.
 The resulting `CLOCK_HZ` is passed through the SoC and peripheral manager to
 UART. UART rounds `CLOCK_HZ / BAUD_RATE` to the nearest whole cycle; the defaults
-give 1.6875 MHz and 176 cycles per bit at 9600 baud. `UART_BAUD_RATE` can be set
+give 6.75 MHz and 703 cycles per bit at 9600 baud. `UART_BAUD_RATE` can be set
 on `cpu_system`; the UART requires at least one clock cycle per bit.
 
 When changing either clock parameter, update `clock.sdc`'s primary period and
-generated-clock divide ratio. For nextpnr, keep frequency constraints consistent
-and update `clock_nextpnr.cst`'s clock net to `clock_divider[log2(CLOCK_DIVIDE)-1]`
-(for example `[3]` for divide-by-16). Check its BUFG routing in the user-run build.
+generated-clock divide ratio.
+For nextpnr, keep frequency constraints consistent. Both flows constrain the
+output register's `cpu_clk` net. Check its global routing in the user-run build.
 These constraint files are not generated
 from RTL parameters. Software busy-loop delays also require recalibration.
 
@@ -64,8 +67,8 @@ resolves and setup/hold timing passes after rebuilding; the RTL change requires
 synthesis, not only P&R.
 
 For the open-source flow, `clock_nextpnr.cst` requests global clock routing for
-`clock_divider[3]` with `CLOCK_LOC ... BUFG = CLK`. This is nextpnr's net name
-for the divided CPU clock. The build also enables `--detailed-timing-report`
+`cpu_clk` with `CLOCK_LOC ... BUFG = CLK`.
+The build also enables `--detailed-timing-report`
 in `report.json`. After a full build, check `nextpnr.log` for the buffered
 clock routing result, missing-net or routing errors, and `Hold/min time`
 violations. A frequency PASS alone does not establish hold timing closure.

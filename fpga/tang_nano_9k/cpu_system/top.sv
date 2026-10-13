@@ -1,6 +1,6 @@
 module cpu_system_top #(
     parameter int unsigned INPUT_CLOCK_HZ = 27_000_000,
-    parameter int unsigned CLOCK_DIVIDE = 16
+    parameter int unsigned CLOCK_DIVIDE = 4
 ) (
     input wire clk,
     input wire reset_button_n_i,
@@ -19,10 +19,11 @@ module cpu_system_top #(
       else $fatal(1, "Divided clock frequency must be at least 1 Hz");
   end
 `endif
-  // Keep this net named for clock.sdc's generated-clock constraint.
   logic [DividerWidth-1:0] clock_divider = '0;
   always @(posedge clk) clock_divider <= clock_divider + 1'b1;
-  (* syn_keep = 1 *) wire cpu_clk = clock_divider[DividerWidth-1];
+  // Keep the named CPU clock separate from the counter's data feedback.
+  (* syn_keep = 1 *) logic cpu_clk = 1'b0;
+  always @(posedge clk) cpu_clk <= clock_divider[DividerWidth-1];
 
   logic [7:0] gpio0_pin_input;
   logic [7:0] gpio0_pin_output;
