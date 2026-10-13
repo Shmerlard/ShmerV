@@ -1,9 +1,9 @@
-rtl/peripherals/hdmi/hdmi_types.sv
-rtl/peripherals/hdmi/hdmi_timer_module.sv
-rtl/peripherals/hdmi/hdmi_pixel_generator.sv
-rtl/peripherals/hdmi/hdmi_image_generator.sv
-rtl/peripherals/hdmi/hdmi_hue_animation.sv
-rtl/peripherals/hdmi/hdmi_tmds_encoder.sv
+fpga/tang_nano_9k/hdmi_test/hdmi/hdmi_types.sv
+fpga/tang_nano_9k/hdmi_test/hdmi/hdmi_timer_module.sv
+fpga/tang_nano_9k/hdmi_test/hdmi/hdmi_pixel_generator.sv
+fpga/tang_nano_9k/hdmi_test/hdmi/hdmi_image_generator.sv
+fpga/tang_nano_9k/hdmi_test/hdmi/hdmi_hue_animation.sv
+fpga/tang_nano_9k/hdmi_test/hdmi/hdmi_tmds_encoder.sv
 fpga/tang_nano_9k/hdmi_test/clocks.sv
 fpga/tang_nano_9k/hdmi_test/serializer.sv
 fpga/tang_nano_9k/hdmi_test/top.sv
