@@ -1,6 +1,6 @@
 // Board clocking reference: Sipeed TangNano-9K-example/hdmi.
 // Local wrapper uses Gowin primitives; no vendor implementation is bundled.
-// Links and attribution: THIRD_PARTY.md in this directory.
+// Links and attribution: docs/third-party.md.
 module hdmi_test_clocks (
     input wire clk,
     input wire reset,

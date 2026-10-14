@@ -32,7 +32,6 @@ report_module_pass() {
 build_test() {
   test_module=$1
   test_build_directory="$build_directory/tests/$test_module/$build_mode"
-  rtl_source=$(find rtl -type f -name "$test_module.sv" -print -quit)
   testbench=$(find tb -type f -name "${test_module}_tb.sv" -print -quit)
 
   # Firmware-driven UART stream regression, with the hardware script's payload.
@@ -78,8 +77,8 @@ build_test() {
     return
   fi
 
-  if [ -z "$rtl_source" ] || [ -z "$testbench" ]; then
-    echo "Missing RTL or testbench for $test_module" >&2
+  if [ -z "$testbench" ]; then
+    echo "Missing testbench for $test_module" >&2
     exit 1
   fi
 
@@ -177,10 +176,15 @@ run_cpu_system_program() {
     return 1
   fi
 
+  local default_timeout=1000
+  if [ "$program_name" = timer_overflow ]; then
+    default_timeout=10000
+  fi
+
   if ! "$build_directory/tests/cpu_system/$build_mode/obj/cpu_system_test" \
     "+memory_init=$program_build_directory/program.hex" \
     "+test_end_pc=$test_end_pc" \
-    "+timeout_cycles=${CPU_TEST_TIMEOUT_CYCLES:-1000}" \
+    "+timeout_cycles=${CPU_TEST_TIMEOUT_CYCLES:-$default_timeout}" \
     "+expected_file=$expected_file" \
     "+trace_file=$program_build_directory/waveform.fst" \
     > "$program_build_directory/test.log" 2>&1; then

@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-// Compile with Gowin's gw1n/prim_sim.v, not the editor declarations.
+// Simulation only; exclude from FPGA sources. Use Gowin's gw1n/prim_sim.v.
 module hdmi_test_top_tb;
   logic clk = 0;
   logic reset_button_n_i = 0;
@@ -10,7 +10,9 @@ module hdmi_test_top_tb;
   hdmi_test_top #(
       .PIXEL_INIT_FILE("fpga/tang_nano_9k/hdmi_test/images/shmerv_pixels.hex"),
       .HUE_PALETTE_PREFIX("fpga/tang_nano_9k/hdmi_test/images/shmerv")
-  ) dut (.*);
+  ) dut (
+      .*
+  );
   always #18.518519 clk = ~clk;
 
   function automatic logic [7:0] decode(input logic [9:0] word);
@@ -65,22 +67,34 @@ module hdmi_test_top_tb;
       // At the end of bit 9, the timer is seven positions ahead of the
       // transmitted pixel (ROM, encoder, and vendor OSER10 pipeline/phase).
       image_x = int'(dut.x) - 7;
-      expected_rgb = {dut.pixels.hue_red_rom[dut.pixels.image_rom[image_x / 2]],
-                      dut.pixels.hue_green_rom[dut.pixels.image_rom[image_x / 2]],
-                      dut.pixels.hue_blue_rom[dut.pixels.image_rom[image_x / 2]]};
+      expected_rgb = {
+        dut.pixels.hue_red_rom[dut.pixels.image_rom[image_x/2]],
+        dut.pixels.hue_green_rom[dut.pixels.image_rom[image_x/2]],
+        dut.pixels.hue_blue_rom[dut.pixels.image_rom[image_x/2]]
+      };
       assert ({decode(words[2]), decode(words[1]), decode(words[0])} == expected_rgb)
-      else $fatal(1, "Serialized image mismatch at source x=%d: actual=%h expected=%h timer=%d", image_x,
-                  {decode(words[2]), decode(words[1]), decode(words[0])}, expected_rgb, dut.x);
+      else
+        $fatal(
+            1,
+            "Serialized image mismatch at source x=%d: actual=%h expected=%h timer=%d",
+            image_x,
+            {
+              decode(words[2]), decode(words[1]), decode(words[0])
+            },
+            expected_rgb,
+            dut.x
+        );
     end
     assert (dut.hold_original && dut.hue == 0)
-      else $fatal(1, "Held S2 did not select original palette");
+    else $fatal(1, "Held S2 did not select original palette");
     animation_button_n_i = 1;
     repeat (4) @(negedge dut.pixel_clk);
-    assert (!dut.hold_original) else $fatal(1, "Released S2 did not resume animation");
+    assert (!dut.hold_original)
+    else $fatal(1, "Released S2 did not resume animation");
     animation_button_n_i = 0;
     repeat (4) @(negedge dut.pixel_clk);
     assert (dut.hold_original && dut.hue == 0)
-      else $fatal(1, "S2 synchronization failed");
+    else $fatal(1, "S2 synchronization failed");
     reset_button_n_i = 0;
     #1;
     assert (dut.pixel_reset)

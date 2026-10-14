@@ -1,5 +1,5 @@
 // Reference encoding equations: Project F / Will Green (2019, MIT).
-// Attribution and license: fpga/tang_nano_9k/hdmi_test/THIRD_PARTY.md.
+// Attribution and license: docs/third-party.md.
 module hdmi_tmds_encoder_tb;
   bit clk = 0;
   logic rst = 1;

@@ -22,13 +22,18 @@ module board_clock_check #(
   wire [7:0] port_c_io;
 
   cpu_system_top #(
+      .ENABLE_HDMI(1'b0),
       .CLOCK_DIVIDE(Divide)
   ) dut (
       .clk(clk),
       .reset_button_n_i(1'b0),
       .port_a_io(port_a_io),
       .port_b_io(port_b_io),
-      .port_c_io(port_c_io)
+      .port_c_io(port_c_io),
+      .tmds_clk_p(),
+      .tmds_clk_n(),
+      .tmds_d_p(),
+      .tmds_d_n()
   );
 
   always #5ns clk = ~clk;

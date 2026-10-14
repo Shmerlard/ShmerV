@@ -1,7 +1,7 @@
 // Encoding flow informed by Project F's TMDS encoder (Will Green, 2019, MIT).
 // https://github.com/projf/display_controller/blob/master/rtl/tmds_encoder_dvi.v
 // Rewritten here with a loop for transition reduction and symbol-based disparity.
-// See fpga/tang_nano_9k/hdmi_test/THIRD_PARTY.md for attribution/license notice.
+// Attribution and license: docs/third-party.md.
 module hdmi_tmds_encoder (
     input logic clk,
     input logic rst,

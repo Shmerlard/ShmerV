@@ -9,6 +9,12 @@
 #define PORTC_BASE 0x10000200u
 #define UART_BASE  0x10000300u
 #define TIMER_A_BASE 0x10000400u
+#define HDMI_CHAR_BASE 0x10002000u
+#define HDMI_CHAR_COUNT 2400u
+#define HDMI_CHAR_STRIDE 4u
+/* Temporary map: one cell in bits 15:0 per aligned 32-bit slot.
+ * Bits 15:8: character, 7:4: foreground index, 3:0: background index.
+ * Writes must enable both low bytes; upper bytes are ignored. */
 
 /* Byte offsets shared by all three GPIO ports. Registers are eight bits wide. */
 #define GPIO_IN_OFFSET      0x00u

@@ -3,8 +3,10 @@ import csr_types::*;
 
 module cpu_system #(
     parameter int MEM_WORDS = 1024,
+    parameter bit ENABLE_HDMI = 1'b1,
     parameter int unsigned CLOCK_HZ = 843_750,
     parameter int unsigned UART_BAUD_RATE = 9600,
+    parameter string HDMI_CHAR_INIT_FILE = "",
     parameter string MEMORY_INIT_FILE = "",
     parameter string MEMORY_INIT_FILE_LANE0 = "",
     parameter string MEMORY_INIT_FILE_LANE1 = "",
@@ -15,6 +17,10 @@ module cpu_system #(
 ) (
     input logic clk,
     input logic rst,
+    input logic hdmi_pixel_clk_i,
+    input logic hdmi_pixel_rst_i,
+    input logic hdmi_enable_i,
+    output logic [9:0] hdmi_symbols_o[0:2],
 
     input  logic [7:0] gpio0_pin_i,
     output logic [7:0] gpio0_pin_o,
@@ -92,11 +98,17 @@ module cpu_system #(
   );
 
   peripheral_manager #(
-      .CLOCK_HZ      (CLOCK_HZ),
-      .UART_BAUD_RATE(UART_BAUD_RATE)
+      .ENABLE_HDMI        (ENABLE_HDMI),
+      .CLOCK_HZ           (CLOCK_HZ),
+      .UART_BAUD_RATE     (UART_BAUD_RATE),
+      .HDMI_CHAR_INIT_FILE(HDMI_CHAR_INIT_FILE)
   ) peripheral_manager (
       .clk                (clk),
       .rst                (rst),
+      .hdmi_pixel_clk_i   (hdmi_pixel_clk_i),
+      .hdmi_pixel_rst_i   (hdmi_pixel_rst_i),
+      .hdmi_enable_i      (hdmi_enable_i),
+      .hdmi_symbols_o     (hdmi_symbols_o),
       .address_i          (dmem_address),
       .write_data_i       (dmem_store_data),
       .write_byte_enable_i(dmem_write_byte_enable),

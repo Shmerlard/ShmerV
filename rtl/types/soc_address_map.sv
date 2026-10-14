@@ -9,6 +9,9 @@ package soc_address_map;
   localparam logic [31:0] GPIO_SIZE_BYTES = 32'h0000_0100;
   localparam logic [31:0] UART_SIZE_BYTES = 32'h0000_0100;
   localparam logic [31:0] TIMER_A_SIZE_BYTES = 32'h0000_0100;
+  // Temporary character-memory MMIO: one 16-bit cell per 32-bit bus slot.
+  localparam logic [31:0] HDMI_CHAR_BASE = 32'h1000_2000;
+  localparam logic [31:0] HDMI_CHAR_SIZE_BYTES = 32'd2400 * 32'd4;
 
   localparam int GPIO_C_UART_TX_PIN = 0;
   localparam int GPIO_C_UART_RX_PIN = 1;

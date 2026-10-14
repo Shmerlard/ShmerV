@@ -1,12 +1,17 @@
 module cpu_system_top #(
     parameter int unsigned INPUT_CLOCK_HZ = 27_000_000,
-    parameter int unsigned CLOCK_DIVIDE = 4
+    parameter int unsigned CLOCK_DIVIDE = 4,
+    parameter bit ENABLE_HDMI = 1'b1
 ) (
     input wire clk,
     input wire reset_button_n_i,
     inout wire [7:0] port_a_io,
     inout wire [7:0] port_b_io,
-    inout wire [7:0] port_c_io
+    inout wire [7:0] port_c_io,
+    output wire tmds_clk_p,
+    output wire tmds_clk_n,
+    output wire [2:0] tmds_d_p,
+    output wire [2:0] tmds_d_n
 );
   localparam int unsigned DividerWidth = $clog2(CLOCK_DIVIDE);
   localparam int unsigned ClockHz = INPUT_CLOCK_HZ / CLOCK_DIVIDE;
@@ -25,6 +30,40 @@ module cpu_system_top #(
   (* syn_keep = 1 *) logic cpu_clk = 1'b0;
   always @(posedge clk) cpu_clk <= clock_divider[DividerWidth-1];
 
+  wire pixel_clk, serializer_clk, pll_locked;
+  wire external_reset = !reset_button_n_i;
+  wire pixel_reset_request = external_reset || !pll_locked;
+  wire pixel_reset;
+  wire [9:0] hdmi_symbols [0:2];
+  if (ENABLE_HDMI) begin : generate_hdmi
+  logic [3:0] pixel_reset_pipeline = '1;
+  assign pixel_reset = pixel_reset_pipeline[3];
+  hdmi_clocks clocks (
+      .clk(clk), .reset(external_reset), .serializer_clk(serializer_clk),
+      .pixel_clk(pixel_clk), .locked(pll_locked)
+  );
+  // Assert on reset/lock loss, release synchronously in the pixel domain.
+  always_ff @(posedge pixel_clk or posedge pixel_reset_request) begin
+    if (pixel_reset_request) pixel_reset_pipeline <= '1;
+    else pixel_reset_pipeline <= {pixel_reset_pipeline[2:0], 1'b0};
+  end
+  hdmi_output display_output (
+      .pixel_clk(pixel_clk), .serializer_clk(serializer_clk),
+      .reset(pixel_reset), .symbols(hdmi_symbols),
+      .tmds_clk_p(tmds_clk_p), .tmds_clk_n(tmds_clk_n),
+      .tmds_d_p(tmds_d_p), .tmds_d_n(tmds_d_n)
+  );
+  end else begin : generate_no_hdmi
+    assign pixel_clk = 1'b0;
+    assign serializer_clk = 1'b0;
+    assign pll_locked = 1'b0;
+    assign pixel_reset = 1'b1;
+    assign tmds_clk_p = 1'b0;
+    assign tmds_clk_n = 1'b0;
+    assign tmds_d_p = '0;
+    assign tmds_d_n = '0;
+  end
+
   logic [7:0] gpio0_pin_input;
   logic [7:0] gpio0_pin_output;
   logic [7:0] gpio0_pin_output_enable;
@@ -36,7 +75,9 @@ module cpu_system_top #(
   logic [7:0] gpio2_pin_output_enable;
 
   cpu_system #(
+      .ENABLE_HDMI     (ENABLE_HDMI),
       .MEM_WORDS       (4096),
+      .HDMI_CHAR_INIT_FILE("rtl/peripherals/hdmi/examples/char_demo.hex"),
       .CLOCK_HZ        (ClockHz),
       .MEMORY_INIT_FILE("build/fpga/tang_nano_9k/cpu_system/software/program.hex"),
       .MEMORY_INIT_FILE_LANE0("build/fpga/tang_nano_9k/cpu_system/software/program_lane0.hex"),
@@ -48,6 +89,10 @@ module cpu_system_top #(
   ) cpu_system (
       .clk              (cpu_clk),
       .rst              (~reset_button_n_i),
+      .hdmi_pixel_clk_i(pixel_clk),
+      .hdmi_pixel_rst_i(pixel_reset),
+      .hdmi_enable_i(1'b1),
+      .hdmi_symbols_o(hdmi_symbols),
       .gpio0_pin_i      (gpio0_pin_input),
       .gpio0_pin_o      (gpio0_pin_output),
       .gpio0_pin_oe_o   (gpio0_pin_output_enable),

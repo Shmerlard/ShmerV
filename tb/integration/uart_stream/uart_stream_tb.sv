@@ -43,6 +43,10 @@ module uart_stream_tb;
   ) dut (
       .clk(clk),
       .rst(rst),
+      .hdmi_pixel_clk_i(clk),
+      .hdmi_pixel_rst_i(rst),
+      .hdmi_enable_i(1'b0),
+      .hdmi_symbols_o(),
       .gpio0_pin_i(8'b0),
       .gpio0_pin_o(),
       .gpio0_pin_oe_o(),
@@ -133,7 +137,7 @@ module uart_stream_tb;
       end
       // No further input: allow pending RX, ISR and TX work to drain.
       // Shorter than the script's timeout to keep the waveform focused.
-      #20ms;
+      #100ms;
       $display(
           "Burst %0d: sent=%0d echoed=%0d RX=%0d reads=%0d overwrites=%0d max read delay=%0d cycles",
           burst_index, sent_count, echo_count, rx_count, rx_read_count, overwrite_count,

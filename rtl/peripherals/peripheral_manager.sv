@@ -3,13 +3,21 @@ import timer_a_types::*;
 import uart_types::*;
 import soc_address_map::*;
 import gpio_types::*;
+import hdmi_types::*;
 
 module peripheral_manager #(
+    parameter bit ENABLE_HDMI = 1'b1,
     parameter int unsigned CLOCK_HZ = 843_750,
-    parameter int unsigned UART_BAUD_RATE = 9600
+    parameter int unsigned UART_BAUD_RATE = 9600,
+    parameter string HDMI_FONT_FILE = "rtl/peripherals/hdmi/fonts/NICER40C.hex",
+    parameter string HDMI_CHAR_INIT_FILE = ""
 ) (
     input logic clk,
     input logic rst,
+    input logic hdmi_pixel_clk_i,
+    input logic hdmi_pixel_rst_i,
+    input logic hdmi_enable_i,
+    output logic [9:0] hdmi_symbols_o[0:2],
 
     input  logic [31:0] address_i,
     input  logic [31:0] write_data_i,
@@ -40,7 +48,8 @@ module peripheral_manager #(
     READ_GPIO1,
     READ_GPIO2,
     READ_TIMER,
-    READ_UART
+    READ_UART,
+    READ_HDMI_CHAR
   } read_target_t;
 
   typedef struct packed {
@@ -79,6 +88,23 @@ module peripheral_manager #(
   logic timer_pwm1, timer_pwm2;
   logic [7:0] gpio2_alt_out;
   ta_irq_t timer_irq;
+
+  logic hdmi_address_hit;
+  logic [31:0] hdmi_address_offset;
+  logic [11:0] hdmi_cell_index;
+  char_pos_t hdmi_cpu_address;
+  char_cell_t hdmi_read_data;
+  logic hdmi_read_enable, hdmi_write_enable;
+
+  // Temporary map: aligned slots at BASE + 4*(row*80 + column).
+  assign hdmi_address_offset = address_i - HDMI_CHAR_BASE;
+  assign hdmi_address_hit = ENABLE_HDMI && address_i >= HDMI_CHAR_BASE
+      && hdmi_address_offset < HDMI_CHAR_SIZE_BYTES && address_i[1:0] == 2'b00;
+  assign hdmi_cell_index = hdmi_address_offset[13:2];
+  assign hdmi_cpu_address.x_pos = 7'(hdmi_cell_index % 12'd80);
+  assign hdmi_cpu_address.y_pos = 5'(hdmi_cell_index / 12'd80);
+  assign hdmi_read_enable = read_enable_i && hdmi_address_hit;
+  assign hdmi_write_enable = write_enable_i && hdmi_address_hit && (&write_byte_enable_i[1:0]);
 
   // GPIO address decoding and byte-wide register access.
   // Reject offsets outside the eight registers before narrowing to three bits.
@@ -164,6 +190,7 @@ module peripheral_manager #(
       else if (gpio2_bus.address_hit) read_target <= READ_GPIO2;
       else if (timer_address_hit) read_target <= READ_TIMER;
       else if (uart_address_hit) read_target <= READ_UART;
+      else if (hdmi_address_hit) read_target <= READ_HDMI_CHAR;
       else read_target <= READ_NONE;
     end
   end
@@ -175,6 +202,7 @@ module peripheral_manager #(
       READ_GPIO2: read_data_o = {24'b0, gpio2_bus.read_data};
       READ_TIMER: read_data_o = {16'b0, timer_read_data};
       READ_UART: read_data_o = {16'b0, uart_read_data};
+      READ_HDMI_CHAR: read_data_o = {16'b0, hdmi_read_data};
       default: read_data_o = 32'b0;
     endcase
   end
@@ -284,5 +312,28 @@ module peripheral_manager #(
       .timer_a_write_enable_i(timer_write_enable),
       .timer_a_read_enable_i(timer_read_enable)
   );
+
+  // CPU and display ports use their respective clock domains.
+  if (ENABLE_HDMI) begin : generate_hdmi
+  hdmi_module #(
+      .FONT_FILE(HDMI_FONT_FILE),
+      .CHAR_INIT_FILE(HDMI_CHAR_INIT_FILE)
+  ) hdmi (
+      .cpu_clk(clk),
+      .pixel_clk(hdmi_pixel_clk_i),
+      .rst(rst),
+      .pixel_rst(hdmi_pixel_rst_i),
+      .enable_i(hdmi_enable_i),
+      .pixel_address_cpu_i(hdmi_cpu_address),
+      .pixel_write_data_cpu_i(char_cell_t'(write_data_i[15:0])),
+      .pixel_read_data_cpu_o(hdmi_read_data),
+      .pixel_write_enable_cpu_i(hdmi_write_enable),
+      .pixel_read_enable_cpu_i(hdmi_read_enable),
+      .tmds_symbols_o(hdmi_symbols_o)
+  );
+  end else begin : generate_no_hdmi
+    assign hdmi_read_data = '0;
+    assign hdmi_symbols_o = '{default: '0};
+  end
 
 endmodule

@@ -17,7 +17,7 @@ just wave uart_stream
 
 `sim` generates a waveform and opens Surfer; `wave` reopens it without rerunning.
 The test decodes the actual TX pin using an independent baud clock. Its drain
-timeout is 20 ms instead of the hardware script's longer timeout.
+timeout is 100 ms instead of the hardware script's longer timeout.
 
 Useful signals under `uart_stream_tb`: `gpio2_pin_i[1]`, `tx_line`,
 `sending_byte`, `echoed_byte`, `sent_count`, `echo_count`, `rx_complete`,

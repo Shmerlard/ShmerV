@@ -2,14 +2,25 @@
 
 ## TMDS encoding
 
-The encoder's transition-reduction decision and running-disparity/control-symbol
-flow were informed by [Project F's TMDS encoder for DVI](https://github.com/projf/display_controller/blob/master/rtl/tmds_encoder_dvi.v),
-by Will Green (2019), released under the MIT License. The local implementation
-is rewritten: transition reduction uses a loop, and disparity is calculated
-from the complete output symbol. The testbench uses the reference's explicit
-disparity equations for comparison. It is not an unchanged copy of that module.
+Both HDMI encoders and their reference test use the encoding flow from
+[Project F](https://github.com/projf/display_controller/blob/master/rtl/tmds_encoder_dvi.v),
+by Will Green (2019, MIT). The local implementation uses a loop for transition
+reduction and complete-symbol disparity. The original MIT notice is below.
 
-The original attribution and MIT notice are retained below for that contribution.
+## Font
+
+`rtl/peripherals/hdmi/fonts/NICER40C.F16` is an unmodified bitmap font by
+VileR, from [VGA Text Mode Fonts](https://github.com/viler-int10h/vga-text-mode-fonts).
+`NICER40C.hex` contains the same bytes converted to hexadecimal text.
+See the [author's description](https://int10h.org/blog/2019/05/de-uglifying-40-column-text-games-for-vga/).
+The project's MIT license does not cover this asset; a specific license for
+the raw binary file has not been confirmed.
+
+## Gowin firmware repack
+
+The FS frame/CRC and BSRAM fuse-layout references are
+[Project Apicula](https://github.com/YosysHQ/apicula), particularly
+`bslib.py` and `gowin_pack.py`. The repacker uses its installed device database.
 
 ## Board and primitive references
 

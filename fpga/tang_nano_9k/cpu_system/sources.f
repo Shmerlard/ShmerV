@@ -4,6 +4,13 @@ rtl/types/timer_a_types.sv
 rtl/types/uart_types.sv
 rtl/types/soc_address_map.sv
 rtl/types/gpio_types.sv
+rtl/types/hdmi_types.sv
+rtl/peripherals/hdmi/hdmi_char_memory.sv
+rtl/peripherals/hdmi/hdmi_font_rom.sv
+rtl/peripherals/hdmi/hdmi_timer_module.sv
+rtl/peripherals/hdmi/hdmi_pixel_generator.sv
+rtl/peripherals/hdmi/hdmi_tmds_encoder.sv
+rtl/peripherals/hdmi/hdmi_module.sv
 rtl/core/alu.sv
 rtl/core/controller.sv
 rtl/core/cpu.sv
@@ -35,3 +42,6 @@ rtl/core/stages/if_stage.sv
 rtl/core/stages/mem_stage.sv
 rtl/core/stages/wb_stage.sv
 fpga/tang_nano_9k/cpu_system/top.sv
+fpga/tang_nano_9k/cpu_system/hdmi_clocks.sv
+fpga/tang_nano_9k/cpu_system/hdmi_serializer.sv
+fpga/tang_nano_9k/cpu_system/hdmi_output.sv

@@ -33,12 +33,17 @@ module cpu_system_tb;
   logic address_overlap_o;
 
   cpu_system #(
+      .ENABLE_HDMI(1'b0),
       .MEM_WORDS(MemoryWords),
       .RESET_PC(32'h8000_0000),
       .RAM_BASE_ADDRESS(32'h8000_0000)
   ) dut (
       .clk              (clk),
       .rst              (rst),
+      .hdmi_pixel_clk_i (clk),
+      .hdmi_pixel_rst_i (rst),
+      .hdmi_enable_i    (1'b0),
+      .hdmi_symbols_o   (),
       .gpio0_pin_i      (gpio0_pin_i),
       .gpio0_pin_o      (gpio0_pin_o),
       .gpio0_pin_oe_o   (gpio0_pin_oe_o),
