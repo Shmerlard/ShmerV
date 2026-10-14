@@ -1,81 +1,84 @@
 # CPU system
 
-Runs a program from `sw/programs/` on the complete FPGA system.
+Tang Nano 9K SoC: 16 KiB RAM, a 6.75 MHz CPU (27 MHz / 4), GPIO B/C, UART,
+Timer A, and 640×480 HDMI text output. GPIO A's upper pins are relocated
+to 48/49 so the HDMI clock can use 69/68.
+
+`ENABLE_HDMI` is a build-time parameter on the top, `cpu_system`, and
+`peripheral_manager` (default: enabled). Setting it to `0` omits HDMI clocking,
+serializers, output buffers, and display memories. HDMI MMIO reads return zero,
+writes are ignored, and HDMI outputs are held low. GPIO pin assignments stay fixed.
+
+`hdmi_board_output_tb.sv` checks Gowin clocking and serializers separately;
+it requires vendor simulation models and is excluded from `just test`.
+
+## Build and load
 
 ```sh
+just firmware-build PROGRAM
 just fpga-build cpu_system PROGRAM
 just fpga-repack cpu_system PROGRAM
+just fpga-repack cpu_system PROGRAM --gowin
 just fpga-flash cpu_system PROGRAM
 ```
 
-- `gpio_pattern`: alternate the LEDs between `0xAA` and `0x55`.
-- `gpio_nibble_sum`: add the DIP-switch nibbles and show the result on the LEDs.
-- `interrupt_test_1`: active-low A.0 / pin 51 presses add 1 and A.1 / pin 53
-  presses add 2 to an eight-bit counter. C.1-C.7 display its low seven bits.
-  C.0 / pin 38 transmits one character per accepted button press over UART
-  at 9600 baud, 8N1: `A` through `Z`, then back to `A`. Reset restarts at `A`.
-  If both button flags are pending, both increments and both characters are sent.
-  Interrupts are re-enabled after 20 consecutive samples of both buttons released.
-  A.1 requires an external pull-up; only A.0 has an internal pull-up configured.
-  UART waits poll START/BUSY status rather than using a calibrated delay.
-  Debounce still uses C delay loops whose duration depends on compilation and
-  clock frequency.
-- `uart_hello`: count from `0x00` to `0xFF` on Port A, then repeatedly transmit
-  `Hello` on GPIO2.0 / pin 38 at 9600 baud.
+The default build/repack flow uses Yosys/nextpnr. For Gowin, build firmware,
+then run IDE synthesis, `just gowin-fix-memory`, and PNR.
+Subsequent firmware-only changes can use `repack --gowin` without synthesis/PNR.
 
-- Reset: onboard button S1, pin 4, active-low.
-- GPIO0 / Port A: `0x10000000`, pins 51, 53, 54, 55, 56, 57, 68, 69 (bits 0–7).
-- GPIO1 / Port B: `0x10000100`, pins 29, 30, 33, 34, 40, 35, 41, 42 (bits 0–7).
-- GPIO2 / Port C: `0x10000200`, pins 38, 37, 36, 39, 25, 26, 27, 28 (bits 0–7).
-- RAM: 16 KiB.
+Gowin repack requires matching `impl/pnr/ShmerV.fs` and
+`impl/gwsynthesis/ShmerV.vg`. It updates the eight CPU RAM blocks and preserves
+routing, other memories, and the original FS. Output:
+`build/fpga/tang_nano_9k/cpu_system/images/PROGRAM.fs`.
+Supported images are uncompressed, unencrypted, CRC-enabled GW1NR-9C files
+with eight 4096×4 CPU RAM blocks. Invalid CRCs, ambiguous RAM matches,
+oversized firmware, and hardware newer than the FS are rejected.
+The timestamp check is not a saved build fingerprint; retain files from the same build.
+Only the user runs FPGA builds and programming.
 
-All three GPIO ports are bidirectional; software controls them through `DIR`.
+## Pins
 
-The board wrapper has `INPUT_CLOCK_HZ = 27_000_000` and `CLOCK_DIVIDE = 4`
-parameters. The divider supports powers of two >= 2, with 50% duty cycle.
-An output register samples the selected counter bit, adding one input-clock
-cycle of phase delay without changing frequency or duty cycle. Its `cpu_clk`
-output only drives clock inputs; counter feedback stays on `clock_divider`.
-The reported frequency is truncated to whole Hz if necessary.
-`INPUT_CLOCK_HZ` describes the physical oscillator; it does not change it.
-The resulting `CLOCK_HZ` is passed through the SoC and peripheral manager to
-UART. UART rounds `CLOCK_HZ / BAUD_RATE` to the nearest whole cycle; the defaults
-give 6.75 MHz and 703 cycles per bit at 9600 baud. `UART_BAUD_RATE` can be set
-on `cpu_system`; the UART requires at least one clock cycle per bit.
+| Function | Board pins |
+|---|---|
+| Oscillator / reset S1 | 52 / 4 (active-low reset) |
+| GPIO A bits 0–7 | 51, 53, 54, 55, 56, 57, 48, 49 |
+| GPIO B bits 0–7 | 29, 30, 33, 34, 40, 35, 41, 42 |
+| GPIO C bits 0–7 | 38, 37, 36, 39, 25, 26, 27, 28 |
+| UART TX / RX | C.0 (38) / C.1 (37) |
+| TMDS clock P/N | 69/68 |
+| TMDS blue / green / red P/N | 71/70, 73/72, 75/74 |
 
-When changing either clock parameter, update `clock.sdc`'s primary period and
-generated-clock divide ratio.
-For nextpnr, keep frequency constraints consistent. Both flows constrain the
-output register's `cpu_clk` net. Check its global routing in the user-run build.
-These constraint files are not generated
-from RTL parameters. Software busy-loop delays also require recalibration.
+All three GPIO ports are bidirectional through `DIR`.
+Peripheral addresses are defined in `shmerv_memory_map.h`;
+HDMI memory layout is documented in the [HDMI README](../../../rtl/peripherals/hdmi/README.md).
 
-The board divider and UART frequency propagation simulation is included in
-`just test`. Run it separately without synthesizing or programming:
+## Clocks and reset
 
-```sh
-just test cpu_system_top
-```
+`INPUT_CLOCK_HZ=27000000` and power-of-two `CLOCK_DIVIDE=4` set the CPU rate.
+The divided clock uses a separate output register; its frequency propagates to UART.
+UART requires at least four CPU clocks per bit at every supported speed.
 
-Both flows use the shared physical pin assignments in `pins.cst`. The Gowin
-project also loads `clock_gowin.cst`, which constrains `cpu_clk` to global clock
-routing. The open-source build combines `pins.cst` and `clock_nextpnr.cst` into
-`build/fpga/tang_nano_9k/cpu_system/constraints.cst` for nextpnr.
+HDMI assumes a fixed 27 MHz input: rPLL produces 126 MHz, and CLKDIV /5
+produces 25.2 MHz. Pixel reset asserts on button reset or PLL lock loss and
+releases after four pixel-clock edges.
 
-Gowin uses `clock.sdc` to constrain both clocks. Check the generated-clock constraint
-resolves and setup/hold timing passes after rebuilding; the RTL change requires
-synthesis, not only P&R.
+Both flows use `pins.cst`; `clock_gowin.cst` and `clock_nextpnr.cst` request
+global CPU clock routing. Update frequency constraints when changing clocks.
+Explicit HDMI SDC constraints and dual-clock RAM/reset review remain pending;
+frequency PASS alone does not establish complete timing closure.
 
-For the open-source flow, `clock_nextpnr.cst` requests global clock routing for
-`cpu_clk` with `CLOCK_LOC ... BUFG = CLK`.
-The build also enables `--detailed-timing-report`
-in `report.json`. After a full build, check `nextpnr.log` for the buffered
-clock routing result, missing-net or routing errors, and `Hold/min time`
-violations. A frequency PASS alone does not establish hold timing closure.
-With the fixed divide-by-32 implementation and this clock-routing constraint,
-the user observed working GPIO interrupt
-counting with normal GPIO-controlled output enable on all Port C pins. The
-firmware and synthesized netlist were byte-identical to the preceding failing
-build; the routed design now contains a BUFG and global clock wires. This
-supports a clock-distribution issue, but does not establish a specific hold
-violation. FPGA builds and programming are run by the user.
+## Programs
+
+Programs live in [sw/programs](../../../sw/programs/). See their local READMEs:
+[hdmi_hello](../../../sw/programs/hdmi_hello/README.md),
+[uart_hdmi](../../../sw/programs/uart_hdmi/README.md),
+[interrupt_test_1](../../../sw/programs/interrupt_test_1/README.md), and
+[uart_hello](../../../sw/programs/uart_hello/README.md).
+`gpio_pattern` alternates LED bytes; `gpio_nibble_sum` sums switch nibbles.
+
+The board currently initializes character RAM from
+[char_demo.hex](../../../rtl/peripherals/hdmi/examples/char_demo.hex).
+CPU writes replace it; button reset does not reload it.
+An empty `HDMI_CHAR_INIT_FILE` disables initialization.
+
+See [third-party credits](../../../docs/third-party.md).

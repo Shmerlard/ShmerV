@@ -12,6 +12,7 @@ rtl/core/                    Reusable CPU and its pipeline internals
 rtl/soc/                     Memory, address decoding, and CPU-system integration
 rtl/peripherals/             GPIO, UART TX, and peripheral management
 rtl/types/                   Shared SystemVerilog packages
+fpga/gowin/                  Primitive declaration stubs for code diagnostics
 fpga/tang_nano_9k/           Tang Nano 9K targets
   gpio_bringup/              Direct GPIO hardware test
   cpu_system/                Complete SoC target for selected programs
@@ -56,7 +57,10 @@ just fpga-flash cpu_system gpio_pattern
 
 Firmware is embedded into block-RAM initialization. `just fpga-repack` can
 replace it while reusing an existing placement and routing result, provided
-the hardware is unchanged. A UART firmware loader is not implemented yet.
+the hardware is unchanged. The default backend uses nextpnr's routed JSON;
+`just fpga-repack cpu_system PROGRAM --gowin` instead updates CPU RAM data
+in the existing Gowin FS, preserving logic/routing and other memory contents.
+A UART firmware loader is not implemented yet.
 
 ## Verification Software
 

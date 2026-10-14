@@ -2,7 +2,7 @@
 
 ShmerV is a five-stage RISC-V CPU and small SoC written in SystemVerilog.
 It runs bare-metal C firmware on a Tang Nano 9K FPGA, with GPIO, interrupts,
-and bidirectional UART.
+bidirectional UART, and HDMI text output.
 
 ## Why I built it
 
@@ -24,18 +24,27 @@ computer architecture.
   jumps, and byte, halfword, and word memory accesses.
 - Forwarding, load-use stalls, and pipeline flushing.
 - Initial Machine-mode trap handling, CSR access, and `MRET`.
-- 16 KiB of block RAM on the Tang Nano 9K. The current board configuration
-  divides the 27 MHz oscillator by 16, giving a 1.6875 MHz CPU clock.
-- Three eight-bit GPIO ports, GPIO interrupts, and UART TX/RX with selectable
+- 16 KiB of block RAM on the Tang Nano 9K.
+- Three eight-bit GPIO ports and interrupts.
+- UART TX/RX with selectable
   9600, 19200, 57600, and 115200 baud rates.
+- 640×480 HDMI text output with 80×30 cells, an 8×16 font, and 16 colors.
 - Bare-metal startup code, linker scripts, and C programs for LED patterns,
   DIP-switch input, button interrupts, UART output, and polling/interrupt-driven echo.
 
 The CPU core is separate from the SoC peripherals and board-specific wrapper.
-Exception and CSR verification is still incomplete; this is not yet a fully
-verified RV32I implementation. UART currently sends and receives eight-bit,
-LSB-first frames without parity. Both polling and RX interrupt-driven echo
-have been tested on the FPGA at 9600 baud.
+UART uses eight-bit, LSB-first frames without parity. Polling and RX
+interrupt-driven echo have been tested on the FPGA at 9600 baud.
+
+## Future Work
+
+Next steps are completing exception/CSR verification and adding official
+RISC-V architectural tests. I plan configurable board targets, HDMI control
+registers and cursor support, and terminal input handling in firmware.
+I also want to simplify the build tools and write a short tutorial with
+architecture and timing diagrams.
+
+## Examples
 
 ### UART echo on hardware
 
@@ -43,6 +52,18 @@ The capture below shows the letter `a` arriving on RX (lower trace) and being
 echoed back on TX (upper trace). UART uses C.0 for TX and C.1 for RX.
 
 ![UART receive and transmit waveforms echoing the letter a](docs/images/first_uart_echo.png)
+
+### HDMI hello world — WIP
+
+Video placeholder: `hello world!` appearing one character per second.
+
+### UART to HDMI — WIP
+
+Video placeholder: terminal input appearing on the connected display.
+
+### Pipeline execution — WIP
+
+Waveform placeholder: a short instruction sequence showing forwarding and stalls.
 
 ## Verification
 
@@ -52,7 +73,8 @@ Spike from the same ELF. SoC-specific tests use explicit expected results
 because Spike does not model the custom GPIO interrupts. Traced simulations
 can be inspected in Surfer.
 
-Official RISC-V architectural tests have not yet been integrated.
+Exception and CSR verification is incomplete; this is not yet a fully
+verified RV32I implementation. Official architectural tests are still pending.
 
 ## Quick Start
 
@@ -91,16 +113,10 @@ just lint
 
 ## Running on the FPGA
 
-The board target uses firmware stored in block-RAM initialization:
-
-```sh
-just fpga-list
-just fpga-build cpu_system gpio_pattern
-just fpga-flash cpu_system gpio_pattern
-```
-
-See the [board target documentation](fpga/tang_nano_9k/cpu_system/README.md)
-for wiring, available programs, clock settings, and timing constraints.
+There are two FPGA workflows, Gowin IDE (recommended for the current board
+target) and Yosys/nextpnr; see the [board build commands](fpga/tang_nano_9k/cpu_system/README.md)
+for loading firmware, wiring, and constraints. This workflow documentation
+is WIP and will be reorganized.
 
 ## Repository layout
 
@@ -116,3 +132,8 @@ the FPGA/software relationship.
 ## License
 
 [MIT](LICENSE).
+
+## Credits
+
+See [third-party credits and license notices](docs/third-party.md), including
+VileR's `NICER40C` font, which is excluded from the project's MIT license.
