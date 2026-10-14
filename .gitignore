@@ -6,5 +6,5 @@
 *.vcd
 *.log
 impl/
-ShmerV.gprj.user
+*.gprj.user
 __pycache__/
