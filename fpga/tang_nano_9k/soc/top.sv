@@ -77,7 +77,7 @@ module soc_top #(
   soc #(
       .ENABLE_HDMI     (ENABLE_HDMI),
       .MEM_WORDS       (4096),
-      .HDMI_CHAR_INIT_FILE("rtl/peripherals/hdmi/examples/char_demo.hex"),
+      .HDMI_CHAR_INIT_FILE("rtl/peripherals/hdmi/examples/char_empty.hex"),
       .CLOCK_HZ        (ClockHz),
       .MEMORY_INIT_FILE("build/fpga/tang_nano_9k/soc/software/program.hex"),
       .MEMORY_INIT_FILE_LANE0("build/fpga/tang_nano_9k/soc/software/program_lane0.hex"),

@@ -21,6 +21,7 @@ module hdmi_font_rom #(
 
   // Fixed VGA text palette. RGB byte order: red, green, blue.
   // Palette lookup is combinational; it adds no clock-cycle latency.
+  // TODO: add as enum in TYPES, and to C header file
   always_comb begin
     case (color_index_i)
       4'h0: color_rgb_o = 24'h000000;  // Black
