@@ -48,5 +48,10 @@ source /home/elad/Projects/ShmerV/scripts/completion/just.zsh
 - `list.sh` lists FPGA targets, software programs, and already-built bitstreams.
 - `build_target.sh` builds a Tang Nano 9K target and embeds a selected program when required.
 - `flash_target.sh` loads a built image into FPGA SRAM or persistent flash.
+- `repack_program.sh` replaces firmware while keeping the existing routed
+  hardware; optional `--gowin` selects the IDE FS instead of nextpnr JSON.
+- `repack_gowin_fs.py` validates an uncompressed GW1NR-9C FS, identifies the
+  eight CPU RAM blocks from the matching synthesis netlist, replaces their
+  initialization, and updates frame CRCs without changing other memories.
 - `synthesize_cpu.sh` reports generic CPU synthesis results.
 - `synthesize_cpu_gowin.sh` maps the CPU to Gowin primitives.
