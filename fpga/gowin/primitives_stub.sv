@@ -1,4 +1,4 @@
-// Declaration only for editor diagnostics; exclude from synthesis and simulation.
+// Declarations for code diagnostics only; exclude from synthesis and simulation.
 module OSER10 (
     output wire Q,
     input wire D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
