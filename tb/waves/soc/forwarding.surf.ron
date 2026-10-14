@@ -24,7 +24,7 @@
     autoload_sibling_state_files: None,
     autoreload_files: None,
     waves: Some((
-        source: File("build/cpu_system/forwarding/waveform.fst"),
+        source: File("build/soc/forwarding/waveform.fst"),
         format: Fst,
         active_scope: None,
         items_tree: (

@@ -19,11 +19,11 @@ if [ -z "$module" ]; then
   exit 1
 fi
 
-if [ "$module" = "cpu_system" ]; then
+if [ "$module" = "soc" ]; then
   if [ -z "$program" ]; then
-    echo "Usage: just sim cpu_system PROGRAM"
+    echo "Usage: just sim soc PROGRAM"
     echo "Available programs:"
-    for program_directory in tb/cpu/programs/*; do
+    for program_directory in tb/core/programs/*; do
       if [ -d "$program_directory" ]; then
         program_name=$(basename "$program_directory")
         if [ -f "$program_directory/$program_name.S" ] \
@@ -34,17 +34,17 @@ if [ "$module" = "cpu_system" ]; then
     done
     exit 0
   fi
-  waveform="build/cpu_system/$program/waveform.fst"
-  elf_file="build/cpu_system/$program/program.elf"
+  waveform="build/soc/$program/waveform.fst"
+  elf_file="build/soc/$program/program.elf"
 elif [ -n "$program" ]; then
-  echo "A program name is only valid for cpu_system" >&2
+  echo "A program name is only valid for soc" >&2
   exit 1
 else
   waveform="build/tests/$module/waveform.fst"
 fi
 
-if [ "$display" = "--elf" ] && [ "$module" != "cpu_system" ]; then
-  echo "--elf is only valid for cpu_system simulations" >&2
+if [ "$display" = "--elf" ] && [ "$module" != "soc" ]; then
+  echo "--elf is only valid for soc simulations" >&2
   exit 1
 fi
 

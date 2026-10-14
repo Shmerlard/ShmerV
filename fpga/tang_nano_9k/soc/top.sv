@@ -1,4 +1,4 @@
-module cpu_system_top #(
+module soc_top #(
     parameter int unsigned INPUT_CLOCK_HZ = 27_000_000,
     parameter int unsigned CLOCK_DIVIDE = 4,
     parameter bit ENABLE_HDMI = 1'b1
@@ -74,19 +74,19 @@ module cpu_system_top #(
   logic [7:0] gpio2_pin_output;
   logic [7:0] gpio2_pin_output_enable;
 
-  cpu_system #(
+  soc #(
       .ENABLE_HDMI     (ENABLE_HDMI),
       .MEM_WORDS       (4096),
       .HDMI_CHAR_INIT_FILE("rtl/peripherals/hdmi/examples/char_demo.hex"),
       .CLOCK_HZ        (ClockHz),
-      .MEMORY_INIT_FILE("build/fpga/tang_nano_9k/cpu_system/software/program.hex"),
-      .MEMORY_INIT_FILE_LANE0("build/fpga/tang_nano_9k/cpu_system/software/program_lane0.hex"),
-      .MEMORY_INIT_FILE_LANE1("build/fpga/tang_nano_9k/cpu_system/software/program_lane1.hex"),
-      .MEMORY_INIT_FILE_LANE2("build/fpga/tang_nano_9k/cpu_system/software/program_lane2.hex"),
-      .MEMORY_INIT_FILE_LANE3("build/fpga/tang_nano_9k/cpu_system/software/program_lane3.hex"),
+      .MEMORY_INIT_FILE("build/fpga/tang_nano_9k/soc/software/program.hex"),
+      .MEMORY_INIT_FILE_LANE0("build/fpga/tang_nano_9k/soc/software/program_lane0.hex"),
+      .MEMORY_INIT_FILE_LANE1("build/fpga/tang_nano_9k/soc/software/program_lane1.hex"),
+      .MEMORY_INIT_FILE_LANE2("build/fpga/tang_nano_9k/soc/software/program_lane2.hex"),
+      .MEMORY_INIT_FILE_LANE3("build/fpga/tang_nano_9k/soc/software/program_lane3.hex"),
       .RESET_PC        (32'h8000_0000),
       .RAM_BASE_ADDRESS(32'h8000_0000)
-  ) cpu_system (
+  ) soc (
       .clk              (cpu_clk),
       .rst              (~reset_button_n_i),
       .hdmi_pixel_clk_i(pixel_clk),

@@ -25,9 +25,9 @@ if [ ! -f "$sources_file" ] || [ ! -f "$constraints_file" ]; then
 fi
 
 case "$target" in
-  cpu_system)
+  soc)
     if [ -z "$program" ]; then
-      echo "A program is required: just fpga-build cpu_system PROGRAM" >&2
+      echo "A program is required: just fpga-build soc PROGRAM" >&2
       echo "Available programs:" >&2
       scripts/fpga/list.sh programs >&2
       exit 1

@@ -15,15 +15,15 @@ rtl/types/                   Shared SystemVerilog packages
 fpga/gowin/                  Primitive declaration stubs for code diagnostics
 fpga/tang_nano_9k/           Tang Nano 9K targets
   gpio_bringup/              Direct GPIO hardware test
-  cpu_system/                Complete SoC target for selected programs
+  soc/                Complete SoC target for selected programs
 sw/runtime/                  Shared bare-metal startup
 sw/linker/                   Simulation and FPGA memory layouts
 sw/include/                  MMIO definitions and C interrupt declarations
 sw/programs/                 Programs intended to run on the FPGA system
 tb/unit/                     Module-level SystemVerilog tests
-tb/cpu/                      Complete CPU/system testbenches
+tb/core/                      Complete CPU/system testbenches
 tb/fpga/                     Board-wrapper simulation tests
-tb/cpu/programs/             Test-only software and Spike check descriptions
+tb/core/programs/             Test-only software and Spike check descriptions
 tb/support/                  Shared test-build support files
 tb/waves/                    Persistent Surfer layouts
 scripts/software/            Software compilation
@@ -51,20 +51,20 @@ and `sources.f` source list. The board-level README lists the available targets.
 just fpga-list targets
 just fpga-list programs
 just fpga-list images
-just fpga-build cpu_system gpio_pattern
-just fpga-flash cpu_system gpio_pattern
+just fpga-build soc gpio_pattern
+just fpga-flash soc gpio_pattern
 ```
 
 Firmware is embedded into block-RAM initialization. `just fpga-repack` can
 replace it while reusing an existing placement and routing result, provided
 the hardware is unchanged. The default backend uses nextpnr's routed JSON;
-`just fpga-repack cpu_system PROGRAM --gowin` instead updates CPU RAM data
+`just fpga-repack soc PROGRAM --gowin` instead updates CPU RAM data
 in the existing Gowin FS, preserving logic/routing and other memory contents.
 A UART firmware loader is not implemented yet.
 
 ## Verification Software
 
-Programs under `tb/cpu/programs/` exist only to verify the CPU. Their `.checks`
+Programs under `tb/core/programs/` exist only to verify the CPU. Their `.checks`
 files select architectural state that Spike evaluates before Verilator compares
 the RTL result. SoC-specific tests whose GPIO/custom interrupts are unavailable
 in Spike instead provide hand-written `.expected` files. Runnable demonstration

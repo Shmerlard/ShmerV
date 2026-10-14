@@ -2,7 +2,7 @@ timeunit 1ns; timeprecision 1ps;
 import core_types::*;
 import csr_types::*;
 
-module cpu #(
+module core #(
     parameter logic [31:0] RESET_PC = 32'h0000_0000
 ) (
     input logic clk,

@@ -32,12 +32,12 @@ _shmerv_just() {
           for item in "$root"/tb/**/*_tb.sv(N); do
             candidates+=(${${item:t}%_tb.sv})
           done
-        elif (( CURRENT == 4 )) && [[ ${words[3]} == cpu_system ]]; then
-          for item in "$root"/tb/cpu/programs/*(/N); do
+        elif (( CURRENT == 4 )) && [[ ${words[3]} == soc ]]; then
+          for item in "$root"/tb/core/programs/*(/N); do
             [[ -f $item/${item:t}.c || -f $item/${item:t}.S ]] && candidates+=(${item:t})
           done
           [[ $recipe == test ]] && candidates+=(-l --list)
-        elif (( CURRENT == 5 )) && [[ $recipe == sim && ${words[3]} == cpu_system ]]; then
+        elif (( CURRENT == 5 )) && [[ $recipe == sim && ${words[3]} == soc ]]; then
           candidates+=(--elf)
         fi
         ;;
@@ -50,9 +50,9 @@ _shmerv_just() {
             candidates+=(${item:h:t})
           done
         elif { (( CURRENT == 3 )) && [[ $recipe == firmware-build ]]; } \
-          || { (( CURRENT == 4 )) && [[ ${words[3]} == cpu_system ]]; }; then
+          || { (( CURRENT == 4 )) && [[ ${words[3]} == soc ]]; }; then
           if [[ $recipe == fpga-flash ]]; then
-            for item in "$root"/build/fpga/tang_nano_9k/cpu_system/images/*.fs(N); do
+            for item in "$root"/build/fpga/tang_nano_9k/soc/images/*.fs(N); do
               candidates+=(${item:t:r})
             done
           else
@@ -61,8 +61,8 @@ _shmerv_just() {
             done
           fi
         elif [[ $recipe == fpga-flash ]]; then
-          if { (( CURRENT == 4 )) && [[ ${words[3]} != cpu_system ]]; } \
-            || { (( CURRENT == 5 )) && [[ ${words[3]} == cpu_system ]]; }; then
+          if { (( CURRENT == 4 )) && [[ ${words[3]} != soc ]]; } \
+            || { (( CURRENT == 5 )) && [[ ${words[3]} == soc ]]; }; then
             candidates+=(sram flash)
           fi
         fi

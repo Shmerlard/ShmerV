@@ -13,8 +13,8 @@ rtl/peripherals/hdmi/hdmi_tmds_encoder.sv
 rtl/peripherals/hdmi/hdmi_module.sv
 rtl/core/alu.sv
 rtl/core/controller.sv
-rtl/core/cpu.sv
-rtl/soc/cpu_system.sv
+rtl/core/core.sv
+rtl/soc/soc.sv
 rtl/core/csr.sv
 rtl/core/hazard_unit.sv
 rtl/core/immediate_generator.sv
@@ -41,7 +41,7 @@ rtl/core/stages/id_stage.sv
 rtl/core/stages/if_stage.sv
 rtl/core/stages/mem_stage.sv
 rtl/core/stages/wb_stage.sv
-fpga/tang_nano_9k/cpu_system/top.sv
-fpga/tang_nano_9k/cpu_system/hdmi_clocks.sv
-fpga/tang_nano_9k/cpu_system/hdmi_serializer.sv
-fpga/tang_nano_9k/cpu_system/hdmi_output.sv
+fpga/tang_nano_9k/soc/top.sv
+fpga/tang_nano_9k/soc/hdmi_clocks.sv
+fpga/tang_nano_9k/soc/hdmi_serializer.sv
+fpga/tang_nano_9k/soc/hdmi_output.sv

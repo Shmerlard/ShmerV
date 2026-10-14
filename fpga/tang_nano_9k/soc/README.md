@@ -4,7 +4,7 @@ Tang Nano 9K SoC: 16 KiB RAM, a 6.75 MHz CPU (27 MHz / 4), GPIO B/C, UART,
 Timer A, and 640×480 HDMI text output. GPIO A's upper pins are relocated
 to 48/49 so the HDMI clock can use 69/68.
 
-`ENABLE_HDMI` is a build-time parameter on the top, `cpu_system`, and
+`ENABLE_HDMI` is a build-time parameter on the top, `soc`, and
 `peripheral_manager` (default: enabled). Setting it to `0` omits HDMI clocking,
 serializers, output buffers, and display memories. HDMI MMIO reads return zero,
 writes are ignored, and HDMI outputs are held low. GPIO pin assignments stay fixed.
@@ -16,10 +16,10 @@ it requires vendor simulation models and is excluded from `just test`.
 
 ```sh
 just firmware-build PROGRAM
-just fpga-build cpu_system PROGRAM
-just fpga-repack cpu_system PROGRAM
-just fpga-repack cpu_system PROGRAM --gowin
-just fpga-flash cpu_system PROGRAM
+just fpga-build soc PROGRAM
+just fpga-repack soc PROGRAM
+just fpga-repack soc PROGRAM --gowin
+just fpga-flash soc PROGRAM
 ```
 
 The default build/repack flow uses Yosys/nextpnr. For Gowin, build firmware,
@@ -29,7 +29,7 @@ Subsequent firmware-only changes can use `repack --gowin` without synthesis/PNR.
 Gowin repack requires matching `impl/pnr/ShmerV.fs` and
 `impl/gwsynthesis/ShmerV.vg`. It updates the eight CPU RAM blocks and preserves
 routing, other memories, and the original FS. Output:
-`build/fpga/tang_nano_9k/cpu_system/images/PROGRAM.fs`.
+`build/fpga/tang_nano_9k/soc/images/PROGRAM.fs`.
 Supported images are uncompressed, unencrypted, CRC-enabled GW1NR-9C files
 with eight 4096×4 CPU RAM blocks. Invalid CRCs, ambiguous RAM matches,
 oversized firmware, and hardware newer than the FS are rejected.

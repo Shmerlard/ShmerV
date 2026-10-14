@@ -94,13 +94,13 @@ Common commands:
 just help                         # List available commands
 just test                         # Run every test
 just test alu                     # Run one module test
-just test cpu_system basic        # Run one CPU software test
-just test cpu_system -l           # List CPU software tests
+just test soc basic        # Run one CPU software test
+just test soc -l           # List CPU software tests
 just sim alu                      # Run with tracing and open Surfer
-just sim cpu_system basic         # Trace one CPU software test
-just sim cpu_system basic --elf   # Also open the ELF disassembly
+just sim soc basic         # Trace one CPU software test
+just sim soc basic --elf   # Also open the ELF disassembly
 just wave alu                     # Reopen an existing waveform
-just wave cpu_system basic        # Reopen a CPU waveform
+just wave soc basic        # Reopen a CPU waveform
 ```
 
 Maintenance commands:
@@ -114,7 +114,7 @@ just lint
 ## Running on the FPGA
 
 There are two FPGA workflows, Gowin IDE (recommended for the current board
-target) and Yosys/nextpnr; see the [board build commands](fpga/tang_nano_9k/cpu_system/README.md)
+target) and Yosys/nextpnr; see the [board build commands](fpga/tang_nano_9k/soc/README.md)
 for loading firmware, wiring, and constraints. This workflow documentation
 is WIP and will be reorganized.
 
@@ -122,7 +122,7 @@ is WIP and will be reorganized.
 
 - `rtl/` contains the hardware.
 - `tb/` contains SystemVerilog testbenches and persistent Surfer layouts.
-- `tb/cpu/programs/<program>/` contains test-only assembly or C programs and human-written `.checks` files.
+- `tb/core/programs/<program>/` contains test-only assembly or C programs and human-written `.checks` files.
 - `sw/programs/` contains bare-metal programs intended to run on the FPGA system.
 - `build/` contains generated programs, logs, test executables, expected values, and waveforms.
 

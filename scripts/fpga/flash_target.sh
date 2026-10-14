@@ -13,9 +13,9 @@ if [ -z "$target" ]; then
 fi
 
 case "$target" in
-  cpu_system)
+  soc)
     if [ -z "$selection" ]; then
-      echo "A program is required: just fpga-flash cpu_system PROGRAM [sram|flash]" >&2
+      echo "A program is required: just fpga-flash soc PROGRAM [sram|flash]" >&2
       exit 1
     fi
     image_name=$selection

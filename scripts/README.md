@@ -8,9 +8,9 @@ Common FPGA commands are:
 just fpga-list targets
 just fpga-list programs
 just fpga-list images
-just fpga-build cpu_system gpio_pattern
-just fpga-flash cpu_system gpio_pattern
-just fpga-flash cpu_system gpio_pattern flash
+just fpga-build soc gpio_pattern
+just fpga-flash soc gpio_pattern
+just fpga-flash soc gpio_pattern flash
 ```
 
 ## `completion/`
@@ -53,5 +53,5 @@ source /home/elad/Projects/ShmerV/scripts/completion/just.zsh
 - `repack_gowin_fs.py` validates an uncompressed GW1NR-9C FS, identifies the
   eight CPU RAM blocks from the matching synthesis netlist, replaces their
   initialization, and updates frame CRCs without changing other memories.
-- `synthesize_cpu.sh` reports generic CPU synthesis results.
-- `synthesize_cpu_gowin.sh` maps the CPU to Gowin primitives.
+- `synthesize_core.sh` reports generic CPU synthesis results.
+- `synthesize_core_gowin.sh` maps the CPU to Gowin primitives.

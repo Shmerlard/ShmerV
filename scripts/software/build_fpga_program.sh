@@ -15,7 +15,7 @@ fi
 
 scripts/software/build_program.sh \
   "$program_source" \
-  build/fpga/tang_nano_9k/cpu_system/software \
+  build/fpga/tang_nano_9k/soc/software \
   sw/linker/tang_nano_9k_16k.ld
 
-echo "Firmware: build/fpga/tang_nano_9k/cpu_system/software/program.hex"
+echo "Firmware: build/fpga/tang_nano_9k/soc/software/program.hex"

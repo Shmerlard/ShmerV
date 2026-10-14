@@ -21,7 +21,7 @@ module board_clock_check #(
   wire [7:0] port_b_io;
   wire [7:0] port_c_io;
 
-  cpu_system_top #(
+  soc_top #(
       .ENABLE_HDMI(1'b0),
       .CLOCK_DIVIDE(Divide)
   ) dut (
@@ -39,10 +39,10 @@ module board_clock_check #(
   always #5ns clk = ~clk;
 
   initial begin
-    assert (dut.cpu_system.peripheral_manager.uart.tx.tx_bit_timer.BitCycles[
+    assert (dut.soc.peripheral_manager.uart.tx.tx_bit_timer.BitCycles[
         uart_types::UART_SPEED_9600] ==
         (27_000_000 / Divide + 4800) / 9600);
-    assert (dut.cpu_system.peripheral_manager.uart.rx.rx_bit_timer.BitCycles[
+    assert (dut.soc.peripheral_manager.uart.rx.rx_bit_timer.BitCycles[
         uart_types::UART_SPEED_9600] ==
         (27_000_000 / Divide + 4800) / 9600);
     for (int cycle_index = 1; cycle_index <= 256; cycle_index++) begin
@@ -54,7 +54,7 @@ module board_clock_check #(
   end
 endmodule
 
-module cpu_system_top_tb;
+module soc_top_tb;
   logic [4:0] done;
   board_clock_check #(.Divide(2)) divide_2 (.done(done[0]));
   board_clock_check divide_4 (.done(done[1]));

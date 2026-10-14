@@ -49,7 +49,7 @@ build_test() {
     if ! verilator --binary --assert --timing --timescale-override 1ns/1ps \
       -Wno-TIMESCALEMOD $trace_arguments --top-module uart_stream_tb \
       --Mdir "$test_build_directory/obj" -o uart_stream_test \
-      -f fpga/tang_nano_9k/cpu_system/sources.f "$testbench" \
+      -f fpga/tang_nano_9k/soc/sources.f "$testbench" \
       > "$test_build_directory/build.log" 2>&1; then
       cat "$test_build_directory/build.log"
       return 1
@@ -58,7 +58,7 @@ build_test() {
   fi
 
   # The board wrapper lives outside rtl/ and needs its simulation IOBUF model.
-  if [ "$test_module" = "cpu_system_top" ]; then
+  if [ "$test_module" = "soc_top" ]; then
     mkdir -p "$test_build_directory"
     trace_arguments=
     if [ "$build_mode" = "trace" ]; then
@@ -66,9 +66,9 @@ build_test() {
     fi
     echo "[BUILD] $test_module ($build_mode)"
     if ! verilator --binary --assert --timing --timescale-override 1ns/1ns \
-      -Wno-TIMESCALEMOD $trace_arguments --top-module cpu_system_top_tb \
+      -Wno-TIMESCALEMOD $trace_arguments --top-module soc_top_tb \
       --Mdir "$test_build_directory/obj" -o "${test_module}_test" \
-      -f fpga/tang_nano_9k/cpu_system/sources.f "$testbench" \
+      -f fpga/tang_nano_9k/soc/sources.f "$testbench" \
       > "$test_build_directory/build.log" 2>&1; then
       echo "[FAIL]  $test_module build"
       cat "$test_build_directory/build.log"
@@ -118,25 +118,25 @@ run_module_test() {
   report_module_pass "$test_module"
 }
 
-run_cpu_system_program() {
+run_soc_program() {
   program_name=$1
-  program_directory="tb/cpu/programs/$program_name"
+  program_directory="tb/core/programs/$program_name"
   assembly_source="$program_directory/$program_name.S"
   c_source="$program_directory/$program_name.c"
   checks_file="$program_directory/$program_name.checks"
   fixed_expected_file="$program_directory/$program_name.expected"
-  program_build_directory="$build_directory/cpu_system/$program_name"
+  program_build_directory="$build_directory/soc/$program_name"
   expected_file="$program_build_directory/program.expected"
 
   if [ -f "$assembly_source" ] && [ -f "$c_source" ]; then
-    echo "Both assembly and C sources exist for cpu_system/$program_name" >&2
+    echo "Both assembly and C sources exist for soc/$program_name" >&2
     exit 1
   elif [ -f "$assembly_source" ]; then
     program_source=$assembly_source
   elif [ -f "$c_source" ]; then
     program_source=$c_source
   else
-    echo "Missing source for cpu_system/$program_name" >&2
+    echo "Missing source for soc/$program_name" >&2
     exit 1
   fi
 
@@ -147,10 +147,10 @@ run_cpu_system_program() {
 
   mkdir -p "$program_build_directory"
 
-  echo "[RUN]   cpu_system/$program_name"
+  echo "[RUN]   soc/$program_name"
   if ! scripts/software/build_program.sh "$program_source" "$program_build_directory" \
     > "$program_build_directory/build.log" 2>&1; then
-    echo "[FAIL]  cpu_system/$program_name build"
+    echo "[FAIL]  soc/$program_name build"
     cat "$program_build_directory/build.log"
     return 1
   fi
@@ -159,11 +159,11 @@ run_cpu_system_program() {
   if [ -f "$fixed_expected_file" ]; then
     cp "$fixed_expected_file" "$expected_file"
   else
-    echo "[SPIKE] cpu_system/$program_name"
+    echo "[SPIKE] soc/$program_name"
     if ! python3 scripts/test/generate_expected.py \
       "$checks_file" "$program_build_directory/program.elf" "$expected_file" \
       > "$program_build_directory/spike.log" 2>&1; then
-      echo "[FAIL]  cpu_system/$program_name Spike reference"
+      echo "[FAIL]  soc/$program_name Spike reference"
       cat "$program_build_directory/spike.log"
       return 1
     fi
@@ -172,7 +172,7 @@ run_cpu_system_program() {
   test_end_pc=$(riscv32-none-elf-nm "$program_build_directory/program.elf" \
     | awk '$3 == "_test_end" { print $1; exit }')
   if [ -z "$test_end_pc" ]; then
-    echo "[FAIL]  cpu_system/$program_name: missing _test_end symbol" >&2
+    echo "[FAIL]  soc/$program_name: missing _test_end symbol" >&2
     return 1
   fi
 
@@ -181,22 +181,22 @@ run_cpu_system_program() {
     default_timeout=10000
   fi
 
-  if ! "$build_directory/tests/cpu_system/$build_mode/obj/cpu_system_test" \
+  if ! "$build_directory/tests/soc/$build_mode/obj/soc_test" \
     "+memory_init=$program_build_directory/program.hex" \
     "+test_end_pc=$test_end_pc" \
     "+timeout_cycles=${CPU_TEST_TIMEOUT_CYCLES:-$default_timeout}" \
     "+expected_file=$expected_file" \
     "+trace_file=$program_build_directory/waveform.fst" \
     > "$program_build_directory/test.log" 2>&1; then
-    echo "[FAIL]  cpu_system/$program_name"
+    echo "[FAIL]  soc/$program_name"
     cat "$program_build_directory/test.log"
     return 1
   fi
-  echo "[PASS]  cpu_system/$program_name"
+  echo "[PASS]  soc/$program_name"
 }
 
-list_cpu_system_programs() {
-  for program_directory in tb/cpu/programs/*; do
+list_soc_programs() {
+  for program_directory in tb/core/programs/*; do
     if [ ! -d "$program_directory" ]; then
       continue
     fi
@@ -209,29 +209,29 @@ list_cpu_system_programs() {
   done
 }
 
-run_cpu_system_tests() {
+run_soc_tests() {
   selected_program=$1
 
   if [ "$selected_program" = "-l" ] || [ "$selected_program" = "--list" ]; then
-    list_cpu_system_programs
+    list_soc_programs
     return
   fi
 
-  build_test cpu_system
+  build_test soc
 
   if [ -n "$selected_program" ]; then
-    run_cpu_system_program "$selected_program"
+    run_soc_program "$selected_program"
     return
   fi
 
   found_program=0
-  for program_directory in tb/cpu/programs/*; do
+  for program_directory in tb/core/programs/*; do
     if [ ! -d "$program_directory" ]; then
       continue
     fi
     found_program=1
     program_name=$(basename "$program_directory")
-    run_cpu_system_program "$program_name"
+    run_soc_program "$program_name"
   done
 
   if [ "$found_program" -eq 0 ]; then
@@ -250,13 +250,13 @@ if [ -z "$module" ]; then
   find tb -type f -name '*_tb.sv' -exec basename {} _tb.sv \; \
     | sort \
     | xargs -r -n1 -P "$test_jobs" scripts/test/run_tests.sh
-elif [ "$module" = "cpu_system" ]; then
-  run_cpu_system_tests "$program"
+elif [ "$module" = "soc" ]; then
+  run_soc_tests "$program"
   if [ -n "${TEST_TOTAL:-}" ]; then
-    report_module_pass cpu_system
+    report_module_pass soc
   fi
 elif [ -n "$program" ]; then
-  echo "A program name is only valid with: just test cpu_system PROGRAM" >&2
+  echo "A program name is only valid with: just test soc PROGRAM" >&2
   exit 1
 else
   run_module_test "$module"

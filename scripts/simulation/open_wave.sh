@@ -9,14 +9,14 @@ if [ -z "$module" ]; then
   exit 1
 fi
 
-if [ "$module" = "cpu_system" ]; then
+if [ "$module" = "soc" ]; then
   if [ -z "$program" ]; then
-    echo "A program is required: just wave cpu_system PROGRAM" >&2
+    echo "A program is required: just wave soc PROGRAM" >&2
     exit 1
   fi
-  waveform="build/cpu_system/$program/waveform.fst"
-  program_state_file="tb/waves/cpu_system/$program.surf.ron"
-  shared_state_file="tb/waves/cpu_system.surf.ron"
+  waveform="build/soc/$program/waveform.fst"
+  program_state_file="tb/waves/soc/$program.surf.ron"
+  shared_state_file="tb/waves/soc.surf.ron"
   if [ -f "$program_state_file" ]; then
     state_file=$program_state_file
   elif [ -f "$shared_state_file" ]; then
@@ -25,7 +25,7 @@ if [ "$module" = "cpu_system" ]; then
     state_file=$program_state_file
   fi
 elif [ -n "$program" ]; then
-  echo "A program name is only valid for cpu_system" >&2
+  echo "A program name is only valid for soc" >&2
   exit 1
 else
   waveform="build/tests/$module/waveform.fst"

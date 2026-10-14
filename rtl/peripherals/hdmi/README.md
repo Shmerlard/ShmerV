@@ -2,7 +2,7 @@
 
 640×480 video with 80×30 cells, an 8×16 font, and a fixed 16-color VGA palette.
 The CPU and renderer access character RAM on separate clocks. Board clocking,
-pins, and loading commands are in the [CPU target README](../../../fpga/tang_nano_9k/cpu_system/README.md).
+pins, and loading commands are in the [CPU target README](../../../fpga/tang_nano_9k/soc/README.md).
 
 ## Memories and MMIO
 

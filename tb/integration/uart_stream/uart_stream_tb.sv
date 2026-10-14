@@ -30,7 +30,7 @@ module uart_stream_tb;
   assign rx_read = dut.peripheral_manager.uart.read_from_rx_addr;
   assign rx_overwrite = rx_complete && dut.peripheral_manager.uart.uart_ctrl_reg.rx_ifg && !rx_read;
 
-  cpu_system #(
+  soc #(
       .MEM_WORDS(4096),
       .CLOCK_HZ(ClockHz),
       .RESET_PC(32'h80000000),

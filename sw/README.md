@@ -3,7 +3,7 @@
 This directory contains bare-metal programs and their shared support files.
 `runtime/start.S` initializes the stack, clears `.bss`, and calls `main` for C
 programs. Linker scripts describe the available memory, while runnable FPGA
-programs live under `programs/`. Test-only programs live under `tb/cpu/programs/`.
+programs live under `programs/`. Test-only programs live under `tb/core/programs/`.
 
 Use `ShmerV.h` for shared MMIO definitions rather than duplicating addresses in
 programs. Peripheral bases match `rtl/types/soc_address_map.sv`; local register
@@ -14,7 +14,7 @@ hex memory image:
 
 ```sh
 # Test-only assembly (.S)
-scripts/software/build_program.sh tb/cpu/programs/basic/basic.S build/cpu_system/basic
+scripts/software/build_program.sh tb/core/programs/basic/basic.S build/soc/basic
 
 # FPGA C program; the startup runtime is linked automatically
 scripts/software/build_program.sh sw/programs/gpio_pattern/main.c \
@@ -24,8 +24,8 @@ scripts/software/build_program.sh sw/programs/gpio_pattern/main.c \
 Run a test-only program on the simulated CPU and compare it with Spike:
 
 ```sh
-just test cpu_system basic
-just test cpu_system c_basic
+just test soc basic
+just test soc c_basic
 ```
 
 The resulting `program.elf` keeps symbols, while `program.hex` initializes
@@ -43,5 +43,5 @@ default unhandled-interrupt loop.
 Run the bounded CPU simulation of the same demo:
 
 ```sh
-CPU_TEST_TIMEOUT_CYCLES=10000 just test cpu_system timer_overflow
+CPU_TEST_TIMEOUT_CYCLES=10000 just test soc timer_overflow
 ```

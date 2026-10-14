@@ -6,8 +6,8 @@ target=${1:-}
 program=${2:-}
 backend=${3:-}
 
-if [ "$target" != "cpu_system" ] || [ -z "$program" ] || [ "$#" -gt 3 ]; then
-  echo "Usage: just fpga-repack cpu_system PROGRAM [--gowin]" >&2
+if [ "$target" != "soc" ] || [ -z "$program" ] || [ "$#" -gt 3 ]; then
+  echo "Usage: just fpga-repack soc PROGRAM [--gowin]" >&2
   exit 1
 fi
 
@@ -70,7 +70,7 @@ if [ "$backend" = --gowin ]; then
 fi
 
 if [ ! -f "$routed_netlist" ]; then
-  echo "Missing routed design; run: just fpga-build cpu_system $program" >&2
+  echo "Missing routed design; run: just fpga-build soc $program" >&2
   exit 1
 fi
 if [ ! -f "$saved_fingerprint_file" ]; then
@@ -95,8 +95,8 @@ repacked_netlist="$build_directory/repacked-routed.json"
 
 yosys -Q -q -l "$build_directory/repack-synthesis.log" -p "
   read_verilog -lib +/gowin/cells_sim.v
-  read_slang --top cpu_system_top $sources
-  synth_gowin -family gw1n -top cpu_system_top -json $fresh_netlist
+  read_slang --top soc_top $sources
+  synth_gowin -family gw1n -top soc_top -json $fresh_netlist
 "
 
 python3 scripts/fpga/patch_bram_init.py \

@@ -1,6 +1,6 @@
 timeunit 1ns / 1ps;
 
-module cpu_system_tb;
+module soc_tb;
   localparam integer PipelineDrainCycles = 5;
   localparam integer MemoryWords = 8192;
   localparam integer MemoryAddressWidth = $clog2(MemoryWords);
@@ -32,7 +32,7 @@ module cpu_system_tb;
   logic [7:0] gpio2_pin_oe_o;
   logic address_overlap_o;
 
-  cpu_system #(
+  soc #(
       .ENABLE_HDMI(1'b0),
       .MEM_WORDS(MemoryWords),
       .RESET_PC(32'h8000_0000),
@@ -72,10 +72,10 @@ module cpu_system_tb;
     if (!$value$plusargs("timeout_cycles=%d", timeout_cycles)) timeout_cycles = 1000;
     if (!$value$plusargs("expected_file=%s", expected_file)) $fatal(1, "Missing +expected_file");
     if (!$value$plusargs("trace_file=%s", trace_file))
-      trace_file = "build/tests/cpu_system/waveform.fst";
+      trace_file = "build/tests/soc/waveform.fst";
 
     $dumpfile(trace_file);
-    $dumpvars(0, cpu_system_tb);
+    $dumpvars(0, soc_tb);
 
     rst = 1'b1;
     gpio0_pin_i = '0;
@@ -88,7 +88,7 @@ module cpu_system_tb;
     for (elapsed_cycles = 0; elapsed_cycles < timeout_cycles; elapsed_cycles++) begin
       @(posedge clk);
       #1ns;
-      if (dut.cpu.valid_ex && (dut.cpu.pc_ex == test_end_pc)) begin
+      if (dut.core.valid_ex && (dut.core.pc_ex == test_end_pc)) begin
         test_completed = 1'b1;
         break;
       end
@@ -127,7 +127,7 @@ module cpu_system_tb;
             scan_result = $fscanf(expected_file_handle, "%d %h", expected_register, expected_value);
             if (scan_result != 2) $fatal(1, "Invalid register entry in %s", expected_file);
             if (expected_register == 0) actual_value = '0;
-            else actual_value = dut.cpu.id_stage.register_file.registers[expected_register];
+            else actual_value = dut.core.id_stage.register_file.registers[expected_register];
             assert (actual_value == expected_value)
             else
               $fatal(
@@ -139,11 +139,11 @@ module cpu_system_tb;
             scan_result = $fscanf(expected_file_handle, "%s %h", expected_csr, expected_value);
             if (scan_result != 2) $fatal(1, "Invalid CSR entry in %s", expected_file);
             case (expected_csr)
-              "mstatus": actual_value = dut.cpu.csr.mstatus;
-              "mtvec": actual_value = dut.cpu.csr.mtvec;
-              "mepc": actual_value = dut.cpu.csr.mepc;
-              "mcause": actual_value = dut.cpu.csr.mcause;
-              "mtval", "mval": actual_value = dut.cpu.csr.mtval;
+              "mstatus": actual_value = dut.core.csr.mstatus;
+              "mtvec": actual_value = dut.core.csr.mtvec;
+              "mepc": actual_value = dut.core.csr.mepc;
+              "mcause": actual_value = dut.core.csr.mcause;
+              "mtval", "mval": actual_value = dut.core.csr.mtval;
               default: $fatal(1, "Unknown CSR '%s' in %s", expected_csr, expected_file);
             endcase
             assert (actual_value == expected_value)
@@ -158,7 +158,7 @@ module cpu_system_tb;
 
     $fclose(expected_file_handle);
 
-    $display("cpu_system tests passed");
+    $display("soc tests passed");
     $finish;
   end
 endmodule

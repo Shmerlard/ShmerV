@@ -2,17 +2,17 @@
 <GAO_CONFIG>
     <Version>3.0</Version>
     <Mode>Standard</Mode>
-    <AoCore index="0" sample_clock="cpu_clk" trig_type="0" storage_depth="1024" window_num="1" capture_amount="1024" implementation="0" trigger_pos="0" module_name="cpu_system_top" force_trigger_by_falling_edge="false" capture_init_data_enabled="false">
+    <AoCore index="0" sample_clock="cpu_clk" trig_type="0" storage_depth="1024" window_num="1" capture_amount="1024" implementation="0" trigger_pos="0" module_name="soc_top" force_trigger_by_falling_edge="false" capture_init_data_enabled="false">
         <SignalList>
-            <Bus capture_enable="true" name="cpu_system/imem_read_address[7:0]">
-                <Signal>cpu_system/imem_read_address[7]</Signal>
-                <Signal>cpu_system/imem_read_address[6]</Signal>
-                <Signal>cpu_system/imem_read_address[5]</Signal>
-                <Signal>cpu_system/imem_read_address[4]</Signal>
-                <Signal>cpu_system/imem_read_address[3]</Signal>
-                <Signal>cpu_system/imem_read_address[2]</Signal>
-                <Signal>cpu_system/imem_read_address[1]</Signal>
-                <Signal>cpu_system/imem_read_address[0]</Signal>
+            <Bus capture_enable="true" name="soc/imem_read_address[7:0]">
+                <Signal>soc/imem_read_address[7]</Signal>
+                <Signal>soc/imem_read_address[6]</Signal>
+                <Signal>soc/imem_read_address[5]</Signal>
+                <Signal>soc/imem_read_address[4]</Signal>
+                <Signal>soc/imem_read_address[3]</Signal>
+                <Signal>soc/imem_read_address[2]</Signal>
+                <Signal>soc/imem_read_address[1]</Signal>
+                <Signal>soc/imem_read_address[0]</Signal>
             </Bus>
             <Signal capture_enable="true">reset_button_n_i</Signal>
             <Bus capture_enable="true" name="gpio0_pin_output[7:0]">

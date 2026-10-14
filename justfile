@@ -24,9 +24,9 @@ format-check:
 # Run Verible and Verilator lint checks.
 lint:
   verible-verilog-lint --rules='+parameter-name-style=localparam_style:CamelCase|ALL_CAPS' {{sv_sources}}
-  verilator --lint-only --timing --top-module cpu_system {{type_sources}} {{verilator_sources}}
+  verilator --lint-only --timing --top-module soc {{type_sources}} {{verilator_sources}}
 
-# Run tests, one CPU program, or list CPU programs with: just test cpu_system -l.
+# Run tests, one CPU program, or list CPU programs with: just test soc -l.
 test module="" program="":
   @scripts/test/run_tests.sh "{{module}}" "{{program}}"
 
@@ -41,11 +41,11 @@ wave module program="":
 
 # Synthesize the standalone CPU and print a generic cell-count report.
 synth:
-  @scripts/fpga/synthesize_cpu.sh
+  @scripts/fpga/synthesize_core.sh
 
 # Map the standalone CPU to Tang Nano 9K Gowin primitives.
 synth-gowin:
-  @scripts/fpga/synthesize_cpu_gowin.sh
+  @scripts/fpga/synthesize_core_gowin.sh
 
 # List FPGA targets, programs, built images, or all three.
 fpga-list kind="all":

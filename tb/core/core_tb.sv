@@ -1,7 +1,7 @@
 timeunit 1ns / 1ps;
 import csr_types::*;
 
-module cpu_tb;
+module core_tb;
   logic clk = 1'b0;
   logic rst;
 
@@ -17,7 +17,7 @@ module cpu_tb;
   logic ext_irq;
   int target_reads, target_writes;
 
-  cpu dut (
+  core dut (
       .clk                     (clk),
       .rst                     (rst),
       .imem_load_data_i        (imem_load_data),
@@ -178,8 +178,8 @@ module cpu_tb;
   endtask
 
   initial begin
-    $dumpfile("build/tests/cpu/waveform.fst");
-    $dumpvars(0, cpu_tb);
+    $dumpfile("build/tests/core/waveform.fst");
+    $dumpvars(0, core_tb);
     ext_irq = 1'b0;
     target_reads = 0;
     target_writes = 0;
@@ -210,7 +210,7 @@ module cpu_tb;
 
     for (int operation = 0; operation < 7; operation++) check_interrupt_replay(operation);
 
-    $display("cpu tests passed (smoke and seven interrupt replay cases)");
+    $display("core tests passed (smoke and seven interrupt replay cases)");
     $finish;
   end
 endmodule

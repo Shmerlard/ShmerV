@@ -1,7 +1,7 @@
 timeunit 1ns / 1ps;
 import csr_types::*;
 
-module cpu_system #(
+module soc #(
     parameter int MEM_WORDS = 1024,
     parameter bit ENABLE_HDMI = 1'b1,
     parameter int unsigned CLOCK_HZ = 843_750,
@@ -58,9 +58,9 @@ module cpu_system #(
   logic peripheral_irq;
   irq_address_t peripheral_irq_address;
 
-  cpu #(
+  core #(
       .RESET_PC(RESET_PC)
-  ) cpu (
+  ) core (
       .clk                     (clk),
       .rst                     (rst),
       .imem_load_data_i        (imem_load_data),
