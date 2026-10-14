@@ -52,8 +52,11 @@ __unhandled_interrupt:
 .weak __irq_TIMER_A_OVERFLOW
 .set __irq_TIMER_A_OVERFLOW, __unhandled_interrupt
 
-.weak __irq_TIMER_A_COMPARE
-.set __irq_TIMER_A_COMPARE, __unhandled_interrupt
+.weak __irq_TIMER_A_COMPARE_1
+.set __irq_TIMER_A_COMPARE_1, __unhandled_interrupt
+
+.weak __irq_TIMER_A_COMPARE_2
+.set __irq_TIMER_A_COMPARE_2, __unhandled_interrupt
 
 .section .vectors, "ax"
 .balign 4
@@ -80,4 +83,5 @@ __vector_table:
     j __irq_GPIO_B        # cause 18
     j __irq_GPIO_C        # cause 19
     j __irq_TIMER_A_OVERFLOW # cause 20
-    j __irq_TIMER_A_COMPARE  # cause 21
+    j __irq_TIMER_A_COMPARE_1  # cause 21
+    j __irq_TIMER_A_COMPARE_2  # cause 22

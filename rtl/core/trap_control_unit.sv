@@ -104,7 +104,8 @@ module trap_control_unit (
         IRQ_ADDRESS_GPIO_B: trap_cause_interrupt = TRAP_CAUSE_GPIO_B;
         IRQ_ADDRESS_GPIO_C: trap_cause_interrupt = TRAP_CAUSE_GPIO_C;
         IRQ_ADDRESS_TIMER_A_OVERFLOW: trap_cause_interrupt = TRAP_CAUSE_TIMER_A_OVERFLOW;
-        IRQ_ADDRESS_TIMER_A_COMPARE: trap_cause_interrupt = TRAP_CAUSE_TIMER_A_COMPARE;
+        IRQ_ADDRESS_TIMER_A_COMPARE_1: trap_cause_interrupt = TRAP_CAUSE_TIMER_A_COMPARE_1;
+        IRQ_ADDRESS_TIMER_A_COMPARE_2: trap_cause_interrupt = TRAP_CAUSE_TIMER_A_COMPARE_2;
         default: begin
         end
       endcase

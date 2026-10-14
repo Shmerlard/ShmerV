@@ -1,4 +1,4 @@
-#include "ShmerV.h"
+#include <ShmerV.h>
 
 /* Single producer (RX interrupt), single consumer (main). Holds 255 bytes. */
 static volatile uint8_t rx_queue[256];

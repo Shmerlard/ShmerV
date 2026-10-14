@@ -16,11 +16,19 @@ module hdmi_text_generator_tb;
 
   always #5 pixel_clk = ~pixel_clk;
   always #7 cpu_clk = ~cpu_clk;
-  hdmi_module #(.WINDOW_OFFSET(OFFSET)) dut (
-      .cpu_clk(cpu_clk), .pixel_clk(pixel_clk), .rst(rst), .pixel_rst(rst),
-      .enable_i(enable), .pixel_address_cpu_i(cpu_address),
-      .pixel_write_data_cpu_i(cpu_data), .pixel_read_data_cpu_o(),
-      .pixel_write_enable_cpu_i(cpu_write), .pixel_read_enable_cpu_i(1'b0),
+  hdmi_module #(
+      .WINDOW_OFFSET(OFFSET)
+  ) dut (
+      .cpu_clk(cpu_clk),
+      .pixel_clk(pixel_clk),
+      .rst(rst),
+      .pixel_rst(rst),
+      .enable_i(enable),
+      .pixel_address_cpu_i(cpu_address),
+      .pixel_write_data_cpu_i(cpu_data),
+      .pixel_read_data_cpu_o(),
+      .pixel_write_enable_cpu_i(cpu_write),
+      .pixel_read_enable_cpu_i(1'b0),
       .tmds_symbols_o()
   );
   // Observe the assembled display path, including the single shared font ROM.

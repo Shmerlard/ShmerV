@@ -46,7 +46,7 @@ module trap_control_unit_tb;
     valid_mem_i = 1'b0;
     check_idle();
     valid_mem_i = 1'b1;
-    for (int source = 0; source < 6; source++) begin
+    for (int source = 0; source < 7; source++) begin
       ext_irq_address_i = irq_address_t'(source);
       check_trap(TRAP_TYPE_INTERRUPT, 5'(16 + source));
     end

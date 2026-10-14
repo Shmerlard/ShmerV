@@ -71,8 +71,7 @@ module soc_tb;
     if (!$value$plusargs("test_end_pc=%h", test_end_pc)) $fatal(1, "Missing +test_end_pc");
     if (!$value$plusargs("timeout_cycles=%d", timeout_cycles)) timeout_cycles = 1000;
     if (!$value$plusargs("expected_file=%s", expected_file)) $fatal(1, "Missing +expected_file");
-    if (!$value$plusargs("trace_file=%s", trace_file))
-      trace_file = "build/tests/soc/waveform.fst";
+    if (!$value$plusargs("trace_file=%s", trace_file)) trace_file = "build/tests/soc/waveform.fst";
 
     $dumpfile(trace_file);
     $dumpvars(0, soc_tb);

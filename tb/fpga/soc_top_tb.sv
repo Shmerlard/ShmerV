@@ -22,7 +22,7 @@ module board_clock_check #(
   wire [7:0] port_c_io;
 
   soc_top #(
-      .ENABLE_HDMI(1'b0),
+      .ENABLE_HDMI (1'b0),
       .CLOCK_DIVIDE(Divide)
   ) dut (
       .clk(clk),

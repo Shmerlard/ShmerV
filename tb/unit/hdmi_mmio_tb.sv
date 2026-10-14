@@ -49,8 +49,8 @@ module hdmi_mmio_tb #(
       read_cell(0, 0);
       read_cell(2399, 0);
       foreach (hdmi_symbols_o[channel])
-        assert (hdmi_symbols_o[channel] == 0)
-        else $fatal(1, "Disabled HDMI produced a symbol");
+      assert (hdmi_symbols_o[channel] == 0)
+      else $fatal(1, "Disabled HDMI produced a symbol");
       $display("PASS: Disabled HDMI has no character MMIO or output symbols");
       $finish;
     end
@@ -85,7 +85,8 @@ module hdmi_mmio_tb #(
     address_i = 32'h10006000;
     read_enable_i = 1;
     @(negedge clk);
-    assert (read_data_o == 0) else $fatal(1, "Removed font window still mapped");
+    assert (read_data_o == 0)
+    else $fatal(1, "Removed font window still mapped");
     read_enable_i = 0;
     write_enable_i = 1;
     write_data_i = 32'hFFFFFFFF;

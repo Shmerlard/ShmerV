@@ -230,13 +230,18 @@ module peripheral_manager_tb;
     write_register(Gpio2BaseAddress, 5'h07, 32'hFF, 4'b0001);
     assert (!irq_o);
 
-    // Both compare channels share a cause; overflow has higher priority.
+    // Compare channels have separate sources: overflow > CCR1 > CCR2.
     write_register(GpioBaseAddress + 32'h400, 5'h02, 32'h3, 4'b0011);
+    assert (irq_o && irq_address_o == IRQ_ADDRESS_TIMER_A_COMPARE_1);
+    write_register(GpioBaseAddress + 32'h400, 5'h02, 32'h2, 4'b0011);
+    assert (!irq_o);
     write_register(GpioBaseAddress + 32'h400, 5'h04, 32'h3, 4'b0011);
-    assert (irq_o && irq_address_o == IRQ_ADDRESS_TIMER_A_COMPARE);
+    assert (irq_o && irq_address_o == IRQ_ADDRESS_TIMER_A_COMPARE_2);
+    write_register(GpioBaseAddress + 32'h400, 5'h02, 32'h3, 4'b0011);
+    assert (irq_o && irq_address_o == IRQ_ADDRESS_TIMER_A_COMPARE_1);
     write_register(GpioBaseAddress + 32'h400, 5'h06, 32'h7, 4'b0011);
     assert (irq_o && irq_address_o == IRQ_ADDRESS_TIMER_A_OVERFLOW);
-    // GPIO interrupts still win while both timer sources are pending.
+    // GPIO interrupts still win while all three timer sources are pending.
     write_register(Gpio2BaseAddress, 5'h06, 32'h2, 4'b0001);
     assert (irq_o && irq_address_o == IRQ_ADDRESS_GPIO_C);
     write_register(Gpio1BaseAddress, 5'h06, 32'h1, 4'b0001);
@@ -250,9 +255,9 @@ module peripheral_manager_tb;
     write_register(Gpio2BaseAddress, 5'h07, 32'h2, 4'b0001);
     assert (irq_o && irq_address_o == IRQ_ADDRESS_TIMER_A_OVERFLOW);
     write_register(GpioBaseAddress + 32'h400, 5'h06, 32'h6, 4'b0011);
-    assert (irq_o && irq_address_o == IRQ_ADDRESS_TIMER_A_COMPARE);
+    assert (irq_o && irq_address_o == IRQ_ADDRESS_TIMER_A_COMPARE_1);
     write_register(GpioBaseAddress + 32'h400, 5'h02, 32'h2, 4'b0011);
-    assert (irq_o && irq_address_o == IRQ_ADDRESS_TIMER_A_COMPARE);
+    assert (irq_o && irq_address_o == IRQ_ADDRESS_TIMER_A_COMPARE_2);
     write_register(GpioBaseAddress + 32'h400, 5'h04, 32'h2, 4'b0011);
     assert (!irq_o);
 

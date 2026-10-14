@@ -6,7 +6,8 @@
 #define SHMERV_IRQ_GPIO_B           "GPIO_B"           /* Cause 18. */
 #define SHMERV_IRQ_GPIO_C           "GPIO_C"           /* Cause 19. */
 #define SHMERV_IRQ_TIMER_A_OVERFLOW "TIMER_A_OVERFLOW" /* Cause 20. */
-#define SHMERV_IRQ_TIMER_A_COMPARE  "TIMER_A_COMPARE"  /* Cause 21; shared by CCR1/CCR2. */
+#define SHMERV_IRQ_TIMER_A_COMPARE_1  "TIMER_A_COMPARE_1"  /* Cause 21 */
+#define SHMERV_IRQ_TIMER_A_COMPARE_2  "TIMER_A_COMPARE_2"  /* Cause 22 */
 
 /* Cause 16: UART RX pending. Reading UART_RX_DATA acknowledges it.
    Select PORTC_UART_RX_PIN in PORTC_SEL, and set UART_ENABLE and UART_RX_IE. */

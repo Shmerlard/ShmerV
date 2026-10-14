@@ -172,9 +172,12 @@ module peripheral_manager #(
     end else if (timer_irq.ta_irq_overflow) begin
       irq_o = 1'b1;
       irq_address_o = IRQ_ADDRESS_TIMER_A_OVERFLOW;
-    end else if (timer_irq.ta_irq_compare_1 || timer_irq.ta_irq_compare_2) begin
+    end else if (timer_irq.ta_irq_compare_1) begin
       irq_o = 1'b1;
-      irq_address_o = IRQ_ADDRESS_TIMER_A_COMPARE;
+      irq_address_o = IRQ_ADDRESS_TIMER_A_COMPARE_1;
+    end else if (timer_irq.ta_irq_compare_2) begin
+      irq_o = 1'b1;
+      irq_address_o = IRQ_ADDRESS_TIMER_A_COMPARE_2;
     end else if (uart_rx_irq) begin
       irq_o = 1'b1;
       irq_address_o = IRQ_ADDRESS_UART_RX;
@@ -315,22 +318,22 @@ module peripheral_manager #(
 
   // CPU and display ports use their respective clock domains.
   if (ENABLE_HDMI) begin : generate_hdmi
-  hdmi_module #(
-      .FONT_FILE(HDMI_FONT_FILE),
-      .CHAR_INIT_FILE(HDMI_CHAR_INIT_FILE)
-  ) hdmi (
-      .cpu_clk(clk),
-      .pixel_clk(hdmi_pixel_clk_i),
-      .rst(rst),
-      .pixel_rst(hdmi_pixel_rst_i),
-      .enable_i(hdmi_enable_i),
-      .pixel_address_cpu_i(hdmi_cpu_address),
-      .pixel_write_data_cpu_i(char_cell_t'(write_data_i[15:0])),
-      .pixel_read_data_cpu_o(hdmi_read_data),
-      .pixel_write_enable_cpu_i(hdmi_write_enable),
-      .pixel_read_enable_cpu_i(hdmi_read_enable),
-      .tmds_symbols_o(hdmi_symbols_o)
-  );
+    hdmi_module #(
+        .FONT_FILE(HDMI_FONT_FILE),
+        .CHAR_INIT_FILE(HDMI_CHAR_INIT_FILE)
+    ) hdmi (
+        .cpu_clk(clk),
+        .pixel_clk(hdmi_pixel_clk_i),
+        .rst(rst),
+        .pixel_rst(hdmi_pixel_rst_i),
+        .enable_i(hdmi_enable_i),
+        .pixel_address_cpu_i(hdmi_cpu_address),
+        .pixel_write_data_cpu_i(char_cell_t'(write_data_i[15:0])),
+        .pixel_read_data_cpu_o(hdmi_read_data),
+        .pixel_write_enable_cpu_i(hdmi_write_enable),
+        .pixel_read_enable_cpu_i(hdmi_read_enable),
+        .tmds_symbols_o(hdmi_symbols_o)
+    );
   end else begin : generate_no_hdmi
     assign hdmi_read_data = '0;
     assign hdmi_symbols_o = '{default: '0};

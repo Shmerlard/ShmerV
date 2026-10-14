@@ -33,10 +33,10 @@ module hdmi_char_memory #(
   end
   logic [11:0] generator_address;
 
-  logic [6:0] x_pos_cpu;
-  logic [4:0] y_pos_cpu;
-  logic [6:0] x_pos_generator;
-  logic [4:0] y_pos_generator;
+  logic [ 6:0] x_pos_cpu;
+  logic [ 4:0] y_pos_cpu;
+  logic [ 6:0] x_pos_generator;
+  logic [ 4:0] y_pos_generator;
 
   always_comb begin
     x_pos_cpu = pixel_address_cpu_i.x_pos;

@@ -61,7 +61,9 @@ module hdmi_module #(
       .y(y),
       .active_video(active_video)
   );
-  hdmi_font_rom #(.FONT_FILE(FONT_FILE)) font_rom (
+  hdmi_font_rom #(
+      .FONT_FILE(FONT_FILE)
+  ) font_rom (
       .clk(pixel_clk),
       .read_enable_i(font_read),
       .char_code_i(font_char_code),
