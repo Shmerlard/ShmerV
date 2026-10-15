@@ -20,11 +20,17 @@ just fpga-build soc PROGRAM
 just fpga-repack soc PROGRAM
 just fpga-repack soc PROGRAM --gowin
 just fpga-flash soc PROGRAM
+just fpga-flash soc --gowin
 ```
 
 The default build/repack flow uses Yosys/nextpnr. For Gowin, build firmware,
 then run IDE synthesis, `just gowin-fix-memory`, and PNR.
 Subsequent firmware-only changes can use `repack --gowin` without synthesis/PNR.
+
+`just fpga-flash soc --gowin` loads the IDE output `impl/pnr/ShmerV.fs`
+directly into SRAM; append `flash` for persistent storage. It does not rebuild
+the image. For a repacked Gowin image, use `just fpga-flash soc PROGRAM`
+instead: that selects `build/fpga/tang_nano_9k/soc/images/PROGRAM.fs`.
 
 Gowin repack requires matching `impl/pnr/ShmerV.fs` and
 `impl/gwsynthesis/ShmerV.vg`. It updates the eight CPU RAM blocks and preserves

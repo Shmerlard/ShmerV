@@ -67,7 +67,7 @@ fpga-build target="" program="":
 fpga-repack target="" program="" backend="":
   @scripts/fpga/repack_program.sh "{{target}}" "{{program}}" "{{backend}}"
 
-# Load a built image into SRAM, or pass "flash" for persistent storage.
+# Load into SRAM, or pass "flash" for persistent storage; soc --gowin uses the IDE FS.
 fpga-flash target="" selection="" mode="":
   @scripts/fpga/flash_target.sh "{{target}}" "{{selection}}" "{{mode}}"
 

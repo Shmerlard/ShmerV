@@ -5,6 +5,7 @@ board=tang_nano_9k
 target=${1:-}
 selection=${2:-}
 requested_mode=${3:-}
+bitstream=
 
 if [ -z "$target" ]; then
   echo "Built FPGA images:"
@@ -15,10 +16,13 @@ fi
 case "$target" in
   soc)
     if [ -z "$selection" ]; then
-      echo "A program is required: just fpga-flash soc PROGRAM [sram|flash]" >&2
+      echo "Usage: just fpga-flash soc PROGRAM|--gowin [sram|flash]" >&2
       exit 1
     fi
     image_name=$selection
+    if [ "$selection" = --gowin ]; then
+      bitstream="impl/pnr/ShmerV.fs"
+    fi
     mode=${requested_mode:-sram}
     ;;
   *)
@@ -35,7 +39,9 @@ case "$target" in
     ;;
 esac
 
-bitstream="build/fpga/$board/$target/images/$image_name.fs"
+if [ -z "$bitstream" ]; then
+  bitstream="build/fpga/$board/$target/images/$image_name.fs"
+fi
 
 if [ ! -f "$bitstream" ]; then
   echo "Missing FPGA image: $bitstream" >&2
