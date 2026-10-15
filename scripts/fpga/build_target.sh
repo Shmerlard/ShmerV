@@ -17,7 +17,7 @@ top="${target}_top"
 sources_file="$target_directory/sources.f"
 constraints_file="$target_directory/pins.cst"
 build_directory="build/fpga/$board/$target"
-images_directory="$build_directory/images"
+images_directory="$build_directory/images/nextpnr"
 
 if [ ! -f "$sources_file" ] || [ ! -f "$constraints_file" ]; then
   echo "Unknown or incomplete FPGA target: $target" >&2

@@ -20,7 +20,12 @@ list_programs() {
 }
 
 list_images() {
-  find build/fpga/tang_nano_9k -type f -path '*/images/*.fs' -print 2>/dev/null | sort
+  find build/fpga/tang_nano_9k -type f \
+    \( -path '*/images/gowin/*.fs' -o -path '*/images/nextpnr/*.fs' \) \
+    -print 2>/dev/null | sort
+  if [ -f impl/pnr/ShmerV.fs ]; then
+    echo 'impl/pnr/ShmerV.fs (soc ide --gowin)'
+  fi
 }
 
 case "$kind" in

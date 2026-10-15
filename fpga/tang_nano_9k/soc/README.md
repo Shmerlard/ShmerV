@@ -20,22 +20,33 @@ just fpga-build soc PROGRAM
 just fpga-repack soc PROGRAM
 just fpga-repack soc PROGRAM --gowin
 just fpga-flash soc PROGRAM
-just fpga-flash soc --gowin
+just fpga-flash soc PROGRAM --gowin
+just fpga-flash soc ide --gowin
 ```
 
 The default build/repack flow uses Yosys/nextpnr. For Gowin, build firmware,
 then run IDE synthesis, `just gowin-fix-memory`, and PNR.
 Subsequent firmware-only changes can use `repack --gowin` without synthesis/PNR.
 
-`just fpga-flash soc --gowin` loads the IDE output `impl/pnr/ShmerV.fs`
-directly into SRAM; append `flash` for persistent storage. It does not rebuild
-the image. For a repacked Gowin image, use `just fpga-flash soc PROGRAM`
-instead: that selects `build/fpga/tang_nano_9k/soc/images/PROGRAM.fs`.
+`--gowin` selects the Gowin backend for both repack and flash. For software-only
+changes, run `just fpga-repack soc PROGRAM --gowin`, then
+`just fpga-flash soc PROGRAM --gowin`. Without the flag, both commands use
+the open-source nextpnr flow. Append `flash` for persistent storage; SRAM is
+the default. The backend flag and storage mode may appear in either order
+after PROGRAM. Flash never compiles or repacks anything.
+
+`just fpga-flash soc ide --gowin` explicitly selects the original IDE output
+`impl/pnr/ShmerV.fs`, not a repacked program. The old `soc --gowin` shorthand
+is rejected to prevent accidentally loading an older program.
+
+Images are separated under `build/fpga/tang_nano_9k/soc/images/gowin/` and
+`images/nextpnr/`. Old files directly under `images/` are not used automatically:
+run repack again to create an image for the selected backend.
 
 Gowin repack requires matching `impl/pnr/ShmerV.fs` and
 `impl/gwsynthesis/ShmerV.vg`. It updates the eight CPU RAM blocks and preserves
 routing, other memories, and the original FS. Output:
-`build/fpga/tang_nano_9k/soc/images/PROGRAM.fs`.
+`build/fpga/tang_nano_9k/soc/images/gowin/PROGRAM.fs`.
 Supported images are uncompressed, unencrypted, CRC-enabled GW1NR-9C files
 with eight 4096×4 CPU RAM blocks. Invalid CRCs, ambiguous RAM matches,
 oversized firmware, and hardware newer than the FS are rejected.

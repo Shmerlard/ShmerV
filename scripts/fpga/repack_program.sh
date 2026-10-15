@@ -19,7 +19,7 @@ esac
 target_directory="fpga/$board/$target"
 sources_file="$target_directory/sources.f"
 build_directory="build/fpga/$board/$target"
-images_directory="$build_directory/images"
+images_directory="$build_directory/images/nextpnr"
 routed_netlist="$build_directory/routed.json"
 saved_fingerprint_file="$build_directory/hardware.sha256"
 program_directory="sw/programs/$program"
@@ -34,6 +34,7 @@ else
 fi
 
 if [ "$backend" = --gowin ]; then
+  images_directory="$build_directory/images/gowin"
   base_fs="impl/pnr/ShmerV.fs"
   gowin_netlist="impl/gwsynthesis/ShmerV.vg"
   if [ ! -f "$base_fs" ] || [ ! -f "$gowin_netlist" ]; then

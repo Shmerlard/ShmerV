@@ -67,9 +67,9 @@ fpga-build target="" program="":
 fpga-repack target="" program="" backend="":
   @scripts/fpga/repack_program.sh "{{target}}" "{{program}}" "{{backend}}"
 
-# Load into SRAM, or pass "flash" for persistent storage; soc --gowin uses the IDE FS.
-fpga-flash target="" selection="" mode="":
-  @scripts/fpga/flash_target.sh "{{target}}" "{{selection}}" "{{mode}}"
+# Load PROGRAM from the selected backend; use soc ide --gowin for the original IDE FS.
+fpga-flash target="" selection="" option="" extra="":
+  @scripts/fpga/flash_target.sh "{{target}}" "{{selection}}" "{{option}}" "{{extra}}"
 
 # Remove all generated build files.
 clean:
