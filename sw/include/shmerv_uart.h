@@ -3,6 +3,13 @@
 
 #include "shmerv_memory_map.h"
 
+/* CTRL: 16-bit RW with RO status fields. TX_DATA: 8-bit RW holding register.
+   RX_DATA: 8-bit RO, read acknowledges pending/overrun. Four-byte spacing.
+   Reset: disabled, RX IE/start/errors/pending clear, TX data zero, LSB-first
+   set, speed from the RTL BAUD_RATE parameter (default 9600).
+   TX_DATA writes are accepted only while TX is idle with no start pending.
+   START clears after completion; disable aborts active frames while preserving
+   unread RX data/pending. There is no receive FIFO. */
 #define UART_CTRL_OFFSET 0x00u
 #define UART_TX_DATA_OFFSET 0x04u
 #define UART_RX_DATA_OFFSET 0x08u
@@ -26,7 +33,7 @@
    Framing error describes the last completed byte's stop bit.
    Overrun means an unread byte was replaced; reading RX_DATA clears overrun.
    Read CTRL before RX_DATA to inspect status before acknowledging the byte.
-   Configure speed/parity/bit order while disabled; preserve settings on START.
+   Configure speed/parity/bit order while disabled; preserve RX IE/enable on START.
    Parity, bit order selection, and auto start are unfinished. */
 #define UART_ENABLE           0x0001u
 #define UART_RX_IE            0x0002u

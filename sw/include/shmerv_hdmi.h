@@ -27,6 +27,11 @@
 
 /* Temporary map: one cell in bits 15:0 per aligned 32-bit slot.
  * Bits 15:8: character, 7:4: foreground index, 3:0: background index.
- * Writes must enable both low bytes; upper bytes are ignored. */
+ * Cells are read/write using halfword accesses; writes must enable both low
+ * bytes, and upper bytes are ignored. Index = row * 80 + column (row 0..29,
+ * column 0..79). Reads return the cell zero-extended to the bus width.
+ * Character RAM initializes from the board's configuration-time image, if
+ * provided; CPU reset does not clear/reload it. There are no HDMI control or
+ * status registers in the current MMIO map. */
 
 #endif

@@ -3,7 +3,13 @@
 
 #include "shmerv_memory_map.h"
 
-/* Timer A registers are 16 bits wide, at four-byte-spaced addresses. */
+/* Timer A registers are 16 bits wide, at four-byte-spaced addresses; use
+   halfword accesses (both low byte lanes must be enabled for writes).
+   Reset clears writable registers, counter, compare outputs and capture data.
+   PERIOD/COUNTER/COMPARE1/COMPARE2 and controls are RW except the RO fields
+   documented below. Counter writes suppress that cycle's timer tick events.
+   UP counts 0..PERIOD inclusive; CONTINUOUS counts 0..65535.
+   Dividers are tick enables: all logic still runs on the system clock. */
 #define TA_PERIOD_OFFSET    0x00u
 #define TA_COMPARE1_OFFSET      0x04u
 #define TA_COMPARE1_CTRL_OFFSET 0x08u
@@ -71,7 +77,9 @@
    [1] overflow interrupt enable
    [0] overflow pending
 
-   Pending clears by writing zero, preserving the other control fields. */
+   Pending clears by writing zero, preserving the other control fields.
+   A new wrap wins over a simultaneous clear. Global interrupt enable masks
+   outgoing overflow/compare/capture requests without clearing pending. */
 #define TA_OVERFLOW_PENDING 0x0001u
 #define TA_OVERFLOW_IE      0x0002u
 #define TA_INTERRUPT_ENABLE 0x0004u
@@ -94,6 +102,10 @@
    [2] manual output value
    [1] compare interrupt enable
    [0] compare pending (write zero to clear; preserve other fields)
+
+   Writing one to pending sets it. Matches set pending even with interrupts
+   masked; a new match wins over a simultaneous clear. For two-part output
+   modes, the first action occurs at compare and the second at PERIOD.
  */
 #define TA_COMPARE_PENDING      0x0001u
 #define TA_COMPARE_IE           0x0002u
