@@ -56,8 +56,10 @@ Reading DELTA acknowledges capture pending. Capture uses cause 23 and
 `SHMERV_IRQ_TIMER_A_CAPTURE_1`; it has lower priority than Timer A overflow
 and both compare channels, and higher priority than UART RX.
 
-Capture behavior and verification are documented in
-[Timer A capture](../rtl/peripherals/timer_a/README.md).
+`capture_hdmi` measures the C.5 button pulse using /1024 and displays timer
+ticks on HDMI; the user verified this demo on Tang Nano 9K. Input bias is
+required and mechanical debounce is not implemented. Capture behavior and
+verification are documented in [Timer A capture](../rtl/peripherals/timer_a/README.md).
 The CPU-only `timer_capture` regression runs with
 `CPU_TEST_TIMEOUT_CYCLES=30000 just test soc timer_capture`.
 

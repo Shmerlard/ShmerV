@@ -72,6 +72,8 @@ frequency PASS alone does not establish complete timing closure.
 Programs live in [sw/programs](../../../sw/programs/). See their local READMEs:
 [hdmi_hello](../../../sw/programs/hdmi_hello/README.md),
 [uart_hdmi](../../../sw/programs/uart_hdmi/README.md),
+[capture_hdmi](../../../sw/programs/capture_hdmi/README.md) (C.5 pulse measurement,
+user-validated on hardware),
 [interrupt_test_1](../../../sw/programs/interrupt_test_1/README.md), and
 [uart_hello](../../../sw/programs/uart_hello/README.md).
 `gpio_pattern` alternates LED bytes; `gpio_nibble_sum` sums switch nibbles.
