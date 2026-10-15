@@ -47,6 +47,20 @@ or `SHMERV_INTERRUPT(SHMERV_IRQ_TIMER_A_COMPARE_1, handler)` /
 `SHMERV_INTERRUPT(SHMERV_IRQ_TIMER_A_COMPARE_2, handler)`. Unused entries retain the
 default unhandled-interrupt loop.
 
+Timer A capture 1 exposes CTRL/START/END/DELTA at offsets `0x1C`/`0x20`/`0x24`/`0x28`.
+`shmerv_timer.h` defines the halfword registers and control fields. External
+capture uses synchronized GPIO C.5 when `PORTC_TA_CAPTURE1_PIN` is set in
+`PORTC_SEL`; the alternate function keeps that pin as an input. Interval
+measurement requires continuous counting without software counter writes.
+Reading DELTA acknowledges capture pending. Capture uses cause 23 and
+`SHMERV_IRQ_TIMER_A_CAPTURE_1`; it has lower priority than Timer A overflow
+and both compare channels, and higher priority than UART RX.
+
+Capture behavior and verification are documented in
+[Timer A capture](../rtl/peripherals/timer_a/README.md).
+The CPU-only `timer_capture` regression runs with
+`CPU_TEST_TIMEOUT_CYCLES=30000 just test soc timer_capture`.
+
 Run the bounded CPU simulation of the same demo:
 
 ```sh

@@ -17,10 +17,12 @@ package soc_address_map;
   localparam int GPIO_C_UART_RX_PIN = 1;
   localparam int GPIO_C_TIMER_A_COMPARE1_PIN = 7;
   localparam int GPIO_C_TIMER_A_COMPARE2_PIN = 6;
+  localparam int GPIO_C_TIMER_A_CAPTURE1_PIN = 5;
 
   localparam logic [7:0] GPIO_C_ALT_OUTPUT_MASK =
       (8'b1 << GPIO_C_UART_TX_PIN)
       | (8'b1 << GPIO_C_TIMER_A_COMPARE1_PIN)
       | (8'b1 << GPIO_C_TIMER_A_COMPARE2_PIN);
-  localparam logic [7:0] GPIO_C_ALT_MASK = GPIO_C_ALT_OUTPUT_MASK | (8'b1 << GPIO_C_UART_RX_PIN);
+  localparam logic [7:0] GPIO_C_ALT_MASK = GPIO_C_ALT_OUTPUT_MASK
+      | (8'b1 << GPIO_C_UART_RX_PIN) | (8'b1 << GPIO_C_TIMER_A_CAPTURE1_PIN);
 endpackage

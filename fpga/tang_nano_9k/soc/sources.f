@@ -30,6 +30,7 @@ rtl/peripherals/uart/uart_bit_timer.sv
 rtl/peripherals/uart/uart_rx.sv
 rtl/peripherals/uart/uart_tx.sv
 rtl/peripherals/timer_a/timer_a_compare_module.sv
+rtl/peripherals/timer_a/timer_a_capture_module.sv
 rtl/peripherals/timer_a/timer_a_module.sv
 rtl/peripherals/peripheral_manager.sv
 rtl/core/pipeline_registers/ex_mem_reg.sv

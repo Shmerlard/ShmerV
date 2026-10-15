@@ -21,6 +21,7 @@
 #define PORTC_UART_RX_PIN 0x02u /* C.1 */
 #define PORTC_TA_COMPARE1_PIN 0x80u /* C.7 */
 #define PORTC_TA_COMPARE2_PIN 0x40u /* C.6 */
+#define PORTC_TA_CAPTURE1_PIN 0x20u /* C.5, synchronized input */
 
 /* Volatile byte/halfword MMIO access at a mapped address. */
 #define SHMERV_MMIO8(address) (*(volatile uint8_t *)(uintptr_t)(address))

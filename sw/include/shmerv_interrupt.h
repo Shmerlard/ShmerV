@@ -8,6 +8,7 @@
 #define SHMERV_IRQ_TIMER_A_OVERFLOW "TIMER_A_OVERFLOW" /* Cause 20. */
 #define SHMERV_IRQ_TIMER_A_COMPARE_1  "TIMER_A_COMPARE_1"  /* Cause 21 */
 #define SHMERV_IRQ_TIMER_A_COMPARE_2  "TIMER_A_COMPARE_2"  /* Cause 22 */
+#define SHMERV_IRQ_TIMER_A_CAPTURE_1  "TIMER_A_CAPTURE_1"  /* Cause 23 */
 
 /* Cause 16: UART RX pending. Reading UART_RX_DATA acknowledges it.
    Select PORTC_UART_RX_PIN in PORTC_SEL, and set UART_ENABLE and UART_RX_IE. */

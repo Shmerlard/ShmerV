@@ -12,7 +12,6 @@ module timer_a_compare_module #(
     output logic [WIDTH-1:0] comp_reg_read_data_o,
     input  logic             cr0_eq_tar,
     output logic             pwm_o,
-    input  logic             timer_a_interrupt_enable_i,
     output logic             irq_o
 );
   logic                [WIDTH-1:0] compare_reg;
@@ -49,8 +48,7 @@ module timer_a_compare_module #(
   always_comb begin
     cr_eq_tar = (compare_reg == timer_a_counter_i);
     enter_interupt = tick_enable_i && cr_eq_tar;
-    irq_o = compare_reg_ctrl.interrupt_pending && compare_reg_ctrl.interrupt_enable
-            && timer_a_interrupt_enable_i;
+    irq_o = compare_reg_ctrl.interrupt_pending && compare_reg_ctrl.interrupt_enable;
   end
 
   // Setting the pwm

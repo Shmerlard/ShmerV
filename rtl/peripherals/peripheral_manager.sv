@@ -86,6 +86,7 @@ module peripheral_manager #(
   logic timer_read_enable, timer_write_enable;
   logic [15:0] timer_read_data;
   logic timer_pwm1, timer_pwm2;
+  logic timer_capture1;
   logic [7:0] gpio2_alt_out;
   ta_irq_t timer_irq;
 
@@ -145,11 +146,11 @@ module peripheral_manager #(
           ? (&write_byte_enable_i[1:0]) : write_byte_enable_i[0]);
   assign uart_read_enable = read_enable_i && uart_address_hit;
 
-  // Timer A accepts seven aligned registers and full 16-bit writes.
+  // Timer A accepts aligned base/compare/capture registers and full 16-bit writes.
   assign timer_address_offset = address_i - TIMER_A_BASE;
   assign timer_address_hit = address_i >= TIMER_A_BASE
     && timer_address_offset < TIMER_A_SIZE_BYTES
-    && timer_address_offset <= (32'(TA_CTRL_ADDRESS) << 2)
+    && timer_address_offset <= (32'(TA_CAPTURE1_DELTA_ADDRESS) << 2)
     && timer_address_offset[1:0] == 2'b00;
   assign timer_register_address = ta_register_address_t'(timer_address_offset[5:2]);
   assign timer_read_enable = read_enable_i && timer_address_hit;
@@ -178,6 +179,9 @@ module peripheral_manager #(
     end else if (timer_irq.ta_irq_compare_2) begin
       irq_o = 1'b1;
       irq_address_o = IRQ_ADDRESS_TIMER_A_COMPARE_2;
+    end else if (timer_irq.ta_irq_capture_1) begin
+      irq_o = 1'b1;
+      irq_address_o = IRQ_ADDRESS_TIMER_A_CAPTURE_1;
     end else if (uart_rx_irq) begin
       irq_o = 1'b1;
       irq_address_o = IRQ_ADDRESS_UART_RX;
@@ -261,6 +265,8 @@ module peripheral_manager #(
     gpio2_alt_out[GPIO_C_TIMER_A_COMPARE2_PIN] = timer_pwm2;
 
     uart_rx = gpio2_alt_sel[GPIO_C_UART_RX_PIN] ? gpio2_alt_in[GPIO_C_UART_RX_PIN] : 1'b1;
+    timer_capture1 = gpio2_alt_sel[GPIO_C_TIMER_A_CAPTURE1_PIN]
+        && gpio2_alt_in[GPIO_C_TIMER_A_CAPTURE1_PIN];
   end
 
   gpio_module #(
@@ -306,6 +312,7 @@ module peripheral_manager #(
   ) timer_a (
       .clk(clk),
       .rst(rst),
+      .capture_1_i(timer_capture1),
       .pwm_1_o(timer_pwm1),
       .pwm_2_o(timer_pwm2),
       .ta_irq_o(timer_irq),

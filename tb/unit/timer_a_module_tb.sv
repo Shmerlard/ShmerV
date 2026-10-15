@@ -4,6 +4,9 @@ import timer_a_types::*;
 module timer_a_module_tb;
   logic clk = 0;
   logic rst;
+  logic capture_1_i = 0;
+  ta_capture_control_t capture_control;
+  logic [15:0] captured_start, captured_end;
   logic pwm_1_o, pwm_2_o;
   ta_irq_t ta_irq_o;
   ta_register_address_t register_address_i;
@@ -89,7 +92,7 @@ module timer_a_module_tb;
     read_check(TA_COMP1_ADDRESS, 2);
     read_check(TA_COMP2_ADDRESS, 7);
 
-    // All divider ratios, including preservation of divider phase at halt.
+    // Original divider ratios, including preservation of divider phase at halt.
     for (int div_index = 0; div_index < 5; div_index++) begin
       reset_timer();
       write_reg(TA_PERIOD_ADDRESS, 100);
@@ -97,6 +100,13 @@ module timer_a_module_tb;
       for (int n = 1; n <= 32; n++) begin
         read_check(TA_ADDRESS, 16'((n - 1) / (1 << div_index)));
       end
+    end
+    // Divide by 1024: check both boundaries and every intervening cycle.
+    reset_timer();
+    write_reg(TA_CTRL_ADDRESS, control(TA_MODE_CONTINUOUS, TIMER_A_CLK_DIV_1024));
+    read_check(TA_CTRL_ADDRESS, control(TA_MODE_CONTINUOUS, TIMER_A_CLK_DIV_1024));
+    for (int n = 2; n <= 2050; n++) begin
+      read_check(TA_ADDRESS, 16'((n - 1) / 1024));
     end
     reset_timer();
     write_reg(TA_PERIOD_ADDRESS, 100);
@@ -122,7 +132,7 @@ module timer_a_module_tb;
     assert (ta_irq_o == '0)
     else $fatal(1, "Event fired on arrival instead of departure");
     cycle();
-    assert (ta_irq_o == 3'b111 && !pwm_1_o && pwm_2_o)
+    assert (ta_irq_o == 4'b1110 && !pwm_1_o && pwm_2_o)
     else $fatal(1, "Simultaneous wrap/compare or PWM priority failed");
     // Halt preserves flags; disabling the global gate suppresses all outputs.
     write_reg(TA_CTRL_ADDRESS, control(TA_MODE_HALT, TIMER_A_CLK_DIV_1, 0) | 16'd1);
@@ -130,7 +140,7 @@ module timer_a_module_tb;
     else $fatal(1, "Global disable failed");
     repeat (3) cycle();
     write_reg(TA_CTRL_ADDRESS, control(TA_MODE_HALT, TIMER_A_CLK_DIV_1) | 16'd1);
-    assert (ta_irq_o == 3'b111)
+    assert (ta_irq_o == 4'b1110)
     else $fatal(1, "Pending was lost while halted/disabled");
     write_reg(TA_COMP1_CTRL_ADDRESS, compare_control(TIMER_A_OUTPUT_MODE_SET_RESET));
     write_reg(TA_COMP2_CTRL_ADDRESS, compare_control(TIMER_A_OUTPUT_MODE_TOGGLE_SET));
@@ -258,6 +268,50 @@ module timer_a_module_tb;
     read_check(TA_ADDRESS, 0);
     assert (ta_irq_o == '0)
     else $fatal(1, "Unsupported mode produced an event");
+    reset_timer();
+    // Manual capture through the timer register bus, spanning a real wrap.
+    capture_control = '0;
+    capture_control.capture_enable = 1;
+    capture_control.irq_mode = CAPTURE_IRQ_CAPTURE_DONE;
+    capture_control.interrupt_pending = 1;
+    write_reg(TA_CAPTURE1_CTRL_ADDRESS, 16'(capture_control));
+    cycle();
+    write_reg(TA_ADDRESS, 16'hFFF0);
+    write_reg(TA_CTRL_ADDRESS, control(TA_MODE_CONTINUOUS, TIMER_A_CLK_DIV_1));
+    capture_control.capture_in = 1;
+    write_reg(TA_CAPTURE1_CTRL_ADDRESS, 16'(capture_control));
+    cycle();
+    register_address_i = TA_CAPTURE1_START_ADDRESS;
+    timer_a_read_enable_i = 1;
+    cycle();
+    timer_a_read_enable_i = 0;
+    captured_start = timer_a_data_read_o;
+    assert (captured_start >= 16'hFFF0) else $fatal(1, "START was not captured before wrap");
+    repeat (25) cycle();
+    capture_control.capture_in = 0;
+    write_reg(TA_CAPTURE1_CTRL_ADDRESS, 16'(capture_control));
+    cycle();
+    cycle();
+    assert (ta_irq_o.ta_irq_capture_1) else $fatal(1, "Missing integrated capture IRQ");
+    register_address_i = TA_CAPTURE1_END_ADDRESS;
+    timer_a_read_enable_i = 1;
+    cycle();
+    timer_a_read_enable_i = 0;
+    captured_end = timer_a_data_read_o;
+    assert (captured_end < captured_start) else $fatal(1, "Expected wrapped END");
+    // Single shot stopped, pending set, and one short wrap is not overflow.
+    capture_control.capture_enable = 0;
+    read_check(TA_CAPTURE1_CTRL_ADDRESS, 16'(capture_control));
+    // Global timer masking must not erase the capture pending flag.
+    write_reg(TA_CTRL_ADDRESS, control(TA_MODE_HALT, TIMER_A_CLK_DIV_1, 0, 0));
+    assert (!ta_irq_o.ta_irq_capture_1) else $fatal(1, "Capture ignored global IRQ mask");
+    read_check(TA_CAPTURE1_CTRL_ADDRESS, 16'(capture_control));
+    write_reg(TA_CTRL_ADDRESS, control(TA_MODE_HALT, TIMER_A_CLK_DIV_1, 1, 0));
+    assert (ta_irq_o.ta_irq_capture_1) else $fatal(1, "Capture pending lost while masked");
+    read_check(TA_CAPTURE1_DELTA_ADDRESS, 16'(captured_end - captured_start));
+    assert (!ta_irq_o.ta_irq_capture_1) else $fatal(1, "DELTA read did not clear capture IRQ");
+    // Non-capture timer reads still use the original one-cycle path.
+    read_check(TA_CTRL_ADDRESS, control(TA_MODE_HALT, TIMER_A_CLK_DIV_1, 1, 0));
     reset_timer();
     $display("Timer A unit tests passed");
     $finish;
