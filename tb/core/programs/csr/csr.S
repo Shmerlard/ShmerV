@@ -56,5 +56,22 @@ _start:
   csrrci x0, mtvec, 12
   csrrci x19, mtvec, 0
 
+  # CSR result (old value) must forward to both EX operands, beating older WB.
+  addi x28, x0, 65
+  csrrw x0, mtvec, x28
+  addi x20, x0, 1
+  csrrwi x20, mtvec, 21
+  add x21, x20, x20
+
+  # New ALU result in MEM must beat the older CSR result in WB.
+  csrrs x22, mtvec, x0
+  addi x22, x0, 7
+  add x23, x22, x22
+
+  # CSR from WB and ALU from MEM feed different operands of the same consumer.
+  csrrs x24, mtvec, x0
+  addi x25, x0, 9
+  add x26, x24, x25
+
 _test_end:
   j _test_end

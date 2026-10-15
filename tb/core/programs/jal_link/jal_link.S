@@ -17,10 +17,9 @@ _start:
   addi x6, x0, 2
 
 target:
-  .rept 4
-  nop
-  .endr
-
+  # First target instruction consumes the link on both operands.
+  # EX-stage redirect inserts bubbles: the link need not still be in MEM.
+  add x6, x5, x5
   sw x5, 0(x10)
   .rept 8
   nop

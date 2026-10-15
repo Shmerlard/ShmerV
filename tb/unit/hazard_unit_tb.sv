@@ -198,6 +198,40 @@ module hazard_unit_tb;
       check_outputs();
     end
 
+    // Each non-load MEM source must win over WB for either/both operands.
+    rs1_ex_i = 5'd9;
+    rs2_ex_i = 5'd9;
+    rd_mem_i = 5'd9;
+    rd_wb_i = 5'd9;
+    valid_mem_i = 1;
+    valid_wb_i = 1;
+    reg_write_mem_i = 1;
+    reg_write_wb_i = 1;
+    for (int source = 0; source < 3; source++) begin
+      case (source)
+        0: writeback_source_mem_i = WRITEBACK_SOURCE_ALU;
+        1: writeback_source_mem_i = WRITEBACK_SOURCE_PC4;
+        2: writeback_source_mem_i = WRITEBACK_SOURCE_CSR;
+        default: ;
+      endcase
+      #1ns;
+      assert (rs1_forwarding_source_o == FORWARD_SOURCE_MEM
+              && rs2_forwarding_source_o == FORWARD_SOURCE_MEM)
+      else $fatal(1, "MEM priority failed for source %0d", source);
+      valid_mem_i = 0;
+      #1ns;
+      assert (rs1_forwarding_source_o == FORWARD_SOURCE_WB
+              && rs2_forwarding_source_o == FORWARD_SOURCE_WB)
+      else $fatal(1, "Invalid MEM blocked WB");
+      valid_mem_i = 1;
+      reg_write_mem_i = 0;
+      #1ns;
+      assert (rs1_forwarding_source_o == FORWARD_SOURCE_WB
+              && rs2_forwarding_source_o == FORWARD_SOURCE_WB)
+      else $fatal(1, "Disabled MEM write blocked WB");
+      reg_write_mem_i = 1;
+    end
+
     $display("hazard_unit tests passed");
     $finish;
   end

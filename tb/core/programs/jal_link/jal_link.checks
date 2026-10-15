@@ -1,2 +1,3 @@
 memory 80000100
 register 5
+register 6
