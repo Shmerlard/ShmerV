@@ -1,3 +1,5 @@
+import hdmi_types::*;
+
 module hdmi_font_rom #(
     parameter string FONT_FILE = "rtl/peripherals/hdmi/fonts/NICER40C.hex"
 ) (
@@ -21,25 +23,24 @@ module hdmi_font_rom #(
 
   // Fixed VGA text palette. RGB byte order: red, green, blue.
   // Palette lookup is combinational; it adds no clock-cycle latency.
-  // TODO: add as enum in TYPES, and to C header file
   always_comb begin
-    case (color_index_i)
-      4'h0: color_rgb_o = 24'h000000;  // Black
-      4'h1: color_rgb_o = 24'h0000AA;  // Blue
-      4'h2: color_rgb_o = 24'h00AA00;  // Green
-      4'h3: color_rgb_o = 24'h00AAAA;  // Cyan
-      4'h4: color_rgb_o = 24'hAA0000;  // Red
-      4'h5: color_rgb_o = 24'hAA00AA;  // Magenta
-      4'h6: color_rgb_o = 24'hAA5500;  // Brown
-      4'h7: color_rgb_o = 24'hAAAAAA;  // Light gray
-      4'h8: color_rgb_o = 24'h555555;  // Dark gray
-      4'h9: color_rgb_o = 24'h5555FF;  // Light blue
-      4'hA: color_rgb_o = 24'h55FF55;  // Light green
-      4'hB: color_rgb_o = 24'h55FFFF;  // Light cyan
-      4'hC: color_rgb_o = 24'hFF5555;  // Light red
-      4'hD: color_rgb_o = 24'hFF55FF;  // Light magenta
-      4'hE: color_rgb_o = 24'hFFFF55;  // Yellow
-      4'hF: color_rgb_o = 24'hFFFFFF;  // White
+    case (hdmi_color_t'(color_index_i))
+      HDMI_COLOR_BLACK: color_rgb_o = 24'h000000;  // Black
+      HDMI_COLOR_BLUE: color_rgb_o = 24'h0000AA;  // Blue
+      HDMI_COLOR_GREEN: color_rgb_o = 24'h00AA00;  // Green
+      HDMI_COLOR_CYAN: color_rgb_o = 24'h00AAAA;  // Cyan
+      HDMI_COLOR_RED: color_rgb_o = 24'hAA0000;  // Red
+      HDMI_COLOR_MAGENTA: color_rgb_o = 24'hAA00AA;  // Magenta
+      HDMI_COLOR_BROWN: color_rgb_o = 24'hAA5500;  // Brown
+      HDMI_COLOR_LIGHT_GRAY: color_rgb_o = 24'hAAAAAA;  // Light gray
+      HDMI_COLOR_DARK_GRAY: color_rgb_o = 24'h555555;  // Dark gray
+      HDMI_COLOR_LIGHT_BLUE: color_rgb_o = 24'h5555FF;  // Light blue
+      HDMI_COLOR_LIGHT_GREEN: color_rgb_o = 24'h55FF55;  // Light green
+      HDMI_COLOR_LIGHT_CYAN: color_rgb_o = 24'h55FFFF;  // Light cyan
+      HDMI_COLOR_LIGHT_RED: color_rgb_o = 24'hFF5555;  // Light red
+      HDMI_COLOR_LIGHT_MAGENTA: color_rgb_o = 24'hFF55FF;  // Light magenta
+      HDMI_COLOR_YELLOW: color_rgb_o = 24'hFFFF55;  // Yellow
+      HDMI_COLOR_WHITE: color_rgb_o = 24'hFFFFFF;  // White
       default: color_rgb_o = 24'h000000;
     endcase
   end

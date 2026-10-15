@@ -22,7 +22,7 @@ int main(void)
 {
     uint8_t cursor_row = 0u;
     uint8_t cursor_col = 0u;
-    uint8_t color = 0x10;
+    uint8_t color = 0xF0;
     UART_CTRL = 0u;
 
     PORTC_DIR &= ~PORTC_UART_RX_PIN;
@@ -52,7 +52,7 @@ int main(void)
                 cursor_row++;
                 if (cursor_row >= 30) cursor_row = 0;
             }
-            color += (1 << 4);
+            // color += (1 << 4);
         }
     }
 }

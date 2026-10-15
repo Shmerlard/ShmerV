@@ -9,6 +9,12 @@ Use `ShmerV.h` for shared MMIO definitions rather than duplicating addresses in
 programs. Peripheral bases match `rtl/types/soc_address_map.sv`; local register
 indices remain in the peripheral packages.
 
+`shmerv_memory_map.h` contains MMIO region bases, address-window sizes, SoC pin
+connections, and shared volatile MMIO access macros.
+Register offsets, access macros, and bit definitions live in `shmerv_gpio.h`
+(shared by ports A/B/C), `shmerv_uart.h`, `shmerv_timer.h`, and `shmerv_hdmi.h`.
+`ShmerV.h` includes all of these headers so existing programs retain the same interface.
+
 From the repository root, build either source type into an ELF, binary, and
 hex memory image:
 

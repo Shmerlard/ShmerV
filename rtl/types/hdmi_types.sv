@@ -1,4 +1,24 @@
 package hdmi_types;
+  // Fixed VGA text palette indices; match sw/include/shmerv_hdmi.h.
+  typedef enum logic [3:0] {
+    HDMI_COLOR_BLACK = 4'h0,
+    HDMI_COLOR_BLUE = 4'h1,
+    HDMI_COLOR_GREEN = 4'h2,
+    HDMI_COLOR_CYAN = 4'h3,
+    HDMI_COLOR_RED = 4'h4,
+    HDMI_COLOR_MAGENTA = 4'h5,
+    HDMI_COLOR_BROWN = 4'h6,
+    HDMI_COLOR_LIGHT_GRAY = 4'h7,
+    HDMI_COLOR_DARK_GRAY = 4'h8,
+    HDMI_COLOR_LIGHT_BLUE = 4'h9,
+    HDMI_COLOR_LIGHT_GREEN = 4'hA,
+    HDMI_COLOR_LIGHT_CYAN = 4'hB,
+    HDMI_COLOR_LIGHT_RED = 4'hC,
+    HDMI_COLOR_LIGHT_MAGENTA = 4'hD,
+    HDMI_COLOR_YELLOW = 4'hE,
+    HDMI_COLOR_WHITE = 4'hF
+  } hdmi_color_t;
+
   typedef struct packed {
     logic [7:0] char_code;
     logic [3:0] fg_col;
