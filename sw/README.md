@@ -40,8 +40,8 @@ the simulated memory.
 `timer_overflow` configures Timer A in repeating up mode with divide-by-16.
 Its cause-20 interrupt handler toggles GPIO2.2 and clears overflow pending.
 At the default 843750 Hz CPU clock, it toggles roughly twice per second.
-CCR1/CCR2 generate 75%/25% PWM on GPIO2.7/GPIO2.6; compare interrupts are disabled.
-Causes 20/21/22 have weak runtime entries for overflow, CCR1, and CCR2;
+COMPARE1/COMPARE2 generate 75%/25% PWM on GPIO2.7/GPIO2.6; compare interrupts are disabled.
+Causes 20/21/22 have weak runtime entries for overflow, COMPARE1, and COMPARE2;
 programs can override them with `SHMERV_INTERRUPT(SHMERV_IRQ_TIMER_A_OVERFLOW, handler)`
 or `SHMERV_INTERRUPT(SHMERV_IRQ_TIMER_A_COMPARE_1, handler)` /
 `SHMERV_INTERRUPT(SHMERV_IRQ_TIMER_A_COMPARE_2, handler)`. Unused entries retain the

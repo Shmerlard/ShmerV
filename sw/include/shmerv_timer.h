@@ -5,18 +5,18 @@
 
 /* Timer A registers are 16 bits wide, at four-byte-spaced addresses. */
 #define TA_PERIOD_OFFSET    0x00u
-#define TA_CCR1_OFFSET      0x04u
-#define TA_CCR1_CTRL_OFFSET 0x08u
-#define TA_CCR2_OFFSET      0x0Cu
-#define TA_CCR2_CTRL_OFFSET 0x10u
+#define TA_COMPARE1_OFFSET      0x04u
+#define TA_COMPARE1_CTRL_OFFSET 0x08u
+#define TA_COMPARE2_OFFSET      0x0Cu
+#define TA_COMPARE2_CTRL_OFFSET 0x10u
 #define TA_COUNTER_OFFSET   0x14u
 #define TA_CTRL_OFFSET      0x18u
 
 #define TA_PERIOD    SHMERV_MMIO16(TIMER_A_BASE + TA_PERIOD_OFFSET)
-#define TA_CCR1      SHMERV_MMIO16(TIMER_A_BASE + TA_CCR1_OFFSET)
-#define TA_CCR1_CTRL SHMERV_MMIO16(TIMER_A_BASE + TA_CCR1_CTRL_OFFSET)
-#define TA_CCR2      SHMERV_MMIO16(TIMER_A_BASE + TA_CCR2_OFFSET)
-#define TA_CCR2_CTRL SHMERV_MMIO16(TIMER_A_BASE + TA_CCR2_CTRL_OFFSET)
+#define TA_COMPARE1      SHMERV_MMIO16(TIMER_A_BASE + TA_COMPARE1_OFFSET)
+#define TA_COMPARE1_CTRL SHMERV_MMIO16(TIMER_A_BASE + TA_COMPARE1_CTRL_OFFSET)
+#define TA_COMPARE2      SHMERV_MMIO16(TIMER_A_BASE + TA_COMPARE2_OFFSET)
+#define TA_COMPARE2_CTRL SHMERV_MMIO16(TIMER_A_BASE + TA_COMPARE2_CTRL_OFFSET)
 #define TA_COUNTER   SHMERV_MMIO16(TIMER_A_BASE + TA_COUNTER_OFFSET)
 #define TA_CTRL      SHMERV_MMIO16(TIMER_A_BASE + TA_CTRL_OFFSET)
 
@@ -43,7 +43,7 @@
 #define TA_MODE_UP          0x0040u
 #define TA_MODE_CONTINUOUS  0x00C0u
 
-/* TA_CCR1_CTRL / TA_CCR2_CTRL:
+/* TA_COMPARE1_CTRL / TA_COMPARE2_CTRL:
    [15:6] unused
    [5:3] output mode (0: manual, 1: set, 2: toggle/reset, 3: set/reset,
          4: toggle, 5: reset, 6: toggle/set)
@@ -51,16 +51,16 @@
    [1] compare interrupt enable
    [0] compare pending (write zero to clear; preserve other fields)
  */
-#define TA_CCR_PENDING      0x0001u
-#define TA_CCR_IE           0x0002u
-#define TA_CCR_MANUAL_OUT   0x0004u
-#define TA_CCR_OUTPUT_MASK  0x0038u
-#define TA_CCR_MANUAL       0x0000u
-#define TA_CCR_SET          0x0008u
-#define TA_CCR_TOGGLE_RESET 0x0010u
-#define TA_CCR_SET_RESET    0x0018u
-#define TA_CCR_TOGGLE       0x0020u
-#define TA_CCR_RESET        0x0028u
-#define TA_CCR_TOGGLE_SET   0x0030u
+#define TA_COMPARE_PENDING      0x0001u
+#define TA_COMPARE_IE           0x0002u
+#define TA_COMPARE_MANUAL_OUT   0x0004u
+#define TA_COMPARE_OUTPUT_MASK  0x0038u
+#define TA_COMPARE_MANUAL       0x0000u
+#define TA_COMPARE_SET          0x0008u
+#define TA_COMPARE_TOGGLE_RESET 0x0010u
+#define TA_COMPARE_SET_RESET    0x0018u
+#define TA_COMPARE_TOGGLE       0x0020u
+#define TA_COMPARE_RESET        0x0028u
+#define TA_COMPARE_TOGGLE_SET   0x0030u
 
 #endif

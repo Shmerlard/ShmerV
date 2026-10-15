@@ -196,19 +196,19 @@ module peripheral_manager_tb;
     assert (!irq_o)
     else $fatal(1, "Timer IRQ unexpectedly routed to CPU");
 
-    // GPIO2.7 = CCR1 output, GPIO2.6 = CCR2 output; GPIO2.0 remains UART.
+    // GPIO2.7 = COMPARE1 output, GPIO2.6 = COMPARE2 output; GPIO2.0 remains UART.
     write_register(Gpio2BaseAddress, 5'h03, 32'hC1, 4'b0001);
     write_register(GpioBaseAddress + 32'h400, 5'h02, 32'h4, 4'b0011);
     write_register(GpioBaseAddress + 32'h400, 5'h04, 32'h0, 4'b0011);
     assert (gpio2_pin_oe_o == 8'hC1);
     assert (gpio2_pin_o[7:6] == 2'b10)
-    else $fatal(1, "CCR1 output did not reach GPIO2.7");
+    else $fatal(1, "COMPARE1 output did not reach GPIO2.7");
     write_register(GpioBaseAddress + 32'h400, 5'h02, 32'h0, 4'b0011);
     write_register(GpioBaseAddress + 32'h400, 5'h04, 32'h4, 4'b0011);
     @(posedge clk);
     #1ns;
     assert (gpio2_pin_o[7:6] == 2'b01)
-    else $fatal(1, "CCR2 output did not reach GPIO2.6");
+    else $fatal(1, "COMPARE2 output did not reach GPIO2.6");
     write_register(Gpio2BaseAddress, 5'h03, 32'h01, 4'b0001);
     assert (gpio2_pin_oe_o == 8'h01);
 
@@ -230,7 +230,7 @@ module peripheral_manager_tb;
     write_register(Gpio2BaseAddress, 5'h07, 32'hFF, 4'b0001);
     assert (!irq_o);
 
-    // Compare channels have separate sources: overflow > CCR1 > CCR2.
+    // Compare channels have separate sources: overflow > COMPARE1 > COMPARE2.
     write_register(GpioBaseAddress + 32'h400, 5'h02, 32'h3, 4'b0011);
     assert (irq_o && irq_address_o == IRQ_ADDRESS_TIMER_A_COMPARE_1);
     write_register(GpioBaseAddress + 32'h400, 5'h02, 32'h2, 4'b0011);

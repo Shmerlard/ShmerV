@@ -20,7 +20,7 @@ void compare1_handler(void)
 {
     check_interrupt(21u, 0u, 0u);
     PORTC_OUT |= LED1;
-    TA_CCR1_CTRL = TA_CCR_IE;
+    TA_COMPARE1_CTRL = TA_COMPARE_IE;
     phase = 1u;
     ++compare1_count;
 }
@@ -30,7 +30,7 @@ void compare2_handler(void)
 {
     check_interrupt(22u, 1u, LED1);
     PORTC_OUT |= LED2;
-    TA_CCR2_CTRL = TA_CCR_IE;
+    TA_COMPARE2_CTRL = TA_COMPARE_IE;
     phase = 2u;
     ++compare2_count;
 }
@@ -56,17 +56,17 @@ int main(void)
     TA_COUNTER = 0u;
     /* UP mode counts 0..999: 1000 ticks per cycle. */
     TA_PERIOD = 999u;
-    TA_CCR1 = 250u;
-    TA_CCR2 = 750u;
-    TA_CCR1_CTRL = TA_CCR_IE;
-    TA_CCR2_CTRL = TA_CCR_IE;
+    TA_COMPARE1 = 250u;
+    TA_COMPARE2 = 750u;
+    TA_COMPARE1_CTRL = TA_COMPARE_IE;
+    TA_COMPARE2_CTRL = TA_COMPARE_IE;
     shmerv_interrupt_enable();
     TA_CTRL = TA_MODE_UP | TA_DIV_16 | TA_INTERRUPT_ENABLE | TA_OVERFLOW_IE;
 
     while (cycles < 3u) {}
     if (errors || compare1_count != 3u || compare2_count != 3u ||
         phase || PORTC_OUT || TA_CTRL ||
-        (TA_CCR1_CTRL & TA_CCR_PENDING) || (TA_CCR2_CTRL & TA_CCR_PENDING))
+        (TA_COMPARE1_CTRL & TA_COMPARE_PENDING) || (TA_COMPARE2_CTRL & TA_COMPARE_PENDING))
         return 2;
     return 1;
 }
