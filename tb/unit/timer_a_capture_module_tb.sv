@@ -33,7 +33,8 @@ module timer_a_capture_module_tb;
     repeat (2) tick();
     rst = 0;
     tick();
-    assert (!irq_o) else $fatal(1, "IRQ after reset");
+    assert (!irq_o)
+    else $fatal(1, "IRQ after reset");
   endtask
 
   task automatic write_control;
@@ -53,15 +54,13 @@ module timer_a_capture_module_tb;
     status = ta_capture_control_t'(capture_read_data_o);
   endtask
 
-  task automatic expect_register(input capture_selected_reg_t reg_sel,
-                                 input logic [15:0] expected);
+  task automatic expect_register(input capture_selected_reg_t reg_sel, input logic [15:0] expected);
     selected_reg = reg_sel;
     capture_read_enable_i = 1;
     tick();
     capture_read_enable_i = 0;
     assert (capture_read_data_o == expected)
-    else $fatal(1, "Register %0d: expected %h, got %h", reg_sel,
-                expected, capture_read_data_o);
+    else $fatal(1, "Register %0d: expected %h, got %h", reg_sel, expected, capture_read_data_o);
   endtask
 
   task automatic source_level(input logic level, input logic [15:0] counter);
@@ -75,16 +74,14 @@ module timer_a_capture_module_tb;
     end
   endtask
 
-  task automatic arm(input capture_edge_mode_t edges,
-                     input capture_input_mode_t source_mode,
-                     input capture_irq_mode_t irq_mode,
-                     input logic burst = 0);
+  task automatic arm(input capture_edge_mode_t edges, input capture_input_mode_t source_mode,
+                     input capture_irq_mode_t irq_mode, input logic burst = 0);
     control = '0;
     control.capture_edge = edges;
     control.capture_input_mode = source_mode;
     control.irq_mode = irq_mode;
     control.capture_burst_enable = burst;
-    control.interrupt_pending = 1; // Preserve pending on control writes.
+    control.interrupt_pending = 1;  // Preserve pending on control writes.
     control.capture_in = (edges == CAPTURE_FALL_TO_RISE || edges == CAPTURE_FALL_TO_FALL);
     ext_capture_i = control.capture_in;
     write_control();
@@ -101,18 +98,19 @@ module timer_a_capture_module_tb;
     tick();
   endtask
 
-  task automatic check_measurement(input logic [15:0] start_value,
-                                   input logic [15:0] end_value,
+  task automatic check_measurement(input logic [15:0] start_value, input logic [15:0] end_value,
                                    input logic overflow_expected);
-    tick(); // DONE commits delta and status.
+    tick();  // DONE commits delta and status.
     read_status();
     assert (status.capture_overflow == overflow_expected)
     else $fatal(1, "Wrong overflow status");
-    assert (!status.capture_enable) else $fatal(1, "Single shot rearmed");
+    assert (!status.capture_enable)
+    else $fatal(1, "Single shot rearmed");
     expect_register(CAPTURE_SEL_REG_START, start_value);
     expect_register(CAPTURE_SEL_REG_END, end_value);
     expect_register(CAPTURE_SEL_REG_DELTA, 16'(end_value - start_value));
-    assert (!irq_o) else $fatal(1, "DELTA read did not acknowledge IRQ");
+    assert (!irq_o)
+    else $fatal(1, "DELTA read did not acknowledge IRQ");
   endtask
 
   initial begin
@@ -124,15 +122,18 @@ module timer_a_capture_module_tb;
         arm(capture_edge_mode_t'(edges), capture_input_mode_t'(source_mode),
             CAPTURE_IRQ_CAPTURE_DONE);
         source_level(edges == 0 || edges == 2, 100);
-        assert (!irq_o) else $fatal(1, "DONE IRQ at START");
+        assert (!irq_o)
+        else $fatal(1, "DONE IRQ at START");
         if (edges >= 2) source_level(edges == 3, 150);
         source_level(edges == 1 || edges == 2, 300);
         tick();
-        assert (irq_o) else $fatal(1, "Missing DONE IRQ");
+        assert (irq_o)
+        else $fatal(1, "Missing DONE IRQ");
         // Merely selecting DELTA without a read must not acknowledge pending.
         selected_reg = CAPTURE_SEL_REG_DELTA;
         tick();
-        assert (irq_o) else $fatal(1, "Address selection cleared pending");
+        assert (irq_o)
+        else $fatal(1, "Address selection cleared pending");
         check_measurement(100, 300, 0);
       end
     end
@@ -172,12 +173,15 @@ module timer_a_capture_module_tb;
     reset_dut();
     arm(CAPTURE_RISE_TO_FALL, CAPTURE_MODE_EXTERNAL, CAPTURE_IRQ_CAPTURE_START);
     source_level(1, 100);
-    assert (irq_o) else $fatal(1, "Missing START IRQ");
+    assert (irq_o)
+    else $fatal(1, "Missing START IRQ");
     write_control();
-    assert (irq_o) else $fatal(1, "Write one cleared pending");
+    assert (irq_o)
+    else $fatal(1, "Write one cleared pending");
     control.interrupt_pending = 0;
     write_control();
-    assert (!irq_o) else $fatal(1, "Write zero did not clear pending");
+    assert (!irq_o)
+    else $fatal(1, "Write zero did not clear pending");
 
     // New START wins over a simultaneous DELTA read acknowledgement.
     reset_dut();
@@ -186,7 +190,8 @@ module timer_a_capture_module_tb;
     capture_read_enable_i = 1;
     source_level(1, 100);
     capture_read_enable_i = 0;
-    assert (irq_o) else $fatal(1, "Read acknowledgement lost new event");
+    assert (irq_o)
+    else $fatal(1, "Read acknowledgement lost new event");
 
     // New START also wins over a simultaneous control write clearing pending.
     reset_dut();
@@ -197,7 +202,8 @@ module timer_a_capture_module_tb;
     capture_write_enable_i = 1;
     source_level(1, 100);
     capture_write_enable_i = 0;
-    assert (irq_o) else $fatal(1, "Control acknowledgement lost new event");
+    assert (irq_o)
+    else $fatal(1, "Control acknowledgement lost new event");
 
     // DONE wins over acknowledgement and remains visible after auto-disable.
     reset_dut();
@@ -208,7 +214,8 @@ module timer_a_capture_module_tb;
     capture_read_enable_i = 1;
     tick();
     capture_read_enable_i = 0;
-    assert (irq_o) else $fatal(1, "DONE event lost to DELTA read");
+    assert (irq_o)
+    else $fatal(1, "DONE event lost to DELTA read");
     read_status();
     assert (!status.capture_enable && status.interrupt_pending)
     else $fatal(1, "Single-shot completion lost pending");
@@ -250,7 +257,8 @@ module timer_a_capture_module_tb;
       expect_register(CAPTURE_SEL_REG_START, 16'(started != 0 ? 100 : 0));
       expect_register(CAPTURE_SEL_REG_END, 0);
       expect_register(CAPTURE_SEL_REG_DELTA, 0);
-      assert (!irq_o) else $fatal(1, "IRQ after aborted measurement");
+      assert (!irq_o)
+      else $fatal(1, "IRQ after aborted measurement");
     end
 
     // Continuous operation retains enable and replaces completed measurements.
@@ -274,16 +282,19 @@ module timer_a_capture_module_tb;
     source_level(0, 300);
     repeat (2) tick();
     read_status();
-    assert (status.capture_overflow) else $fatal(1, "Missing burst overflow");
+    assert (status.capture_overflow)
+    else $fatal(1, "Missing burst overflow");
     control.capture_overflow = 0;
     write_control();
     read_status();
-    assert (status.capture_overflow) else $fatal(1, "Software cleared RO overflow");
+    assert (status.capture_overflow)
+    else $fatal(1, "Software cleared RO overflow");
     source_level(1, 400);
     source_level(0, 500);
     repeat (2) tick();
     read_status();
-    assert (!status.capture_overflow) else $fatal(1, "Old overflow leaked into new result");
+    assert (!status.capture_overflow)
+    else $fatal(1, "Old overflow leaked into new result");
     expect_register(CAPTURE_SEL_REG_DELTA, 100);
 
     // Disabled and reserved IRQ modes never latch pending.
@@ -294,7 +305,8 @@ module timer_a_capture_module_tb;
       source_level(0, 300);
       tick();
       read_status();
-      assert (!status.interrupt_pending && !irq_o) else $fatal(1, "Masked IRQ event");
+      assert (!status.interrupt_pending && !irq_o)
+      else $fatal(1, "Masked IRQ event");
     end
     $display("timer capture tests passed");
     $finish;

@@ -26,10 +26,10 @@ package timer_a_types;
   } ta_operation_mode_t;
 
   typedef enum logic [2:0] {
-    TIMER_A_CLK_DIV_1  = 3'd0,
-    TIMER_A_CLK_DIV_2  = 3'd1,
-    TIMER_A_CLK_DIV_4  = 3'd2,
-    TIMER_A_CLK_DIV_8  = 3'd3,
+    TIMER_A_CLK_DIV_1 = 3'd0,
+    TIMER_A_CLK_DIV_2 = 3'd1,
+    TIMER_A_CLK_DIV_4 = 3'd2,
+    TIMER_A_CLK_DIV_8 = 3'd3,
     TIMER_A_CLK_DIV_16 = 3'd4,
     TIMER_A_CLK_DIV_1024 = 3'd5
   } ta_clock_div_t;

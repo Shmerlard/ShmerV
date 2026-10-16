@@ -29,12 +29,15 @@
         <File path="rtl/core/stages/wb_stage.sv" type="file.verilog" enable="1"/>
         <File path="rtl/core/trap_control_unit.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/gpio_module.sv" type="file.verilog" enable="1"/>
+        <File path="rtl/peripherals/hdmi/hdmi_blink_module.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/hdmi/hdmi_char_memory.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/hdmi/hdmi_font_rom.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/hdmi/hdmi_module.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/hdmi/hdmi_pixel_generator.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/hdmi/hdmi_timer_module.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/hdmi/hdmi_tmds_encoder.sv" type="file.verilog" enable="1"/>
+        <File path="rtl/peripherals/hdmi/hdmi_text_renderer.sv" type="file.verilog" enable="1"/>
+        <File path="rtl/peripherals/hdmi/hdmi_video_output.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/peripheral_manager.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/timer_a/timer_a_capture_module.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/timer_a/timer_a_compare_module.sv" type="file.verilog" enable="1"/>

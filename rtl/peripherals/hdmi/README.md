@@ -19,9 +19,22 @@ Upper bytes are ignored. Byte writes and unaligned slots are unsupported.
 The word stride uses 9600 address bytes but only 4800 bytes of RAM.
 The last cell slot is `0x1000457C`.
 
-`hdmi_module` owns one font ROM and palette, accessed by the generator through
-request/response ports. The temporary CPU font window was removed.
-Control registers are not implemented.
+`hdmi_module` connects the existing register logic, character memory, text
+renderer, and video output. The register interface is still incomplete;
+no new controller behavior is implemented by this reorganization.
+
+- `hdmi_char_memory` contains only dual-clock character storage and CPU/display ports.
+- `hdmi_text_renderer` owns the pixel generator, one font ROM with its palette,
+  and the blink module. It substitutes a white-on-black underscore for the
+  visible cursor without modifying RAM, retaining the one-clock RAM response.
+- `hdmi_video_output` owns the timer and three TMDS encoders. It supplies
+  coordinates/active-video to the renderer and encodes its RGB output.
+
+The temporary cursor remains enabled and blinking at cell (0,0), with 500 ms
+visible/hidden intervals at the configured CPU clock. Its existing CPU-to-pixel
+clock sampling is unchanged. The temporary CPU font window remains removed.
+The two new wrapper files must be added to external explicit source lists;
+those lists are intentionally outside this change's scope.
 
 ## Rendering
 
@@ -35,6 +48,10 @@ TMDS channels 0/1/2 carry blue/green/red. Blue also carries active-low sync;
 the encoders add one pixel-clock delay. Disabling the generator produces
 black video while timing continues.
 
+Character RAM now allocates 80×51 cells (8160 bytes); the visible area and
+existing MMIO mapping remain unchanged. Window scrolling is not implemented.
+The existing coordinate type still has a five-bit row, so rows 32–50 are
+not yet addressable through these ports; widening it is outside this change.
 Character RAM optionally loads `INIT_FILE` at configuration, never on reset.
 The board currently selects [char_demo.hex](examples/char_demo.hex).
 CPU writes replace its contents normally.

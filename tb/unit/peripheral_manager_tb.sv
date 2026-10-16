@@ -268,7 +268,8 @@ module peripheral_manager_tb;
     gpio2_pin_i = 0;
     write_register(Gpio2BaseAddress, 5'h02, 32'hFF, 4'b0001);
     write_register(Gpio2BaseAddress, 5'h03, 32'h20, 4'b0001);
-    assert (!gpio2_pin_oe_o[5]) else $fatal(1, "Capture alternate pin drives output");
+    assert (!gpio2_pin_oe_o[5])
+    else $fatal(1, "Capture alternate pin drives output");
     // CTRL: external, enabled, DONE IRQ, preserve pending.
     write_register(GpioBaseAddress + 32'h400, 5'h07, 32'hA5, 4'b0011);
     check_read(GpioBaseAddress + 32'h41C, 32'hA4);
@@ -289,7 +290,7 @@ module peripheral_manager_tb;
     repeat (20) @(negedge clk);
     gpio2_pin_i[5] = 0;
     repeat (6) @(negedge clk);
-    check_read(GpioBaseAddress + 32'h41C, 32'h85); // Single shot off, pending on.
+    check_read(GpioBaseAddress + 32'h41C, 32'h85);  // Single shot off, pending on.
     assert (irq_o && irq_address_o == IRQ_ADDRESS_TIMER_A_CAPTURE_1)
     else $fatal(1, "Capture IRQ was not routed");
     // Compare channels and overflow have priority over a pending capture.
@@ -304,14 +305,16 @@ module peripheral_manager_tb;
     write_register(GpioBaseAddress + 32'h400, 5'h04, 32'h2, 4'b0011);
     assert (irq_o && irq_address_o == IRQ_ADDRESS_TIMER_A_CAPTURE_1);
     write_register(GpioBaseAddress + 32'h400, 5'h06, 0, 4'b0011);
-    assert (!irq_o) else $fatal(1, "Capture ignored timer global mask");
+    assert (!irq_o)
+    else $fatal(1, "Capture ignored timer global mask");
     write_register(GpioBaseAddress + 32'h400, 5'h06, 32'h4, 4'b0011);
     assert (irq_o && irq_address_o == IRQ_ADDRESS_TIMER_A_CAPTURE_1);
     // Writes to DELTA are ignored and must not acknowledge pending.
     write_register(GpioBaseAddress + 32'h400, 5'h0A, 32'hFFFF, 4'b0011);
     check_read(GpioBaseAddress + 32'h41C, 32'h85);
     check_read(GpioBaseAddress + 32'h428, 20);
-    assert (!irq_o) else $fatal(1, "Capture IRQ remained after DELTA acknowledgement");
+    assert (!irq_o)
+    else $fatal(1, "Capture IRQ remained after DELTA acknowledgement");
     check_read(GpioBaseAddress + 32'h41C, 32'h84);
     // Reject offsets beyond capture DELTA rather than aliasing registers.
     write_register(GpioBaseAddress + 32'h400, 5'h0B, 32'hFFFF, 4'b0011);

@@ -176,13 +176,16 @@ module mem_stage_tb;
     csr_load_data_i = 32'hABCD_0065;
     writeback_control_i.writeback_source = WRITEBACK_SOURCE_ALU;
     #1ns;
-    assert (forward_data_o == 32'h1234_5678) else $fatal(1, "ALU forwarding data");
+    assert (forward_data_o == 32'h1234_5678)
+    else $fatal(1, "ALU forwarding data");
     writeback_control_i.writeback_source = WRITEBACK_SOURCE_PC4;
     #1ns;
-    assert (forward_data_o == 32'h8000_0044) else $fatal(1, "PC+4 forwarding data");
+    assert (forward_data_o == 32'h8000_0044)
+    else $fatal(1, "PC+4 forwarding data");
     writeback_control_i.writeback_source = WRITEBACK_SOURCE_CSR;
     #1ns;
-    assert (forward_data_o == 32'hABCD_0065) else $fatal(1, "CSR forwarding data");
+    assert (forward_data_o == 32'hABCD_0065)
+    else $fatal(1, "CSR forwarding data");
 
     $display("mem_stage tests passed");
     $finish;

@@ -5,11 +5,14 @@ rtl/types/uart_types.sv
 rtl/types/soc_address_map.sv
 rtl/types/gpio_types.sv
 rtl/types/hdmi_types.sv
+rtl/peripherals/hdmi/hdmi_blink_module.sv
 rtl/peripherals/hdmi/hdmi_char_memory.sv
 rtl/peripherals/hdmi/hdmi_font_rom.sv
 rtl/peripherals/hdmi/hdmi_timer_module.sv
 rtl/peripherals/hdmi/hdmi_pixel_generator.sv
 rtl/peripherals/hdmi/hdmi_tmds_encoder.sv
+rtl/peripherals/hdmi/hdmi_text_renderer.sv
+rtl/peripherals/hdmi/hdmi_video_output.sv
 rtl/peripherals/hdmi/hdmi_module.sv
 rtl/core/alu.sv
 rtl/core/controller.sv

@@ -3,7 +3,7 @@
 /* Default wiring: C.5 is low at rest and high while the button is pressed.
  * Set to 1 for a button that pulls the input low while pressed. */
 #ifndef CAPTURE_BUTTON_ACTIVE_LOW
-#define CAPTURE_BUTTON_ACTIVE_LOW 0
+#define CAPTURE_BUTTON_ACTIVE_LOW 1
 #endif
 
 #define TEXT_COLOR ((HDMI_COLOR_WHITE << 4) | HDMI_COLOR_BLACK)

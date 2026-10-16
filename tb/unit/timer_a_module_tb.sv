@@ -286,30 +286,36 @@ module timer_a_module_tb;
     cycle();
     timer_a_read_enable_i = 0;
     captured_start = timer_a_data_read_o;
-    assert (captured_start >= 16'hFFF0) else $fatal(1, "START was not captured before wrap");
+    assert (captured_start >= 16'hFFF0)
+    else $fatal(1, "START was not captured before wrap");
     repeat (25) cycle();
     capture_control.capture_in = 0;
     write_reg(TA_CAPTURE1_CTRL_ADDRESS, 16'(capture_control));
     cycle();
     cycle();
-    assert (ta_irq_o.ta_irq_capture_1) else $fatal(1, "Missing integrated capture IRQ");
+    assert (ta_irq_o.ta_irq_capture_1)
+    else $fatal(1, "Missing integrated capture IRQ");
     register_address_i = TA_CAPTURE1_END_ADDRESS;
     timer_a_read_enable_i = 1;
     cycle();
     timer_a_read_enable_i = 0;
     captured_end = timer_a_data_read_o;
-    assert (captured_end < captured_start) else $fatal(1, "Expected wrapped END");
+    assert (captured_end < captured_start)
+    else $fatal(1, "Expected wrapped END");
     // Single shot stopped, pending set, and one short wrap is not overflow.
     capture_control.capture_enable = 0;
     read_check(TA_CAPTURE1_CTRL_ADDRESS, 16'(capture_control));
     // Global timer masking must not erase the capture pending flag.
     write_reg(TA_CTRL_ADDRESS, control(TA_MODE_HALT, TIMER_A_CLK_DIV_1, 0, 0));
-    assert (!ta_irq_o.ta_irq_capture_1) else $fatal(1, "Capture ignored global IRQ mask");
+    assert (!ta_irq_o.ta_irq_capture_1)
+    else $fatal(1, "Capture ignored global IRQ mask");
     read_check(TA_CAPTURE1_CTRL_ADDRESS, 16'(capture_control));
     write_reg(TA_CTRL_ADDRESS, control(TA_MODE_HALT, TIMER_A_CLK_DIV_1, 1, 0));
-    assert (ta_irq_o.ta_irq_capture_1) else $fatal(1, "Capture pending lost while masked");
+    assert (ta_irq_o.ta_irq_capture_1)
+    else $fatal(1, "Capture pending lost while masked");
     read_check(TA_CAPTURE1_DELTA_ADDRESS, 16'(captured_end - captured_start));
-    assert (!ta_irq_o.ta_irq_capture_1) else $fatal(1, "DELTA read did not clear capture IRQ");
+    assert (!ta_irq_o.ta_irq_capture_1)
+    else $fatal(1, "DELTA read did not clear capture IRQ");
     // Non-capture timer reads still use the original one-cycle path.
     read_check(TA_CTRL_ADDRESS, control(TA_MODE_HALT, TIMER_A_CLK_DIV_1, 1, 0));
     reset_timer();

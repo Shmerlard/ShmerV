@@ -4,7 +4,7 @@ module timer_a_module #(
 ) (
     input logic clk,
     input logic rst,
-    input logic capture_1_i,  // Must already be synchronized to clk.
+    input logic capture_1_i, // Must already be synchronized to clk.
 
     output logic pwm_1_o,
     output logic pwm_2_o,
@@ -70,7 +70,7 @@ module timer_a_module #(
       TIMER_A_CLK_DIV_8:    divider_limit = 10'd7;
       TIMER_A_CLK_DIV_16:   divider_limit = 10'd15;
       TIMER_A_CLK_DIV_1024: divider_limit = 10'd1023;
-      default:             divider_limit = 10'd0;
+      default:              divider_limit = 10'd0;
     endcase
     tick_enable = !rst && timer_running && (divider_counter >= divider_limit);
   end

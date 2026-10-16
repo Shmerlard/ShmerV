@@ -1,4 +1,20 @@
 package hdmi_types;
+  typedef struct packed {
+    logic hdmi_enable;
+    logic cursor_enable;
+    logic cursor_blink;
+    logic write_wrap;
+    logic hdmi_ie;
+  } hdmi_ctrl_reg_t;
+
+  typedef enum logic [2:0] {
+    HDMI_ADDRESS_CTRL,
+    HDMI_ADDRESS_CHAR,
+    HDMI_ADDRESS_CURSOR_POS,
+    HDMI_ADDRESS_START_ROW,
+    HDMI_ADDRESS_WRITE_CHAR   // TODO: better name
+  } hdmi_address_t;
+
   // Fixed VGA text palette indices; match sw/include/shmerv_hdmi.h.
   typedef enum logic [3:0] {
     HDMI_COLOR_BLACK = 4'h0,

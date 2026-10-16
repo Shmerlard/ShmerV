@@ -327,7 +327,8 @@ module peripheral_manager #(
   if (ENABLE_HDMI) begin : generate_hdmi
     hdmi_module #(
         .FONT_FILE(HDMI_FONT_FILE),
-        .CHAR_INIT_FILE(HDMI_CHAR_INIT_FILE)
+        .CHAR_INIT_FILE(HDMI_CHAR_INIT_FILE),
+        .CPU_CLOCK_HZ(CLOCK_HZ)
     ) hdmi (
         .cpu_clk(clk),
         .pixel_clk(hdmi_pixel_clk_i),
