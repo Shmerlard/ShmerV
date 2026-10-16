@@ -101,3 +101,20 @@ The converter preserves byte/bit order and accepts 256 glyphs, 8 pixels wide,
 1–32 rows high. An 8×16 glyph row has ROM address `{char_code, row}`.
 
 See [credits and license notices](../../../docs/third-party.md).
+
+## Font character chart
+
+Generate a 16×16 SVG chart with the actual glyph bitmap and hexadecimal/decimal
+code of every character. The script uses only the Python standard library:
+
+```sh
+python3 scripts/software/font_chart.py rtl/peripherals/hdmi/fonts/NICER40C.hex build/docs/NICER40C-chart.svg
+```
+
+Open the SVG in a browser and zoom to inspect symbols such as box-drawing
+characters. Run the same command with a different font to regenerate its chart.
+Raw binary fonts such as `.F16` are also accepted; glyph height is inferred.
+Use `--format hex` or `--format raw` to override extension detection and
+`--scale 6` for larger glyphs. Fonts must contain 256 glyphs, 8 pixels wide,
+with 1–32 bytes per glyph. Bit 7 is drawn on the left, matching the RTL.
+Generated charts belong in `build/` and are not committed.
