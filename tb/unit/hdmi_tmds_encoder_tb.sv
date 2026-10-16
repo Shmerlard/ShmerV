@@ -9,7 +9,14 @@ module hdmi_tmds_encoder_tb;
   logic [9:0] symbol;
   int reference_disparity = 0;
   bit [4:0] branches = 0;
-  hdmi_tmds_encoder dut (.*);
+  hdmi_tmds_encoder dut (
+      .clk(clk),
+      .rst(rst),
+      .color_i(color),
+      .active_video_i(active_video),
+      .control_i(control),
+      .symbol_o(symbol)
+  );
   always #5 clk = ~clk;
 
   function automatic logic [9:0] control_symbol(input logic [1:0] c);

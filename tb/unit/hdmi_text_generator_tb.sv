@@ -1,13 +1,14 @@
 module hdmi_text_generator_tb;
   import hdmi_types::*;
   parameter logic [2:0] OFFSET = 3'd5;
+  parameter int START_ROW = 0;
+  parameter bit CURSOR_ENABLE = 1'b1;
+  parameter int CURSOR_INDEX = 80;
   bit pixel_clk = 0, cpu_clk = 0;
   logic rst = 1, enable = 1;
   logic [9:0] x, y;
   logic active_video;
-  hdmi_horizontal_state_t hor_state;
-  hdmi_vertical_state_t ver_state;
-  char_pos_t cpu_address, display_address;
+  logic [11:0] cpu_address, display_address;
   char_cell_t cpu_data, display_data;
   logic cpu_write = 0, display_read;
   pixel_rgb_t rgb;
@@ -16,31 +17,49 @@ module hdmi_text_generator_tb;
 
   always #5 pixel_clk = ~pixel_clk;
   always #7 cpu_clk = ~cpu_clk;
-  hdmi_module #(
-      .WINDOW_OFFSET(OFFSET)
-  ) dut (
+  hdmi_char_memory memory (
+      .cpu_clk(cpu_clk),
+      .pixel_clk(pixel_clk),
+      .char_index_controller_i(cpu_address),
+      .char_write_data_controller_i(cpu_data),
+      .char_read_data_controller_o(),
+      .char_write_enable_controller_i(cpu_write),
+      .char_read_enable_controller_i(1'b0),
+      .char_index_renderer_i(display_address),
+      .char_read_data_renderer_o(display_data),
+      .char_read_enable_renderer_i(display_read)
+  );
+  hdmi_text_renderer #(
+      .VIDEO_X_OFFSET_PIXELS(OFFSET)
+  ) renderer (
       .cpu_clk(cpu_clk),
       .pixel_clk(pixel_clk),
       .rst(rst),
       .pixel_rst(rst),
       .enable_i(enable),
-      .pixel_address_cpu_i(cpu_address),
-      .pixel_write_data_cpu_i(cpu_data),
-      .pixel_read_data_cpu_o(),
-      .pixel_write_enable_cpu_i(cpu_write),
-      .pixel_read_enable_cpu_i(1'b0),
+      .active_video_i(active_video),
+      .cursor_enable_i(CURSOR_ENABLE),
+      .cursor_blink_i(1'b0),
+      .cursor_index_i(12'(CURSOR_INDEX)),
+      .start_row_i(6'(START_ROW)),
+      .scan_pixel_x_i(x),
+      .scan_pixel_y_i(y),
+      .char_index_o(display_address),
+      .char_data_i(display_data),
+      .char_read_o(display_read),
+      .rgb_o(rgb)
+  );
+  hdmi_video_output #(
+      .VIDEO_X_OFFSET_PIXELS(OFFSET)
+  ) video_output (
+      .pixel_clk(pixel_clk),
+      .pixel_rst(rst),
+      .rgb_i(rgb),
+      .scan_pixel_x_o(x),
+      .scan_pixel_y_o(y),
+      .active_video_o(active_video),
       .tmds_symbols_o()
   );
-  // Observe the assembled display path, including the single shared font ROM.
-  assign x = dut.x;
-  assign y = dut.y;
-  assign active_video = dut.active_video;
-  assign hor_state = dut.hor_state;
-  assign ver_state = dut.ver_state;
-  assign display_address = dut.generator_address;
-  assign display_data = dut.generator_data;
-  assign display_read = dut.generator_read;
-  assign rgb = dut.rgb;
 
   function automatic char_cell_t cell_value(input int column, input int row);
     char_cell_t cell_data;
@@ -54,22 +73,27 @@ module hdmi_text_generator_tb;
     int screen_x, glyph_address;
     char_cell_t cell_data;
     logic [23:0] expected_rgb;
+    bit cursor_cell;
     expected_rgb = 0;
     if (active_video) begin
       screen_x = int'(x) - int'(OFFSET);
-      cell_data = cell_value(screen_x / 8, int'(y) / 16);
+      cell_data = cell_value(screen_x / 8, START_ROW + int'(y) / 16);
+      cursor_cell = CURSOR_ENABLE && (START_ROW + int'(y) / 16) * 80 + screen_x / 8 == CURSOR_INDEX;
+      if (cursor_cell) cell_data.char_code = 8'h5F;
       glyph_address = int'(cell_data.char_code) * 16 + int'(y) % 16;
       if (reference_font[glyph_address][7-screen_x%8])
-        expected_rgb = cell_data.fg_col == 4'h1 ? 24'h0000AA : 24'h00AA00;
-      else expected_rgb = cell_data.bg_col == 4'h4 ? 24'hAA0000 : 24'hFFFFFF;
+        expected_rgb = cursor_cell ? 24'hFFFFFF
+            : (cell_data.fg_col == 4'h1 ? 24'h0000AA : 24'h00AA00);
+      else
+        expected_rgb = cursor_cell ? 24'h000000
+          : (cell_data.bg_col == 4'h4 ? 24'hAA0000 : 24'hFFFFFF);
     end
     assert (rgb == expected_rgb)
     else $fatal(1, "Pixel (%0d,%0d): got %h expected %h", x, y, rgb, expected_rgb);
     assert (display_read == (x < 640 && y < 480 && x[2:0] == 0))
     else $fatal(1, "Unexpected character read");
     if (display_read) begin
-      assert (int'(display_address.x_pos) == int'(x)/8
-          && int'(display_address.y_pos) == int'(y)/16)
+      assert (int'(display_address) == (START_ROW + int'(y) / 16) * 80 + int'(x) / 8)
       else $fatal(1, "Wrong cell address");
       requests++;
     end
@@ -79,10 +103,9 @@ module hdmi_text_generator_tb;
     $readmemh("rtl/peripherals/hdmi/fonts/NICER40C.hex", reference_font);
     // Initialize using the independent CPU clock, keeping the display reset.
     @(negedge cpu_clk);
-    for (int row = 0; row < 30; row++) begin
+    for (int row = 0; row < 51; row++) begin
       for (int column = 0; column < 80; column++) begin
-        cpu_address.x_pos = 7'(column);
-        cpu_address.y_pos = 5'(row);
+        cpu_address = 12'(row * 80 + column);
         cpu_data = cell_value(column, row);
         cpu_write = 1;
         @(negedge cpu_clk);

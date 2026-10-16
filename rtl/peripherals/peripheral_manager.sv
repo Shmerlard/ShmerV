@@ -95,6 +95,7 @@ module peripheral_manager #(
   hdmi_access_target_t hdmi_access_target;
   char_cell_t hdmi_read_data;
   logic hdmi_read_enable, hdmi_write_enable;
+  logic hdmi_irq;
 
   // Forward a byte offset from HDMI_BASE; the controller selects the RAM cell.
   assign hdmi_address_offset = address_i - HDMI_BASE;
@@ -171,7 +172,7 @@ module peripheral_manager #(
     irq_o = 1'b0;
     irq_address_o = IRQ_ADDRESS_GPIO_A;
 
-    // Fixed priority: GPIO A > B > C > timer overflow > timer compare > UART RX.
+    // Fixed priority: GPIO A/B/C > timer overflow/compare/capture > UART RX > HDMI.
     if (gpio0_bus.irq) begin
       irq_o = 1'b1;
       irq_address_o = IRQ_ADDRESS_GPIO_A;
@@ -196,6 +197,9 @@ module peripheral_manager #(
     end else if (uart_rx_irq) begin
       irq_o = 1'b1;
       irq_address_o = IRQ_ADDRESS_UART_RX;
+    end else if (hdmi_irq) begin
+      irq_o = 1'b1;
+      irq_address_o = IRQ_ADDRESS_HDMI_OVERFLOW;
     end
   end
 
@@ -339,7 +343,7 @@ module peripheral_manager #(
     hdmi_module #(
         .FONT_INIT_FILE(HDMI_FONT_FILE),
         .TEXT_INIT_FILE(HDMI_CHAR_INIT_FILE),
-        .CPU_CLOCK_HZ(CLOCK_HZ)
+        .CPU_CLOCK_HZ  (CLOCK_HZ)
     ) hdmi (
         .cpu_clk(clk),
         .pixel_clk(hdmi_pixel_clk_i),
@@ -349,11 +353,13 @@ module peripheral_manager #(
         .hdmi_address_i(hdmi_address_offset[14:0]),
         .hdmi_write_data_i(write_data_i[15:0]),
         .hdmi_read_data_o(hdmi_read_data),
+        .irq_o(hdmi_irq),
         .hdmi_write_enable_i(hdmi_write_enable),
         .hdmi_read_enable_i(hdmi_read_enable),
         .tmds_symbols_o(hdmi_symbols_o)
     );
   end else begin : generate_no_hdmi
+    assign hdmi_irq = 1'b0;
     assign hdmi_read_data = '0;
     assign hdmi_symbols_o = '{default: '0};
   end

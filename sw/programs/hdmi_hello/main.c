@@ -36,7 +36,7 @@ int main(void)
     static const char message[] = "hello world!";
 
     /* Replace the initialized font demo with a blank black screen. */
-    for (uint32_t index = 0; index < HDMI_CHAR_COUNT; ++index)
+    for (uint32_t index = 0; index < HDMI_VISIBLE_CHAR_COUNT; ++index)
         write_cell(index, ' ');
 
     for (uint32_t index = 0; index < sizeof(message) - 1u; ++index) {

@@ -21,6 +21,7 @@ module hdmi_module #(
     input  logic                       hdmi_write_enable_i,
     input  logic                       hdmi_read_enable_i,
     output logic                [15:0] hdmi_read_data_o,
+    output logic irq_o,
 
     // Parallel TMDS symbols for the FPGA serializer: 0=blue, 1=green, 2=red.
     output logic [9:0] tmds_symbols_o[0:2]
@@ -30,21 +31,27 @@ module hdmi_module #(
   char_cell_t renderer_data;
   logic renderer_read;
   logic [9:0] scan_pixel_x, scan_pixel_y;
-  logic active_video;
-  pixel_rgb_t rgb;
+  logic              active_video;
+  pixel_rgb_t        rgb;
 
-  logic cmem_write_enable_controller;
-  logic cmem_read_enable_controller;
-  logic [11:0] cmem_cell_index_controller;
-  logic [15:0] cmem_write_data_controller;
-  logic [15:0] cmem_read_data_controller;
+  logic              cmem_write_enable_controller;
+  logic              cmem_read_enable_controller;
+  logic       [11:0] cmem_cell_index_controller;
+  logic       [15:0] cmem_write_data_controller;
+  logic       [15:0] cmem_read_data_controller;
 
-  logic [11:0] cursor_index;
+  logic       [11:0] cursor_index;
+  logic              hdmi_enable;
+  logic              cursor_enable;
+  logic              cursor_blink;
 
   // -----------------------------
 
   // ----------------- INSTANTIATIONS -----------------------
-  hdmi_controller hdmi_controller (
+  hdmi_controller #(
+      .TEXT_COLUMNS(TEXT_COLUMNS),
+      .TEXT_BUFFER_ROWS(TEXT_BUFFER_ROWS)
+  ) hdmi_controller (
       .cpu_clk(cpu_clk),
       .rst    (rst),
 
@@ -61,9 +68,11 @@ module hdmi_module #(
       .cmem_write_data_o  (cmem_write_data_controller),
       .cmem_read_data_i   (cmem_read_data_controller),
 
-      .cursor_enable_o(),
-      .cursor_blink_o (),
-      .cursor_index_o (cursor_index)
+      .hdmi_enable_o(hdmi_enable),
+      .cursor_enable_o(cursor_enable),
+      .cursor_blink_o (cursor_blink),
+      .cursor_index_o (cursor_index),
+      .irq_o(irq_o)
   );
 
 
@@ -100,9 +109,9 @@ module hdmi_module #(
       .rst(rst),
       .pixel_rst(pixel_rst),
 
-      .enable_i(1'b1),
-      .cursor_enable_i(1'b1),
-      .cursor_blink_i(1'b1),
+      .enable_i(hdmi_enable),
+      .cursor_enable_i(cursor_enable),
+      .cursor_blink_i(cursor_blink),
       .cursor_index_i(cursor_index),
       .start_row_i(6'd0),
 

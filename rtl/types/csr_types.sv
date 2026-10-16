@@ -28,10 +28,11 @@ package csr_types;
     TRAP_CAUSE_TIMER_A_OVERFLOW = 5'h14,
     TRAP_CAUSE_TIMER_A_COMPARE_1 = 5'h15,
     TRAP_CAUSE_TIMER_A_COMPARE_2 = 5'h16,
-    TRAP_CAUSE_TIMER_A_CAPTURE_1 = 5'h17
+    TRAP_CAUSE_TIMER_A_CAPTURE_1 = 5'h17,
+    TRAP_CAUSE_HDMI_OVERFLOW = 5'h18
   } trap_cause_interrupt_t;
 
-  typedef enum logic [2:0] {
+  typedef enum logic [3:0] {
     IRQ_ADDRESS_UART_RX,
     IRQ_ADDRESS_GPIO_A,
     IRQ_ADDRESS_GPIO_B,
@@ -39,7 +40,8 @@ package csr_types;
     IRQ_ADDRESS_TIMER_A_OVERFLOW,
     IRQ_ADDRESS_TIMER_A_COMPARE_1,
     IRQ_ADDRESS_TIMER_A_COMPARE_2,
-    IRQ_ADDRESS_TIMER_A_CAPTURE_1
+    IRQ_ADDRESS_TIMER_A_CAPTURE_1,
+    IRQ_ADDRESS_HDMI_OVERFLOW
   } irq_address_t;
 
   typedef enum logic [2:0] {

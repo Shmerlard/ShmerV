@@ -4,7 +4,8 @@
 
 /* Decoded MMIO regions; match rtl/types/soc_address_map.sv.
  * Sizes describe address windows, not the number of implemented registers.
- * HDMI uses 9600 bus-address bytes for 4800 bytes of cell data. */
+ * HDMI allocates 32 KiB; its 4080 cells use 16320 bus-address bytes
+ * for 8160 bytes of cell data (four-byte stride). */
 #define PORTA_BASE 0x10000000u
 #define PORTB_BASE 0x10000100u
 #define PORTC_BASE 0x10000200u
@@ -13,8 +14,10 @@
 #define UART_SIZE_BYTES 0x100u
 #define TIMER_A_BASE 0x10000400u
 #define TIMER_A_SIZE_BYTES 0x100u
-#define HDMI_CHAR_BASE 0x10002000u
-#define HDMI_CHAR_SIZE_BYTES 9600u
+#define HDMI_BASE 0x10002000u
+#define HDMI_SIZE_BYTES 0x8000u
+#define HDMI_CHAR_BASE 0x10006000u
+#define HDMI_CHAR_SIZE_BYTES 16320u /* Implemented cell slots; 64 bytes remain reserved. */
 
 /* SoC connections: PORTC_SEL selects these alternate pin functions. */
 #define PORTC_UART_TX_PIN 0x01u /* C.0 */

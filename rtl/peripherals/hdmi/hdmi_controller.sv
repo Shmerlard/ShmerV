@@ -1,7 +1,10 @@
 import hdmi_types::*;
 import soc_address_map::*;
 
-module hdmi_controller (
+module hdmi_controller #(
+    parameter int TEXT_COLUMNS = 80,
+    parameter int TEXT_BUFFER_ROWS = 51
+) (
     input cpu_clk,
     input rst,
 
@@ -20,10 +23,16 @@ module hdmi_controller (
     input logic [15:0] cmem_read_data_i,
 
     // Text renderer control
+    output logic hdmi_enable_o,
     output logic cursor_enable_o,
     output logic cursor_blink_o,
-    output logic [11:0] cursor_index_o
+    output logic [11:0] cursor_index_o,
+
+    output logic irq_o
 );
+
+  localparam int unsigned CHAR_COUNT = TEXT_COLUMNS * TEXT_BUFFER_ROWS;
+
 
   logic direct_write_req;
   logic cursor_write_req;
@@ -32,8 +41,41 @@ module hdmi_controller (
   logic [14:0] cmem_byte_offset;
   logic [11:0] direct_cell_index;
 
-  hdmi_ctrl_reg_t ctrl_reg;
-  // logic [4:0] start_row_reg; // TODO: better name to indicate scroll
+  logic cursor_overflow_req;
+  hdmi_ctrl_reg_t control_reg;
+  hdmi_access_target_t read_target;
+  logic [15:0] register_read_data;
+  logic [4:0] start_row_reg;  // TODO: better name to indicate scroll
+
+  assign irq_o = control_reg.hdmi_ie && control_reg.overflow_ifg;
+  assign hdmi_enable_o = control_reg.hdmi_enable;
+  assign cursor_enable_o = control_reg.cursor_enable;
+  assign cursor_blink_o = control_reg.cursor_blink;
+
+  assign start_row_reg = 5'b0;
+
+  always_ff @(posedge cpu_clk) begin
+    if (rst) begin
+      read_target <= HDMI_TARGET_RESERVED;
+      register_read_data <= '0;
+    end else if (hdmi_read_enable_i) begin
+      read_target <= access_target_i;
+      case (access_target_i)
+        HDMI_TARGET_CTRL: register_read_data <= 16'(control_reg);
+        HDMI_TARGET_CURSOR_POS: register_read_data <= {4'b0, cursor_index_o};
+        HDMI_TARGET_START_ROW: register_read_data <= {11'b0, start_row_reg};
+        HDMI_TARGET_CURSOR_DATA: ;
+        HDMI_TARGET_RESERVED: ;
+        HDMI_TARGET_CMEM: ;
+        default: ;
+      endcase
+    end
+  end
+
+  always_comb begin
+    hdmi_read_data_o = register_read_data;
+    if (read_target == HDMI_TARGET_CMEM) hdmi_read_data_o = cmem_read_data_i;
+  end
 
   // direct write control
   always_comb begin
@@ -71,13 +113,37 @@ module hdmi_controller (
 
   always_ff @(posedge cpu_clk) begin
     if (rst) begin
-      cursor_index_o <= 0;
+      control_reg <= 0;
+      control_reg.hdmi_enable <= 1'b1;
+      control_reg.cursor_enable <= 1'b1;
+      control_reg.cursor_blink <= 1'b1;
     end else begin
+      if (access_target_i == HDMI_TARGET_CTRL) begin
+        if (hdmi_write_enable_i) begin
+          control_reg <= 5'(hdmi_write_data_i);
+        end
+      end
+    if (cursor_overflow_req) control_reg.overflow_ifg <= 1'b1;
+    end
+  end
+
+  always_ff @(posedge cpu_clk) begin
+    if (rst) begin
+      cursor_index_o <= 0;
+      cursor_overflow_req <= 1'b0;
+    end else begin
+      cursor_overflow_req <= 1'b0;
       if (hdmi_write_enable_i && access_target_i == HDMI_TARGET_CURSOR_POS) begin
-        cursor_index_o <= hdmi_write_data_i[11:0];
+        if (int'(hdmi_write_data_i) < int'(CHAR_COUNT))
+          cursor_index_o <= hdmi_write_data_i[11:0];
+        // TODO: Consider reporting an exception for an out-of-range cursor write.
       end else if (cursor_write_req) begin
-        cursor_index_o <= cursor_index_o + 1;
-        // TODO: interrupt if there is overflow
+        if (int'(cursor_index_o) == int'(CHAR_COUNT) - 1) begin
+          cursor_index_o <= 0;
+          cursor_overflow_req <= 1;
+        end else begin
+          cursor_index_o <= cursor_index_o + 1;
+        end
       end
     end
   end

@@ -10,15 +10,15 @@ module hdmi_timer_offset_tb;
 
   for (genvar i = 0; i < 3; i++) begin : timers
     hdmi_timer #(
-        .WINDOW_OFFSET(3'(OFFSETS[i]))
+        .VIDEO_X_OFFSET_PIXELS(3'(OFFSETS[i]))
     ) dut (
         .clk(clk),
         .rst(rst),
-        .hor_state(hor_state[i]),
-        .ver_state(ver_state[i]),
-        .x(x[i]),
-        .y(y[i]),
-        .active_video(active_video[i])
+        .hor_state_o(hor_state[i]),
+        .ver_state_o(ver_state[i]),
+        .scan_pixel_x_o(x[i]),
+        .scan_pixel_y_o(y[i]),
+        .active_video_o(active_video[i])
     );
   end
   always #5 clk = ~clk;

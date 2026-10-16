@@ -4,7 +4,7 @@ package hdmi_types;
     logic hdmi_enable;
     logic cursor_enable;
     logic cursor_blink;
-    logic write_wrap;
+    logic overflow_ifg;
     logic hdmi_ie;
   } hdmi_ctrl_reg_t;
 

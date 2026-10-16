@@ -107,6 +107,7 @@ module trap_control_unit (
         IRQ_ADDRESS_TIMER_A_COMPARE_1: trap_cause_interrupt = TRAP_CAUSE_TIMER_A_COMPARE_1;
         IRQ_ADDRESS_TIMER_A_COMPARE_2: trap_cause_interrupt = TRAP_CAUSE_TIMER_A_COMPARE_2;
         IRQ_ADDRESS_TIMER_A_CAPTURE_1: trap_cause_interrupt = TRAP_CAUSE_TIMER_A_CAPTURE_1;
+        IRQ_ADDRESS_HDMI_OVERFLOW: trap_cause_interrupt = TRAP_CAUSE_HDMI_OVERFLOW;
         default: begin
         end
       endcase

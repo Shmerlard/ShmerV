@@ -61,6 +61,9 @@ __unhandled_interrupt:
 .weak __irq_TIMER_A_CAPTURE_1
 .set __irq_TIMER_A_CAPTURE_1, __unhandled_interrupt
 
+.weak __irq_HDMI_OVERFLOW
+.set __irq_HDMI_OVERFLOW, __unhandled_interrupt
+
 .section .vectors, "ax"
 .balign 4
 .global __vector_table
@@ -89,3 +92,4 @@ __vector_table:
     j __irq_TIMER_A_COMPARE_1  # cause 21
     j __irq_TIMER_A_COMPARE_2  # cause 22
     j __irq_TIMER_A_CAPTURE_1  # cause 23
+    j __irq_HDMI_OVERFLOW      # cause 24
