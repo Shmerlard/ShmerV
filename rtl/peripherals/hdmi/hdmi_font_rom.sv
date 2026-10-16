@@ -1,7 +1,7 @@
 import hdmi_types::*;
 
 module hdmi_font_rom #(
-    parameter string FONT_FILE = "rtl/peripherals/hdmi/fonts/NICER40C.hex"
+    parameter string FONT_INIT_FILE = "rtl/peripherals/hdmi/fonts/NICER40C.hex"
 ) (
     input logic clk,
     input logic read_enable_i,
@@ -14,7 +14,7 @@ module hdmi_font_rom #(
   logic [7:0] font_memory[0:4095]  /* synthesis syn_ramstyle = "block_ram" */;
 
   initial begin
-    $readmemh(FONT_FILE, font_memory);
+    $readmemh(FONT_INIT_FILE, font_memory);
   end
 
   always_ff @(posedge clk) begin

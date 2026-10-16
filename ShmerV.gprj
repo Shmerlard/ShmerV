@@ -31,6 +31,7 @@
         <File path="rtl/peripherals/gpio_module.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/hdmi/hdmi_blink_module.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/hdmi/hdmi_char_memory.sv" type="file.verilog" enable="1"/>
+        <File path="rtl/peripherals/hdmi/hdmi_controller.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/hdmi/hdmi_font_rom.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/hdmi/hdmi_module.sv" type="file.verilog" enable="1"/>
         <File path="rtl/peripherals/hdmi/hdmi_pixel_generator.sv" type="file.verilog" enable="1"/>

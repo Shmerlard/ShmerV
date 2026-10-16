@@ -7,6 +7,7 @@ rtl/types/gpio_types.sv
 rtl/types/hdmi_types.sv
 rtl/peripherals/hdmi/hdmi_blink_module.sv
 rtl/peripherals/hdmi/hdmi_char_memory.sv
+rtl/peripherals/hdmi/hdmi_controller.sv
 rtl/peripherals/hdmi/hdmi_font_rom.sv
 rtl/peripherals/hdmi/hdmi_timer_module.sv
 rtl/peripherals/hdmi/hdmi_pixel_generator.sv

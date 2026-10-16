@@ -1,62 +1,46 @@
 import hdmi_types::*;
 module hdmi_char_memory #(
-    parameter int CHAR_WIDTH = 8,
-    parameter int CHAR_HEIGHT = 16,
-    parameter int HORIZONTAL_CHAR = 80,
-    parameter int VERTICAL_CHAR = 51,
-    parameter string INIT_FILE = ""
+    parameter int TEXT_COLUMNS = 80,
+    parameter int TEXT_BUFFER_ROWS = 51,
+    parameter string TEXT_INIT_FILE = ""
 ) (
     input logic cpu_clk,
     input logic pixel_clk,
 
-    input char_pos_t pixel_address_cpu_i,
-    input char_cell_t pixel_write_data_cpu_i,
-    output char_cell_t pixel_read_data_cpu_o,
-    input logic pixel_write_enable_cpu_i,
-    input logic pixel_read_enable_cpu_i,
+    // Controller Interface
+    input logic [11:0] char_index_controller_i,
+    input char_cell_t char_write_data_controller_i,
+    output char_cell_t char_read_data_controller_o,
+    input logic char_write_enable_controller_i,
+    input logic char_read_enable_controller_i,
 
-    input char_pos_t pixel_address_generator_i,
-    output char_cell_t pixel_read_data_generator_o,
-    input logic pixel_read_enable_generator_i
+    // Renderer Interface
+    input logic [11:0] char_index_renderer_i,
+    output char_cell_t char_read_data_renderer_o,
+    input logic char_read_enable_renderer_i
 
 );
 
-  logic [15:0] char_memory[0:HORIZONTAL_CHAR * VERTICAL_CHAR - 1] /* synthesis syn_ramstyle = "block_ram" */;
+  logic [15:0] char_memory[0:TEXT_COLUMNS * TEXT_BUFFER_ROWS - 1] /* synthesis syn_ramstyle = "block_ram" */;
 
-  logic [11:0] cpu_address;
-  logic [11:0] generator_address;
-
-  logic [6:0] x_pos_cpu;
-  logic [4:0] y_pos_cpu;
-  logic [6:0] x_pos_generator;
-  logic [4:0] y_pos_generator;
   //------------------------
 
   initial begin
-    if (INIT_FILE != "") $readmemh(INIT_FILE, char_memory);
+    if (TEXT_INIT_FILE != "") $readmemh(TEXT_INIT_FILE, char_memory);
   end
-  always_comb begin
-    x_pos_cpu = pixel_address_cpu_i.x_pos;
-    y_pos_cpu = pixel_address_cpu_i.y_pos;
-    x_pos_generator = pixel_address_generator_i.x_pos;
-    y_pos_generator = pixel_address_generator_i.y_pos;
-  end
-
-  assign cpu_address = 12'(32'(x_pos_cpu) + HORIZONTAL_CHAR * 32'(y_pos_cpu));
-  assign generator_address = 12'(32'(x_pos_generator) + HORIZONTAL_CHAR * 32'(y_pos_generator));
 
   always_ff @(posedge cpu_clk) begin
-    if (pixel_write_enable_cpu_i) begin
-      char_memory[cpu_address] <= pixel_write_data_cpu_i;
+    if (char_write_enable_controller_i) begin
+      char_memory[char_index_controller_i] <= char_write_data_controller_i;
     end
-    if (pixel_read_enable_cpu_i) begin
-      pixel_read_data_cpu_o <= char_cell_t'(char_memory[cpu_address]);
+    if (char_read_enable_controller_i) begin
+      char_read_data_controller_o <= char_cell_t'(char_memory[char_index_controller_i]);
     end
   end
 
   always_ff @(posedge pixel_clk) begin
-    if (pixel_read_enable_generator_i) begin
-      pixel_read_data_generator_o <= char_cell_t'(char_memory[generator_address]);
+    if (char_read_enable_renderer_i) begin
+      char_read_data_renderer_o <= char_cell_t'(char_memory[char_index_renderer_i]);
     end
   end
 

@@ -1,4 +1,5 @@
 package hdmi_types;
+
   typedef struct packed {
     logic hdmi_enable;
     logic cursor_enable;
@@ -8,12 +9,13 @@ package hdmi_types;
   } hdmi_ctrl_reg_t;
 
   typedef enum logic [2:0] {
-    HDMI_ADDRESS_CTRL,
-    HDMI_ADDRESS_CHAR,
-    HDMI_ADDRESS_CURSOR_POS,
-    HDMI_ADDRESS_START_ROW,
-    HDMI_ADDRESS_WRITE_CHAR   // TODO: better name
-  } hdmi_address_t;
+    HDMI_TARGET_CTRL = 3'd0,
+    HDMI_TARGET_CURSOR_POS = 3'd1,
+    HDMI_TARGET_START_ROW = 3'd2,
+    HDMI_TARGET_CURSOR_DATA = 3'd3,  // TODO: better name
+    HDMI_TARGET_RESERVED = 3'd4,
+    HDMI_TARGET_CMEM = 3'd5
+  } hdmi_access_target_t;
 
   // Fixed VGA text palette indices; match sw/include/shmerv_hdmi.h.
   typedef enum logic [3:0] {
@@ -44,7 +46,7 @@ package hdmi_types;
   typedef struct packed {
     logic [6:0] x_pos;
     logic [4:0] y_pos;
-  } char_pos_t;  // the position of the char on the screen
+  } screen_cell_pos_t;  // the position of the char on the screen
 
   typedef struct packed {
     logic [7:0] r_pixel;

@@ -92,18 +92,29 @@ module peripheral_manager #(
 
   logic hdmi_address_hit;
   logic [31:0] hdmi_address_offset;
-  logic [11:0] hdmi_cell_index;
-  char_pos_t hdmi_cpu_address;
+  hdmi_access_target_t hdmi_access_target;
   char_cell_t hdmi_read_data;
   logic hdmi_read_enable, hdmi_write_enable;
 
-  // Temporary map: aligned slots at BASE + 4*(row*80 + column).
-  assign hdmi_address_offset = address_i - HDMI_CHAR_BASE;
-  assign hdmi_address_hit = ENABLE_HDMI && address_i >= HDMI_CHAR_BASE
-      && hdmi_address_offset < HDMI_CHAR_SIZE_BYTES && address_i[1:0] == 2'b00;
-  assign hdmi_cell_index = hdmi_address_offset[13:2];
-  assign hdmi_cpu_address.x_pos = 7'(hdmi_cell_index % 12'd80);
-  assign hdmi_cpu_address.y_pos = 5'(hdmi_cell_index / 12'd80);
+  // Forward a byte offset from HDMI_BASE; the controller selects the RAM cell.
+  assign hdmi_address_offset = address_i - HDMI_BASE;
+  assign hdmi_address_hit = ENABLE_HDMI && address_i >= HDMI_BASE
+      && hdmi_address_offset < HDMI_SIZE_BYTES && address_i[1:0] == 2'b00;
+  always_comb begin
+    hdmi_access_target = HDMI_TARGET_RESERVED;
+    if (hdmi_address_hit) begin
+      case (hdmi_address_offset)
+        32'h00: hdmi_access_target = HDMI_TARGET_CTRL;
+        32'h04: hdmi_access_target = HDMI_TARGET_CURSOR_POS;
+        32'h08: hdmi_access_target = HDMI_TARGET_START_ROW;
+        32'h0C: hdmi_access_target = HDMI_TARGET_CURSOR_DATA;
+        default: begin
+          if (address_i >= HDMI_CHAR_MEM_BASE && address_i < HDMI_CHAR_MEM_BASE + 32'd4080 * 32'd4)
+            hdmi_access_target = HDMI_TARGET_CMEM;
+        end
+      endcase
+    end
+  end
   assign hdmi_read_enable = read_enable_i && hdmi_address_hit;
   assign hdmi_write_enable = write_enable_i && hdmi_address_hit && (&write_byte_enable_i[1:0]);
 
@@ -326,20 +337,20 @@ module peripheral_manager #(
   // CPU and display ports use their respective clock domains.
   if (ENABLE_HDMI) begin : generate_hdmi
     hdmi_module #(
-        .FONT_FILE(HDMI_FONT_FILE),
-        .CHAR_INIT_FILE(HDMI_CHAR_INIT_FILE),
+        .FONT_INIT_FILE(HDMI_FONT_FILE),
+        .TEXT_INIT_FILE(HDMI_CHAR_INIT_FILE),
         .CPU_CLOCK_HZ(CLOCK_HZ)
     ) hdmi (
         .cpu_clk(clk),
         .pixel_clk(hdmi_pixel_clk_i),
         .rst(rst),
         .pixel_rst(hdmi_pixel_rst_i),
-        .enable_i(hdmi_enable_i),
-        .pixel_address_cpu_i(hdmi_cpu_address),
-        .pixel_write_data_cpu_i(char_cell_t'(write_data_i[15:0])),
-        .pixel_read_data_cpu_o(hdmi_read_data),
-        .pixel_write_enable_cpu_i(hdmi_write_enable),
-        .pixel_read_enable_cpu_i(hdmi_read_enable),
+        .access_target_i(hdmi_access_target),
+        .hdmi_address_i(hdmi_address_offset[14:0]),
+        .hdmi_write_data_i(write_data_i[15:0]),
+        .hdmi_read_data_o(hdmi_read_data),
+        .hdmi_write_enable_i(hdmi_write_enable),
+        .hdmi_read_enable_i(hdmi_read_enable),
         .tmds_symbols_o(hdmi_symbols_o)
     );
   end else begin : generate_no_hdmi

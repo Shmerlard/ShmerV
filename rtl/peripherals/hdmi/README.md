@@ -23,6 +23,12 @@ The last cell slot is `0x1000457C`.
 renderer, and video output. The register interface is still incomplete;
 no new controller behavior is implemented by this reorganization.
 
+The initial write interface now supports direct cell writes at
+`0x10006000 + 4*index`, cursor-position writes at `0x10002004` (low 12 bits),
+and cell writes at `0x1000200C` using the current cursor with auto-increment.
+Setting the cursor does not write RAM. Cursor bounds, readback, and the
+remaining control registers are not implemented yet.
+
 - `hdmi_char_memory` contains only dual-clock character storage and CPU/display ports.
 - `hdmi_text_renderer` owns the pixel generator, one font ROM with its palette,
   and the blink module. It substitutes a white-on-black underscore for the
