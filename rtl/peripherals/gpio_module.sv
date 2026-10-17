@@ -33,8 +33,7 @@ module gpio_module #(
   logic [WIDTH-1:0] ies_reg;
   logic [WIDTH-1:0] ifg_reg;
 
-  logic [WIDTH-1:0] sync_ff1;
-  logic [WIDTH-1:0] sync_ff2;
+  logic [WIDTH-1:0] pin_synced;
 
   logic [WIDTH-1:0] selected_output;
   logic [WIDTH-1:0] effective_sel;
@@ -46,27 +45,31 @@ module gpio_module #(
 
   assign effective_sel = ALT_MASK & sel_reg;
   assign alt_sel_o = effective_sel;
-  assign in_reg = sync_ff2;
-  assign alt_in_o = sync_ff2;
+  assign in_reg = pin_synced;
+  assign alt_in_o = pin_synced;
   assign irq_o = |(ifg_reg & ie_reg & IRQ_MASK);
 
-  // Synchronizer
+  for (genvar pin = 0; pin < WIDTH; pin++) begin : generate_input_sync
+    cdc_bit_sync input_sync (
+        .dst_clk(clk),
+        .dst_rst(rst),
+        .data_i (pin_i[pin]),
+        .data_o (pin_synced[pin])
+    );
+  end
+
   always_ff @(posedge clk) begin
     if (rst) begin
-      sync_ff1   <= '0;
-      sync_ff2   <= '0;
       prev_input <= '0;
     end else begin
-      sync_ff1   <= pin_i;
-      sync_ff2   <= sync_ff1;
-      prev_input <= sync_ff2;
+      prev_input <= pin_synced;
     end
   end
 
   // IFG handling
   always_comb begin
-    rising_edge_input = ~prev_input & sync_ff2 & IRQ_MASK;
-    falling_edge_input = prev_input & ~sync_ff2 & IRQ_MASK;
+    rising_edge_input = ~prev_input & pin_synced & IRQ_MASK;
+    falling_edge_input = prev_input & ~pin_synced & IRQ_MASK;
     selected_edge = ~dir_reg & ~effective_sel
         & ((rising_edge_input & ~ies_reg) | (falling_edge_input & ies_reg));
   end
