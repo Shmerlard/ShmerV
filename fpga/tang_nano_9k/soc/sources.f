@@ -8,6 +8,8 @@ rtl/types/hdmi_types.sv
 rtl/peripherals/hdmi/hdmi_blink_module.sv
 rtl/peripherals/hdmi/hdmi_char_memory.sv
 rtl/peripherals/hdmi/hdmi_controller.sv
+rtl/common/cdc_bit_sync.sv
+rtl/common/cdc_handshake.sv
 rtl/peripherals/hdmi/hdmi_font_rom.sv
 rtl/peripherals/hdmi/hdmi_timer_module.sv
 rtl/peripherals/hdmi/hdmi_pixel_generator.sv
