@@ -21,7 +21,7 @@ module hdmi_module #(
     input  logic                       hdmi_write_enable_i,
     input  logic                       hdmi_read_enable_i,
     output logic                [15:0] hdmi_read_data_o,
-    output logic irq_o,
+    output logic                       irq_o,
 
     // Parallel TMDS symbols for the FPGA serializer: 0=blue, 1=green, 2=red.
     output logic [9:0] tmds_symbols_o[0:2]
@@ -41,11 +41,20 @@ module hdmi_module #(
   logic       [15:0] cmem_read_data_controller;
 
   logic       [11:0] cursor_index;
+  logic       [11:0] cursor_index_pixel;
   logic              hdmi_enable;
+  logic              hdmi_enable_pixel;
   logic              cursor_enable;
   logic              cursor_blink;
 
-  // -----------------------------
+
+  // Synchronize display enable to pixel_clk.
+  cdc_bit_sync enable_sync (
+      .dst_clk(pixel_clk),
+      .dst_rst(pixel_rst),
+      .data_i (hdmi_enable),
+      .data_o (hdmi_enable_pixel)
+  );
 
   // ----------------- INSTANTIATIONS -----------------------
   hdmi_controller #(
@@ -70,11 +79,22 @@ module hdmi_module #(
 
       .hdmi_enable_o(hdmi_enable),
       .cursor_enable_o(cursor_enable),
-      .cursor_blink_o (cursor_blink),
-      .cursor_index_o (cursor_index),
+      .cursor_blink_o(cursor_blink),
+      .cursor_index_o(cursor_index),
       .irq_o(irq_o)
   );
 
+
+  cdc_handshake #(
+      .WIDTH(12)
+  ) cursor_handshake (
+      .src_clk(cpu_clk),
+      .src_rst(rst),
+      .dst_clk(pixel_clk),
+      .dst_rst(pixel_rst),
+      .data_i (cursor_index),
+      .data_o (cursor_index_pixel)
+  );
 
   hdmi_char_memory #(
       .TEXT_INIT_FILE(TEXT_INIT_FILE),
@@ -109,10 +129,10 @@ module hdmi_module #(
       .rst(rst),
       .pixel_rst(pixel_rst),
 
-      .enable_i(hdmi_enable),
+      .enable_i(hdmi_enable_pixel),
       .cursor_enable_i(cursor_enable),
       .cursor_blink_i(cursor_blink),
-      .cursor_index_i(cursor_index),
+      .cursor_index_i(cursor_index_pixel),
       .start_row_i(6'd0),
 
       .scan_pixel_x_i(scan_pixel_x),

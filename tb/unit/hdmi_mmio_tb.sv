@@ -72,13 +72,12 @@ module hdmi_mmio_tb #(
       read_bus(32'h10002000, 32'h1C);  // Reset: display/cursor/blink, no flag/IRQ.
       write_bus(32'h10002000, 32'h10);
       read_bus(32'h10002000, 32'h10);
-      assert (!dut.generate_hdmi.hdmi.cursor_enable
-          && !dut.generate_hdmi.hdmi.cursor_blink)
+      assert (!dut.generate_hdmi.hdmi.cursor_enable && !dut.generate_hdmi.hdmi.cursor_blink)
       else $fatal(1, "CTRL cursor settings not forwarded");
       write_bus(32'h10002000, 32'h1C);
       write_bus(32'h10002000, 32'h00);
-      assert (dut.generate_hdmi.hdmi.rgb == 0
-          && !dut.generate_hdmi.hdmi.renderer_read)
+      repeat (2) @(negedge clk);  // Display control crosses two pixel registers.
+      assert (dut.generate_hdmi.hdmi.rgb == 0 && !dut.generate_hdmi.hdmi.renderer_read)
       else $fatal(1, "Display disable did not blank output and stop reads");
       begin
         logic [9:0] previous_x;
@@ -154,7 +153,7 @@ module hdmi_mmio_tb #(
       check_cursor(79);
       write_bus(CURSOR_POS, 32'hFFFF);
       check_cursor(79);
-      write_bus(CURSOR_POS, 32'h104F); // High bits must not silently truncate to 79.
+      write_bus(CURSOR_POS, 32'h104F);  // High bits must not silently truncate to 79.
       check_cursor(79);
       check_cell(79, 16'h4220);  // Setting the cursor does not write RAM.
       write_bus(CURSOR_DATA, 32'hABCD41F0);
@@ -166,7 +165,7 @@ module hdmi_mmio_tb #(
       check_cell(80, 16'h42E0);
       check_cursor(81);
       read_bus(CURSOR_POS, 81);
-      read_bus(CURSOR_DATA, 81); // Unsupported read retains prior register response.
+      read_bus(CURSOR_DATA, 81);  // Unsupported read retains prior register response.
       read_bus(CURSOR_POS, 81);
       address_i = CURSOR_DATA;
       repeat (3) @(negedge clk);  // CURSOR_DATA selected without a write.
@@ -193,22 +192,26 @@ module hdmi_mmio_tb #(
       // Overflow becomes sticky on the cycle following the last-cell write.
       @(negedge clk);
       read_bus(32'h10002000, 32'h1E);
-      assert (!dut.generate_hdmi.hdmi.irq_o) else $fatal(1, "Masked IRQ asserted");
+      assert (!dut.generate_hdmi.hdmi.irq_o)
+      else $fatal(1, "Masked IRQ asserted");
       write_bus(32'h10002000, 32'h1F);
-      assert (dut.generate_hdmi.hdmi.irq_o) else $fatal(1, "Pending IRQ not exported");
+      assert (dut.generate_hdmi.hdmi.irq_o)
+      else $fatal(1, "Pending IRQ not exported");
       assert (irq_o && irq_address_o == IRQ_ADDRESS_HDMI_OVERFLOW)
       else $fatal(1, "HDMI IRQ not routed to manager");
-      write_bus(32'h10000010, 32'd1, 4'b0001); // GPIO A interrupt enable.
-      write_bus(32'h10000018, 32'd1, 4'b0001); // GPIO A software pending.
+      write_bus(32'h10000010, 32'd1, 4'b0001);  // GPIO A interrupt enable.
+      write_bus(32'h10000018, 32'd1, 4'b0001);  // GPIO A software pending.
       assert (irq_o && irq_address_o == IRQ_ADDRESS_GPIO_A)
       else $fatal(1, "HDMI incorrectly preempted GPIO A");
       write_bus(32'h1000001C, 32'd1, 4'b0001);
       assert (irq_o && irq_address_o == IRQ_ADDRESS_HDMI_OVERFLOW)
       else $fatal(1, "Pending HDMI IRQ lost after higher-priority source");
       write_bus(32'h10000010, 32'd0, 4'b0001);
-      write_bus(32'h10002000, 32'h1D); // Current CTRL semantics: write flag zero to clear.
-      assert (!dut.generate_hdmi.hdmi.irq_o) else $fatal(1, "IRQ did not clear");
-      assert (!irq_o) else $fatal(1, "Manager IRQ remained asserted");
+      write_bus(32'h10002000, 32'h1D);  // Current CTRL semantics: write flag zero to clear.
+      assert (!dut.generate_hdmi.hdmi.irq_o)
+      else $fatal(1, "IRQ did not clear");
+      assert (!irq_o)
+      else $fatal(1, "Manager IRQ remained asserted");
 
       rst = 1;
       @(negedge clk);

@@ -33,6 +33,8 @@ module hdmi_controller #(
 
   localparam int unsigned CHAR_COUNT = TEXT_COLUMNS * TEXT_BUFFER_ROWS;
 
+  logic [11:0] cursor_index;
+  assign cursor_index_o = cursor_index;
 
   logic direct_write_req;
   logic cursor_write_req;
@@ -62,7 +64,7 @@ module hdmi_controller #(
       read_target <= access_target_i;
       case (access_target_i)
         HDMI_TARGET_CTRL: register_read_data <= 16'(control_reg);
-        HDMI_TARGET_CURSOR_POS: register_read_data <= {4'b0, cursor_index_o};
+        HDMI_TARGET_CURSOR_POS: register_read_data <= {4'b0, cursor_index};
         HDMI_TARGET_START_ROW: register_read_data <= {11'b0, start_row_reg};
         HDMI_TARGET_CURSOR_DATA: ;
         HDMI_TARGET_RESERVED: ;
@@ -107,7 +109,7 @@ module hdmi_controller #(
     cmem_cell_index_o = direct_cell_index;
     cmem_write_data_o = hdmi_write_data_i;
     if (cursor_write_req) begin
-      cmem_cell_index_o = cursor_index_o;
+      cmem_cell_index_o = cursor_index;
     end
   end
 
@@ -123,26 +125,25 @@ module hdmi_controller #(
           control_reg <= 5'(hdmi_write_data_i);
         end
       end
-    if (cursor_overflow_req) control_reg.overflow_ifg <= 1'b1;
+      if (cursor_overflow_req) control_reg.overflow_ifg <= 1'b1;
     end
   end
 
   always_ff @(posedge cpu_clk) begin
     if (rst) begin
-      cursor_index_o <= 0;
+      cursor_index <= 0;
       cursor_overflow_req <= 1'b0;
     end else begin
       cursor_overflow_req <= 1'b0;
       if (hdmi_write_enable_i && access_target_i == HDMI_TARGET_CURSOR_POS) begin
-        if (int'(hdmi_write_data_i) < int'(CHAR_COUNT))
-          cursor_index_o <= hdmi_write_data_i[11:0];
+        if (int'(hdmi_write_data_i) < int'(CHAR_COUNT)) cursor_index <= hdmi_write_data_i[11:0];
         // TODO: Consider reporting an exception for an out-of-range cursor write.
       end else if (cursor_write_req) begin
-        if (int'(cursor_index_o) == int'(CHAR_COUNT) - 1) begin
-          cursor_index_o <= 0;
+        if (int'(cursor_index) == int'(CHAR_COUNT) - 1) begin
+          cursor_index <= 0;
           cursor_overflow_req <= 1;
         end else begin
-          cursor_index_o <= cursor_index_o + 1;
+          cursor_index <= cursor_index + 1;
         end
       end
     end

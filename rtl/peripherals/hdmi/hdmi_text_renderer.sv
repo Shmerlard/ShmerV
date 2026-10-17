@@ -30,6 +30,8 @@ module hdmi_text_renderer #(
     output pixel_rgb_t rgb_o
 );
   logic cursor_blink_visible, display_cursor_active;
+  logic cursor_visible_cpu;
+  logic cursor_visible_pixel;
   char_cell_t display_cell;
   logic font_read;
   logic [7:0] font_char_code, font_bitmap;
@@ -38,11 +40,23 @@ module hdmi_text_renderer #(
 
   screen_cell_pos_t screen_cell_pos;
 
+  // Register visibility before CDC to avoid glitches.
+  always_ff @(posedge cpu_clk) begin
+    if (rst) cursor_visible_cpu <= 1'b0;
+    else cursor_visible_cpu <= cursor_blink_visible;
+  end
+
+  cdc_bit_sync visibility_sync (
+      .dst_clk(pixel_clk),
+      .dst_rst(pixel_rst),
+      .data_i (cursor_visible_cpu),
+      .data_o (cursor_visible_pixel)
+  );
+
   // Capture the cursor selection on the same edge as the RAM response.
-  // Retain the existing CPU-clock blink timing and pixel-clock sampling.
   always_ff @(posedge pixel_clk) begin
     if (char_read_o)
-      display_cursor_active <= char_index_o == cursor_index_i && cursor_blink_visible;
+      display_cursor_active <= char_index_o == cursor_index_i && cursor_visible_pixel;
   end
 
   always_comb begin

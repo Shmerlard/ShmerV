@@ -66,8 +66,12 @@ See `sw/include/shmerv_hdmi.h` for offsets, masks, and access semantics.
   coordinates/active-video to the renderer and encodes its RGB output.
 
 The cursor remains enabled and blinking at its controller-managed position,
-with 500 ms visible/hidden intervals at the configured CPU clock. Its existing
-CPU-to-pixel clock sampling is unchanged. The temporary CPU font window remains removed.
+with 500 ms visible/hidden intervals at the configured CPU clock. Cursor position
+crosses to the pixel domain through `cdc_handshake #(.WIDTH(12))`; intermediate
+positions may be skipped while a transfer is active. Display enable and registered
+cursor visibility use `cdc_bit_sync`. Both reusable modules and their reset/timing
+contracts are documented in [rtl/common](../../common/README.md).
+The temporary CPU font window remains removed.
 
 ## Rendering
 
